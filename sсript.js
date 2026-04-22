@@ -4,15 +4,13 @@
   const mapScreen = document.getElementById("map-screen");
   const playButton = document.getElementById("playButton");
   const settingsButton = document.getElementById("settingsButton");
-  const backButton = document.getElementById("backButton");
   const mapViewport = document.getElementById("mapViewport");
   const chapterLayer = document.getElementById("chapterLayer");
-  const decorBack = document.getElementById("decorBack");
-  const decorFront = document.getElementById("decorFront");
   const levelLayer = document.getElementById("levelLayer");
-  const roadMain = document.getElementById("roadMain");
   const roadShadow = document.getElementById("roadShadow");
-  const roadHighlight = document.getElementById("roadHighlight");
+  const roadMain = document.getElementById("roadMain");
+  const roadEdge = document.getElementById("roadEdge");
+  const roadCenter = document.getElementById("roadCenter");
   const menuButtons = document.querySelectorAll(".menu-button");
   const playPopDuration = 220;
   const trackHeight = 12000;
@@ -21,57 +19,30 @@
   const activeLevel = 1;
   let isStarting = false;
 
-  const chapterThemes = [
-    {
-      tint: "linear-gradient(180deg, rgba(255, 252, 205, 0.42), rgba(175, 229, 156, 0.45))",
-      decor: ["hill", "tree", "flower"],
-      colors: ["#bfe88c", "#7fcf8f", "#ffe680", "#ff9fb7"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(255, 221, 201, 0.48), rgba(255, 174, 198, 0.42))",
-      decor: ["tree", "flower", "hill"],
-      colors: ["#ffb39c", "#ff80b4", "#ffd46e", "#bce38b"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(218, 205, 255, 0.5), rgba(184, 213, 255, 0.36))",
-      decor: ["hill", "crystal", "flower"],
-      colors: ["#bca8ff", "#8fa8ff", "#d8b6ff", "#fff0a3"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(207, 255, 231, 0.44), rgba(111, 208, 156, 0.42))",
-      decor: ["tree", "hill", "flower"],
-      colors: ["#86dfad", "#48b98b", "#baf3cf", "#fff08d"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(204, 246, 255, 0.5), rgba(113, 198, 246, 0.42))",
-      decor: ["pond", "hill", "flower"],
-      colors: ["#8de4ff", "#57b7ef", "#c8f6ff", "#7fdca8"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(142, 237, 255, 0.44), rgba(76, 183, 226, 0.48))",
-      decor: ["shell", "pond", "crystal"],
-      colors: ["#84e4ff", "#3ca7d8", "#ffd7a9", "#ff9cc7"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(121, 130, 255, 0.46), rgba(52, 44, 130, 0.46))",
-      decor: ["crystal", "star", "orbit"],
-      colors: ["#7dfff4", "#ff8dff", "#ffe66e", "#87a2ff"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(39, 44, 114, 0.46), rgba(136, 94, 218, 0.4))",
-      decor: ["star", "orbit", "crystal"],
-      colors: ["#fff07a", "#a9b7ff", "#d796ff", "#6ef1ff"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(255, 179, 112, 0.46), rgba(255, 119, 145, 0.36))",
-      decor: ["hill", "tree", "star"],
-      colors: ["#ffbd73", "#ff7e8d", "#ffe37f", "#b9d48a"]
-    },
-    {
-      tint: "linear-gradient(180deg, rgba(255, 245, 124, 0.42), rgba(136, 238, 255, 0.48))",
-      decor: ["rainbow", "star", "flower"],
-      colors: ["#fff16d", "#ff84b8", "#8ee9ff", "#9ff08e"]
-    }
+  const chapterTitles = [
+    "Мягкий мир",
+    "Деревня",
+    "Поля и животные",
+    "Река и мосты",
+    "Морской берег",
+    "Затонувшие корабли",
+    "Город",
+    "Неоновый город",
+    "Космос",
+    "Финальный мир"
+  ];
+
+  const chapterStyles = [
+    { text: "#456a40", panel: "rgba(255, 250, 231, 0.86)", border: "rgba(118, 164, 101, 0.38)", levelA: "#fff7b8", levelB: "#a8df81", levelInk: "#4f7240" },
+    { text: "#80533c", panel: "rgba(255, 241, 219, 0.86)", border: "rgba(208, 138, 85, 0.34)", levelA: "#ffe2a8", levelB: "#f0ad70", levelInk: "#7b4d33" },
+    { text: "#5a6c2f", panel: "rgba(255, 248, 196, 0.86)", border: "rgba(143, 178, 64, 0.36)", levelA: "#f8e98e", levelB: "#9fcb63", levelInk: "#53672e" },
+    { text: "#276d79", panel: "rgba(225, 250, 252, 0.86)", border: "rgba(75, 162, 174, 0.34)", levelA: "#d4f6ff", levelB: "#75cad1", levelInk: "#276975" },
+    { text: "#755f3e", panel: "rgba(255, 242, 211, 0.86)", border: "rgba(92, 179, 183, 0.34)", levelA: "#d9fbff", levelB: "#d8bb75", levelInk: "#6d593a" },
+    { text: "#dbfbff", panel: "rgba(18, 84, 112, 0.78)", border: "rgba(151, 238, 255, 0.28)", levelA: "#6ed6df", levelB: "#167ca3", levelInk: "#eefcff" },
+    { text: "#55516f", panel: "rgba(245, 245, 249, 0.86)", border: "rgba(121, 124, 145, 0.28)", levelA: "#f4f0ea", levelB: "#aeb9bf", levelInk: "#55566a" },
+    { text: "#e8fbff", panel: "rgba(24, 23, 68, 0.8)", border: "rgba(106, 236, 255, 0.32)", levelA: "#52f1ff", levelB: "#b55cff", levelInk: "#f6fdff" },
+    { text: "#f8f1ff", panel: "rgba(13, 16, 50, 0.82)", border: "rgba(196, 178, 255, 0.3)", levelA: "#8c96ff", levelB: "#53327e", levelInk: "#ffffff" },
+    { text: "#715000", panel: "rgba(255, 246, 219, 0.88)", border: "rgba(255, 184, 214, 0.42)", levelA: "#fff18e", levelB: "#87dce8", levelInk: "#6a5541" }
   ];
 
   const blockBrowserGesture = (event) => {
@@ -84,7 +55,7 @@
     }
   };
 
-  document.addEventListener("contextmenu", blockBrowserGesture);
+  // document.addEventListener("contextmenu", blockBrowserGesture);
   document.addEventListener("selectstart", blockBrowserGesture);
   document.addEventListener("dragstart", blockBrowserGesture);
   document.addEventListener("touchmove", blockBrowserGesture, { passive: false });
@@ -112,8 +83,6 @@
   };
 
   menuButtons.forEach(setPressedFeedback);
-  setPressedFeedback(backButton);
-
   const pathX = (y) => {
     const progress = 1 - y / trackHeight;
     const wave = Math.sin(y / 470) * 92 + Math.sin(y / 1320 + 0.7) * 46;
@@ -131,7 +100,7 @@
   const buildRoadPath = () => {
     const points = [];
 
-    for (let y = trackHeight + 140; y >= -180; y -= 120) {
+    for (let y = trackHeight + 160; y >= -160; y -= 96) {
       points.push([pathX(y), y]);
     }
 
@@ -140,80 +109,40 @@
       .join(" ");
   };
 
-  const createSvgLock = () => {
-    const lock = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    lock.setAttribute("class", "level-lock");
-    lock.setAttribute("viewBox", "0 0 24 24");
-    lock.setAttribute("aria-hidden", "true");
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("fill", "currentColor");
-    path.setAttribute("d", "M7 10V8a5 5 0 0 1 10 0v2h1.1c.5 0 .9.4.9.9v8.2c0 .5-.4.9-.9.9H5.9a.9.9 0 0 1-.9-.9v-8.2c0-.5.4-.9.9-.9H7Zm2 0h6V8a3 3 0 1 0-6 0v2Z");
-    lock.append(path);
-
-    return lock;
-  };
-
   const createChapterBands = () => {
     const fragment = document.createDocumentFragment();
 
-    chapterThemes.forEach((theme, index) => {
+    chapterTitles.forEach((chapterTitle, index) => {
       const band = document.createElement("div");
-      band.className = "chapter-band";
-      band.style.top = `${trackHeight - (index + 1) * chapterHeight}px`;
-      band.style.setProperty("--chapter-tint", theme.tint);
+      const marker = document.createElement("div");
+      const title = document.createElement("span");
+      const theme = chapterStyles[index];
+      const markerY = trackHeight - (index + 1) * chapterHeight + 92;
+      const roadX = pathX(markerY + 78);
+      const isLeftSide = roadX > sceneWidth / 2;
+      const markerX = isLeftSide
+        ? Math.max(122, roadX - 214)
+        : Math.min(sceneWidth - 122, roadX + 214);
+
+      band.className = `chapter-band chapter-band-${index + 1}`;
+      band.style.top = `${trackHeight - (index + 1) * chapterHeight - 90}px`;
       fragment.append(band);
+
+      title.className = "chapter-marker__name";
+      title.textContent = chapterTitle;
+
+      marker.className = "chapter-marker";
+      marker.classList.add(isLeftSide ? "chapter-marker-left" : "chapter-marker-right");
+      marker.style.setProperty("--marker-x", xPercent(markerX));
+      marker.style.setProperty("--marker-y", `${markerY}px`);
+      marker.style.setProperty("--marker-color", theme.text);
+      marker.style.setProperty("--marker-panel", theme.panel);
+      marker.style.setProperty("--marker-border", theme.border);
+      marker.append(title);
+      fragment.append(marker);
     });
 
     chapterLayer.append(fragment);
-  };
-
-  const createDecor = (theme, chapterIndex, localIndex, frontLayer) => {
-    const type = theme.decor[localIndex % theme.decor.length];
-    const item = document.createElement("div");
-    const baseY = trackHeight - (chapterIndex * chapterHeight + 120 + localIndex * 142);
-    const y = Math.max(70, Math.min(trackHeight - 70, baseY + Math.sin((chapterIndex + 1) * (localIndex + 2)) * 42));
-    const roadX = pathX(y);
-    const side = localIndex % 2 === 0 ? -1 : 1;
-    const spread = frontLayer ? 162 : 220;
-    const x = Math.max(62, Math.min(658, roadX + side * (spread + Math.cos(localIndex * 1.4) * 62)));
-    const farFromBottom = 1 - y / trackHeight;
-    const size = frontLayer
-      ? 62 + (localIndex % 4) * 15
-      : 86 + (localIndex % 5) * 22;
-    const primary = theme.colors[localIndex % theme.colors.length];
-    const secondary = theme.colors[(localIndex + 1) % theme.colors.length];
-
-    item.className = `decor decor-${type}`;
-    item.style.setProperty("--x", xPercent(x));
-    item.style.setProperty("--y", `${y.toFixed(1)}px`);
-    item.style.setProperty("--size", `${size}px`);
-    item.style.setProperty("--scale", frontLayer ? (1 - farFromBottom * 0.22).toFixed(2) : (0.88 - farFromBottom * 0.18).toFixed(2));
-    item.style.setProperty("--opacity", frontLayer ? "0.92" : "0.7");
-    item.style.setProperty("--a", primary);
-    item.style.setProperty("--b", secondary);
-    item.style.setProperty("--float-time", `${6 + ((chapterIndex + localIndex) % 5)}s`);
-    item.style.setProperty("--float-delay", `${-((chapterIndex * 0.27 + localIndex * 0.19) % 3).toFixed(2)}s`);
-
-    return item;
-  };
-
-  const createDecorations = () => {
-    const backFragment = document.createDocumentFragment();
-    const frontFragment = document.createDocumentFragment();
-
-    chapterThemes.forEach((theme, chapterIndex) => {
-      for (let i = 0; i < 7; i += 1) {
-        backFragment.append(createDecor(theme, chapterIndex, i, false));
-      }
-
-      for (let i = 0; i < 5; i += 1) {
-        frontFragment.append(createDecor(theme, chapterIndex, i + 7, true));
-      }
-    });
-
-    decorBack.append(backFragment);
-    decorFront.append(frontFragment);
   };
 
   const createLevels = () => {
@@ -225,19 +154,24 @@
       const y = trackHeight - (chapterIndex * chapterHeight + 150 + indexInChapter * 102);
       const x = pathX(y);
       const button = document.createElement("button");
+      const theme = chapterStyles[chapterIndex];
       const isActive = level === activeLevel;
+      const isCompleted = level < activeLevel;
 
-      button.className = `level-button ${isActive ? "is-active" : "is-locked"}`;
+      button.className = `level-button chapter-level-${chapterIndex + 1} ${isCompleted ? "is-completed" : isActive ? "is-active" : "is-locked"}`;
       button.type = "button";
       button.style.setProperty("--x", xPercent(x));
       button.style.setProperty("--y", `${y}px`);
       button.style.setProperty("--scale", levelScale(y));
+      button.style.setProperty("--level-a", theme.levelA);
+      button.style.setProperty("--level-b", theme.levelB);
+      button.style.setProperty("--level-ink", theme.levelInk);
       button.style.zIndex = String(Math.round(y));
       button.dataset.level = String(level);
 
-      if (isActive) {
+      if (isActive || isCompleted) {
         button.textContent = String(level);
-        button.setAttribute("aria-label", `Уровень ${level}`);
+        button.setAttribute("aria-label", isCompleted ? `Уровень ${level} пройден` : `Уровень ${level}`);
         button.addEventListener("click", () => {
           console.log(`Start level ${level}`);
         });
@@ -245,7 +179,7 @@
       } else {
         button.disabled = true;
         button.setAttribute("aria-label", `Уровень ${level} заблокирован`);
-        button.append(createSvgLock());
+        button.textContent = String(level);
       }
 
       fragment.append(button);
@@ -256,11 +190,10 @@
 
   const buildMap = () => {
     const roadPath = buildRoadPath();
-    roadMain.setAttribute("d", roadPath);
-    roadShadow.setAttribute("d", roadPath);
-    roadHighlight.setAttribute("d", roadPath);
+    [roadShadow, roadMain, roadEdge, roadCenter].forEach((roadPart) => {
+      roadPart.setAttribute("d", roadPath);
+    });
     createChapterBands();
-    createDecorations();
     createLevels();
   };
 
@@ -304,8 +237,6 @@
     playButton.classList.add("is-starting");
     window.setTimeout(showMapScreen, playPopDuration);
   });
-
-  backButton.addEventListener("click", showStartScreen);
 
   settingsButton.addEventListener("click", () => {
     console.log("Open settings");
