@@ -27,17 +27,71 @@
       </div>
     </section>
 
-    <section class="map-screen screen" id="map-screen" aria-label="Карта уровней" aria-hidden="true">
-      <div class="map-viewport" id="mapViewport" aria-label="Путь уровней">
-        <div class="map-track" id="mapTrack">
-          <div class="chapter-layer" id="chapterLayer" aria-hidden="true"></div>
-          <svg class="map-road" id="mapRoad" viewBox="0 0 720 12000" preserveAspectRatio="none" aria-hidden="true">
-            <path class="map-road__shadow" id="roadShadow"></path>
-            <path class="map-road__main" id="roadMain"></path>
-            <path class="map-road__edge" id="roadEdge"></path>
-            <path class="map-road__center" id="roadCenter"></path>
+    <section class="map-screen screen" id="map-screen" aria-label="Карта глав" aria-hidden="true">
+      <div class="map-scene" id="mapScene">
+        <header class="top-ui" aria-label="Верхняя панель">
+          <button class="icon-button back-button" type="button" id="backButton" aria-label="Назад">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
+            </svg>
+          </button>
+
+          <div class="resource-strip" aria-label="Ресурсы">
+            <div class="resource-pill" aria-label="Монеты">
+              <span class="resource-icon">¢</span>
+              <span id="coinsValue">120</span>
+            </div>
+            <div class="resource-pill" aria-label="Жизни">
+              <span class="resource-icon">♥</span>
+              <span id="livesValue">5</span>
+            </div>
+            <button class="resource-pill achievement-button" type="button" id="achievementButton" aria-label="Достижения">
+              <span class="resource-icon">★</span>
+              <span>12</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="chapter-title-card" aria-live="polite">
+          <span class="chapter-kicker" id="chapterKicker">Глава 1</span>
+          <h2 id="chapterTitle">Солнечная поляна</h2>
+        </div>
+
+        <button class="chapter-arrow chapter-arrow-prev" type="button" id="prevChapterButton" aria-label="Предыдущая глава">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M15.7 5.3a1 1 0 0 1 0 1.4L10.41 12l5.3 5.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
           </svg>
-          <div class="level-layer" id="levelLayer" aria-label="Уровни"></div>
+        </button>
+
+        <button class="chapter-arrow chapter-arrow-next" type="button" id="nextChapterButton" aria-label="Следующая глава">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M8.3 18.7a1 1 0 0 1 0-1.4l5.29-5.3-5.3-5.3A1 1 0 1 1 9.7 5.3l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 0 1-1.42 0Z"/>
+          </svg>
+        </button>
+
+        <div class="chapter-stage" aria-label="Путь уровней">
+          <svg class="chapter-road" viewBox="0 0 520 1000" preserveAspectRatio="none" aria-hidden="true">
+            <path class="road-shadow" id="roadShadow" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
+            <path class="road-rim" id="roadRim" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
+            <path class="road-main" id="roadMain" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
+            <path class="road-highlight" id="roadHighlight" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
+            <path class="road-edge" id="roadEdge" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
+            <path class="road-center" id="roadCenter" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
+          </svg>
+          <div class="level-layer" id="levelLayer" aria-label="Уровни главы"></div>
+          <div class="final-portal" id="finalPortal" aria-hidden="true">
+            <span class="portal-core"></span>
+          </div>
+          <button class="next-chapter-cta" type="button" id="chapterCompleteButton">
+            Перейти в следующую главу
+          </button>
+        </div>
+      </div>
+
+      <div class="chapter-transition" id="chapterTransition" aria-hidden="true">
+        <div class="transition-panel">
+          <span id="transitionKicker">Новая глава</span>
+          <strong id="transitionTitle">Солнечная поляна</strong>
         </div>
       </div>
     </section>
