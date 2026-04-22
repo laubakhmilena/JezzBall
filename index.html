@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="game-root" id="gameRoot" aria-label="Стартовый экран JezzBall">
-    <section class="start-screen" id="startScreen" aria-labelledby="gameTitle">
+  <main class="game-root" id="gameRoot" aria-label="Экран игры JezzBall">
+    <section class="start-screen screen is-active" id="start-screen" aria-labelledby="gameTitle">
       <div class="background-bloom" aria-hidden="true"></div>
 
       <div class="start-content">
@@ -24,6 +24,16 @@
             <span>Настройки</span>
           </button>
         </nav>
+      </div>
+    </section>
+
+    <section class="map-screen screen" id="map-screen" aria-label="Карта уровней" aria-hidden="true">
+      <div class="map-panel" aria-hidden="true">
+        <div class="map-node is-current"></div>
+        <div class="map-path"></div>
+        <div class="map-node"></div>
+        <div class="map-path"></div>
+        <div class="map-node"></div>
       </div>
     </section>
   </main>
