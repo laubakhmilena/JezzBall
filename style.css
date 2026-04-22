@@ -120,51 +120,447 @@ button {
 }
 
 .map-screen {
-  display: grid;
-  place-items: center;
+  display: block;
   min-width: 100%;
   min-height: 100%;
   overflow: hidden;
-  padding:
-    calc(var(--safe-top) + clamp(16px, 4vmin, 34px))
-    calc(var(--safe-right) + clamp(18px, 5vmin, 52px))
-    calc(var(--safe-bottom) + clamp(16px, 4vmin, 34px))
-    calc(var(--safe-left) + clamp(18px, 5vmin, 52px));
+  padding: 0;
   transform: translateY(18px);
 }
 
-.map-panel {
-  display: grid;
-  grid-template-columns: auto minmax(54px, 14vmin) auto minmax(54px, 14vmin) auto;
-  align-items: center;
-  width: min(84vw, 560px);
-  min-height: min(48vh, 320px);
-  padding: clamp(22px, 6vmin, 44px);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.58);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.map-node {
-  width: clamp(46px, 10vmin, 74px);
+.back-button {
+  position: absolute;
+  z-index: 40;
+  top: calc(var(--safe-top) + clamp(10px, 2.5vmin, 18px));
+  left: calc(var(--safe-left) + clamp(10px, 2.5vmin, 18px));
+  display: inline-grid;
+  place-items: center;
+  width: clamp(42px, 9vmin, 54px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: linear-gradient(180deg, #ffffff 0%, #ffe8df 100%);
-  box-shadow: inset 0 -6px 14px rgba(118, 79, 100, 0.1), var(--shadow-press);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 245, 235, 0.74)),
+    rgba(255, 255, 255, 0.7);
+  color: #5a5164;
+  box-shadow: 0 12px 24px rgba(70, 65, 92, 0.16), inset 0 -4px 10px rgba(130, 90, 85, 0.08);
+  outline: 0;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
-.map-node.is-current {
-  background: linear-gradient(180deg, #ffe0d6 0%, var(--button-main) 100%);
-  box-shadow: var(--shadow-soft), var(--play-glow);
+.back-button:hover {
+  transform: translateY(-1px);
 }
 
-.map-path {
-  height: clamp(8px, 1.8vmin, 12px);
+.back-button:active,
+.back-button.is-pressed {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: 0 8px 18px rgba(70, 65, 92, 0.14), inset 0 -2px 8px rgba(130, 90, 85, 0.08);
+}
+
+.back-button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.72), 0 12px 24px rgba(70, 65, 92, 0.16);
+}
+
+.back-icon {
+  width: 58%;
+  height: 58%;
+}
+
+.map-viewport {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.map-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.map-viewport.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
+.map-track {
+  --map-height: 12000px;
+  --chapter-height: 1200px;
+  position: relative;
+  width: 100%;
+  height: var(--map-height);
+  min-height: 320px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(
+      to top,
+      #dff7d3 0%,
+      #fff2b7 7%,
+      #ffd6c8 15%,
+      #ffc0d9 21%,
+      #d8cfff 29%,
+      #c1dafb 34%,
+      #bdf0d4 39%,
+      #9fe8be 45%,
+      #b9eeff 49%,
+      #91d9ff 56%,
+      #6cd5f2 60%,
+      #6f7eff 68%,
+      #242869 74%,
+      #422b82 80%,
+      #c9b6ff 86%,
+      #ffb073 92%,
+      #fff16c 97%,
+      #c8fbff 100%
+    );
+}
+
+.map-track::before,
+.map-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.map-track::before {
+  background:
+    radial-gradient(ellipse at 6% 20%, rgba(255, 255, 255, 0.52) 0 6%, transparent 17%),
+    radial-gradient(ellipse at 18% 16%, rgba(255, 241, 184, 0.52) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 30% 24%, rgba(255, 255, 255, 0.34) 0 5%, transparent 16%),
+    radial-gradient(ellipse at 46% 18%, rgba(255, 255, 255, 0.42) 0 6%, transparent 17%),
+    radial-gradient(ellipse at 63% 16%, rgba(255, 255, 255, 0.34) 0 5%, transparent 16%),
+    radial-gradient(ellipse at 75% 14%, rgba(190, 210, 255, 0.28) 0 5%, transparent 15%),
+    radial-gradient(ellipse at 91% 20%, rgba(255, 244, 183, 0.48) 0 6%, transparent 18%);
+  opacity: 0.84;
+  animation: mapAirDrift 16s ease-in-out infinite alternate;
+}
+
+.map-track::after {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.46) 0%, transparent 35%),
+    linear-gradient(0deg, rgba(65, 71, 87, 0.1) 0%, transparent 25%);
+  mix-blend-mode: soft-light;
+}
+
+.sky-ribbons {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 34%, rgba(255, 255, 255, 0.18) 37%, transparent 41% 100%),
+    linear-gradient(70deg, transparent 0 62%, rgba(255, 255, 255, 0.14) 66%, transparent 70% 100%);
+  background-size: 100% 1400px, 100% 1800px;
+  opacity: 0.7;
+  animation: ribbonDrift 24s linear infinite;
+}
+
+.chapter-layer,
+.decor-layer,
+.level-layer,
+.road-svg {
+  position: absolute;
+  inset: 0;
+}
+
+.chapter-layer {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.chapter-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--chapter-height);
+  opacity: 0.48;
+  background: var(--chapter-tint);
+  mask-image: linear-gradient(0deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+
+.chapter-band::before,
+.chapter-band::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.chapter-band::before {
+  height: 30%;
+  top: 8%;
+}
+
+.chapter-band::after {
+  height: 24%;
+  bottom: -9%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.road-svg {
+  z-index: 12;
+  width: 100%;
+  height: var(--map-height);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.road-shadow,
+.road-main,
+.road-highlight {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.road-shadow {
+  stroke: rgba(79, 76, 94, 0.16);
+  stroke-width: 124;
+  transform: translate(10px, 16px);
+  filter: blur(3px);
+}
+
+.road-main {
+  stroke: url(#roadGradient);
+  stroke-width: 104;
+  filter: drop-shadow(0 16px 20px rgba(75, 70, 90, 0.14));
+}
+
+.road-highlight {
+  stroke: rgba(255, 255, 255, 0.52);
+  stroke-width: 18;
+  stroke-dasharray: 34 78;
+  stroke-dashoffset: 16;
+  opacity: 0.72;
+}
+
+.decor-layer {
+  z-index: 8;
+  pointer-events: none;
+}
+
+.decor-layer-back {
+  z-index: 6;
+}
+
+.decor-layer-front {
+  z-index: 18;
+}
+
+.decor {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
+  opacity: var(--opacity, 1);
+  filter: drop-shadow(0 10px 8px rgba(70, 63, 87, 0.12));
+  animation: decorFloat var(--float-time, 7s) ease-in-out infinite alternate;
+  animation-delay: var(--float-delay, 0s);
+}
+
+.decor::before,
+.decor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.decor-tree::before {
+  left: 18%;
+  right: 18%;
+  top: 9%;
+  bottom: 22%;
+  border-radius: 54% 54% 46% 46%;
+  background: linear-gradient(180deg, var(--a), var(--b));
+}
+
+.decor-tree::after {
+  left: 42%;
+  right: 42%;
+  top: 58%;
+  bottom: 1%;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: inset 0 2px 8px rgba(118, 79, 100, 0.08);
+  background: #9f7355;
+}
+
+.decor-flower::before {
+  inset: 14%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #fff8a8 0 13%, transparent 14%),
+    radial-gradient(circle at 50% 12%, var(--a) 0 19%, transparent 20%),
+    radial-gradient(circle at 86% 34%, var(--a) 0 19%, transparent 20%),
+    radial-gradient(circle at 72% 84%, var(--b) 0 19%, transparent 20%),
+    radial-gradient(circle at 28% 84%, var(--b) 0 19%, transparent 20%),
+    radial-gradient(circle at 14% 34%, var(--a) 0 19%, transparent 20%);
+}
+
+.decor-hill::before {
+  inset: 34% 0 5%;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, var(--a), var(--b));
+}
+
+.decor-crystal::before {
+  inset: 6% 24% 8%;
+  clip-path: polygon(50% 0, 88% 31%, 72% 100%, 28% 100%, 12% 31%);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.72), var(--a) 44%, var(--b));
+}
+
+.decor-pond::before {
+  inset: 34% 2% 18%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 37% 35%, rgba(255, 255, 255, 0.72) 0 12%, transparent 32%),
+    linear-gradient(135deg, var(--a), var(--b));
+}
+
+.decor-shell::before {
+  inset: 12% 10% 22%;
+  border-radius: 70% 70% 35% 35%;
+  background:
+    repeating-conic-gradient(from 22deg, rgba(255, 255, 255, 0.42) 0deg 12deg, transparent 13deg 24deg),
+    linear-gradient(180deg, var(--a), var(--b));
+}
+
+.decor-star::before {
+  inset: 14%;
+  clip-path: polygon(50% 0, 62% 34%, 98% 35%, 68% 56%, 79% 91%, 50% 70%, 21% 91%, 32% 56%, 2% 35%, 38% 34%);
+  background: linear-gradient(180deg, var(--a), var(--b));
+}
+
+.decor-orbit::before {
+  inset: 25%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--a), var(--b));
+}
+
+.decor-orbit::after {
+  inset: 34% -8%;
+  border: max(2px, calc(var(--size) * 0.055)) solid rgba(255, 255, 255, 0.7);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-16deg);
+}
+
+.decor-rainbow::before {
+  inset: 12% 0 30%;
+  border-radius: 999px 999px 0 0;
+  border: calc(var(--size) * 0.14) solid #ff87ad;
+  border-bottom: 0;
+  box-shadow:
+    inset 0 0 0 calc(var(--size) * 0.12) #ffd65c,
+    inset 0 0 0 calc(var(--size) * 0.22) #75dfb2,
+    inset 0 0 0 calc(var(--size) * 0.32) #8bb7ff;
+}
+
+.level-layer {
+  z-index: 22;
+}
+
+.level-button {
+  --level-size: clamp(42px, 9vmin, 64px);
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: inline-grid;
+  place-items: center;
+  width: var(--level-size);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0) 44%),
+    linear-gradient(180deg, #fffdf4, #ffe6b0 42%, #ffc779);
+  color: #725748;
+  font-size: clamp(1rem, 3.1vmin, 1.25rem);
+  font-weight: 850;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.68);
+  box-shadow:
+    0 15px 20px rgba(76, 70, 86, 0.14),
+    inset 0 -7px 12px rgba(147, 91, 55, 0.13),
+    inset 0 3px 7px rgba(255, 255, 255, 0.7);
+  outline: 0;
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.level-button::after {
+  content: "";
+  position: absolute;
+  inset: 13% 19% auto;
+  height: 28%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.56);
+  pointer-events: none;
+}
+
+.level-button.is-active {
+  --level-size: clamp(54px, 11vmin, 80px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(180deg, #fff37c, #ffb75f 48%, #ff7f70);
+  color: #654034;
+  box-shadow:
+    0 20px 30px rgba(89, 72, 81, 0.2),
+    0 0 32px rgba(255, 238, 104, 0.58),
+    inset 0 -8px 14px rgba(126, 69, 51, 0.16),
+    inset 0 4px 8px rgba(255, 255, 255, 0.72);
+  animation: currentLevelPulse 2.2s ease-in-out infinite;
+}
+
+.level-button.is-active:hover {
+  filter: brightness(1.05) saturate(1.05);
+}
+
+.level-button.is-active:active,
+.level-button.is-active.is-pressed {
+  transform: translate(-50%, -50%) scale(calc(var(--scale, 1) * 0.94));
+}
+
+.level-button.is-locked {
+  cursor: default;
+  color: rgba(88, 83, 99, 0.52);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0) 44%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(218, 221, 231, 0.76));
+  box-shadow:
+    0 12px 18px rgba(76, 70, 86, 0.08),
+    inset 0 -6px 11px rgba(85, 82, 96, 0.08),
+    inset 0 3px 7px rgba(255, 255, 255, 0.62);
+  filter: saturate(0.58) opacity(0.82);
+}
+
+.level-lock {
+  width: 42%;
+  height: 42%;
+  color: rgba(82, 77, 94, 0.48);
+}
+
+.level-button:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.74),
+    0 17px 24px rgba(76, 70, 86, 0.16),
+    inset 0 -7px 12px rgba(147, 91, 55, 0.13);
 }
 
 .background-bloom {
@@ -369,17 +765,21 @@ button {
     min-height: 50px;
   }
 
-  .map-panel {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(42px, 10vh) auto minmax(42px, 10vh) auto;
-    justify-items: center;
-    width: min(100%, 340px);
-    min-height: min(62vh, 520px);
+  .map-track {
+    min-height: 520px;
   }
 
-  .map-path {
-    width: clamp(8px, 2vw, 12px);
-    height: 100%;
+  .level-button {
+    --level-size: clamp(44px, 12vw, 62px);
+    font-size: clamp(0.95rem, 4vw, 1.15rem);
+  }
+
+  .level-button.is-active {
+    --level-size: clamp(56px, 15vw, 76px);
+  }
+
+  .back-button {
+    width: clamp(42px, 12vw, 54px);
   }
 
   .background-bloom::before {
@@ -408,6 +808,19 @@ button {
 
   .settings-button {
     min-height: 40px;
+  }
+
+  .level-button {
+    --level-size: clamp(36px, 9vmin, 50px);
+    font-size: clamp(0.82rem, 2.8vmin, 1rem);
+  }
+
+  .level-button.is-active {
+    --level-size: clamp(46px, 11vmin, 62px);
+  }
+
+  .back-button {
+    width: clamp(36px, 9vmin, 46px);
   }
 }
 
@@ -466,5 +879,56 @@ button {
 
   to {
     transform: translate3d(2.1%, -1.5%, 0) scale(1.035);
+  }
+}
+
+@keyframes currentLevelPulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+    box-shadow:
+      0 20px 30px rgba(89, 72, 81, 0.2),
+      0 0 32px rgba(255, 238, 104, 0.58),
+      inset 0 -8px 14px rgba(126, 69, 51, 0.16),
+      inset 0 4px 8px rgba(255, 255, 255, 0.72);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(calc(var(--scale, 1) * 1.08));
+    box-shadow:
+      0 24px 36px rgba(89, 72, 81, 0.24),
+      0 0 44px rgba(255, 238, 104, 0.72),
+      inset 0 -8px 14px rgba(126, 69, 51, 0.16),
+      inset 0 4px 8px rgba(255, 255, 255, 0.72);
+  }
+}
+
+@keyframes decorFloat {
+  from {
+    translate: 0 -2px;
+  }
+
+  to {
+    translate: 0 5px;
+  }
+}
+
+@keyframes mapAirDrift {
+  from {
+    transform: translateY(24px);
+  }
+
+  to {
+    transform: translateY(-36px);
+  }
+}
+
+@keyframes ribbonDrift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+
+  to {
+    background-position: 0 -1400px, 0 1800px;
   }
 }

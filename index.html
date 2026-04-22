@@ -28,12 +28,39 @@
     </section>
 
     <section class="map-screen screen" id="map-screen" aria-label="Карта уровней" aria-hidden="true">
-      <div class="map-panel" aria-hidden="true">
-        <div class="map-node is-current"></div>
-        <div class="map-path"></div>
-        <div class="map-node"></div>
-        <div class="map-path"></div>
-        <div class="map-node"></div>
+      <button class="back-button" type="button" id="backButton" aria-label="Назад">
+        <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.42 11H19a1 1 0 1 1 0 2h-8.58l4.28 4.3a1 1 0 1 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/>
+        </svg>
+      </button>
+
+      <div class="map-viewport" id="mapViewport" aria-label="Путь уровней">
+        <div class="map-track" id="mapTrack">
+          <div class="sky-ribbons" aria-hidden="true"></div>
+          <div class="chapter-layer" id="chapterLayer" aria-hidden="true"></div>
+          <div class="decor-layer decor-layer-back" id="decorBack" aria-hidden="true"></div>
+          <svg class="road-svg" id="roadSvg" viewBox="0 0 720 12000" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="roadGradient" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#ffe8b8"/>
+                <stop offset="14%" stop-color="#ffd6ba"/>
+                <stop offset="25%" stop-color="#e4d3ff"/>
+                <stop offset="36%" stop-color="#bff3d6"/>
+                <stop offset="48%" stop-color="#bfefff"/>
+                <stop offset="59%" stop-color="#92e5ff"/>
+                <stop offset="70%" stop-color="#95a2ff"/>
+                <stop offset="82%" stop-color="#cfc7ff"/>
+                <stop offset="91%" stop-color="#ffc494"/>
+                <stop offset="100%" stop-color="#fff27a"/>
+              </linearGradient>
+            </defs>
+            <path class="road-shadow" id="roadShadow"></path>
+            <path class="road-main" id="roadMain"></path>
+            <path class="road-highlight" id="roadHighlight"></path>
+          </svg>
+          <div class="decor-layer decor-layer-front" id="decorFront" aria-hidden="true"></div>
+          <div class="level-layer" id="levelLayer" aria-label="Уровни"></div>
+        </div>
       </div>
     </section>
   </main>
