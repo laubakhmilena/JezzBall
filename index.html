@@ -3,17 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#fff3ea">
-  <title>JezzBall</title>
+  <meta name="theme-color" content="#160b3a">
+  <title>JezzBall - карта глав</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="game-root" id="gameRoot" aria-label="Экран игры JezzBall">
-    <section class="start-screen screen is-active" id="start-screen" aria-labelledby="gameTitle">
+    <section class="start-screen screen is-active" id="main-menu" aria-labelledby="gameTitle">
       <div class="start-content">
         <h1 class="game-title" id="gameTitle">JezzBall</h1>
         <p class="game-subtitle">Проведи линию. <span>Захвати пространство.</span></p>
-
         <nav class="menu-actions" aria-label="Главное меню">
           <button class="menu-button play-button" type="button" id="playButton">
             <span class="play-icon" aria-hidden="true">
@@ -23,87 +22,86 @@
             </span>
             <span>Играть</span>
           </button>
-          <button class="menu-button settings-button" type="button" id="settingsButton">
-            <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.1-1.64c.19-.15.24-.42.12-.64l-1.99-3.45a.5.5 0 0 0-.61-.22l-2.47 1a7.2 7.2 0 0 0-1.7-.98l-.37-2.63A.5.5 0 0 0 14.01 2h-4a.5.5 0 0 0-.5.42L9.14 5.05c-.61.24-1.18.57-1.7.98l-2.47-1a.5.5 0 0 0-.61.22L2.37 8.7a.5.5 0 0 0 .12.64l2.1 1.64c-.05.32-.08.65-.08.99s.03.67.08.99l-2.1 1.64a.5.5 0 0 0-.12.64l1.99 3.45c.13.22.39.31.61.22l2.47-1c.52.4 1.09.73 1.7.98l.37 2.63c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.63c.61-.25 1.18-.58 1.7-.98l2.47 1c.22.09.48 0 .61-.22l1.99-3.45a.5.5 0 0 0-.12-.64l-2.1-1.64ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/>
-            </svg>
-            <span>Настройки</span>
-          </button>
         </nav>
-
       </div>
     </section>
 
-    <section class="map-screen screen" id="map-screen" aria-label="Карта глав" aria-hidden="true">
-      <div class="map-scene" id="mapScene">
-        <header class="top-ui" aria-label="Верхняя панель">
-          <button class="icon-button back-button" type="button" id="backButton" aria-label="Назад">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
-            </svg>
-          </button>
+    <section class="chapter-screen chapter-1 screen" id="chapter-1-screen" data-chapter="1" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-2 screen" id="chapter-2-screen" data-chapter="2" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-3 screen" id="chapter-3-screen" data-chapter="3" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-4 screen" id="chapter-4-screen" data-chapter="4" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-5 screen" id="chapter-5-screen" data-chapter="5" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-6 screen" id="chapter-6-screen" data-chapter="6" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-7 screen" id="chapter-7-screen" data-chapter="7" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-8 screen" id="chapter-8-screen" data-chapter="8" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-9 screen" id="chapter-9-screen" data-chapter="9" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-10 screen" id="chapter-10-screen" data-chapter="10" aria-hidden="true"></section>
 
+    <section class="level-screen screen" id="level-screen" aria-label="Экран уровня" aria-hidden="true">
+      <div class="chapter-scene level-scene">
+        <header class="top-ui" aria-label="Верхняя панель">
+          <button class="icon-button back-button" type="button" data-action="return-chapter" aria-label="Назад к главе">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/></svg>
+          </button>
           <div class="resource-strip" aria-label="Ресурсы">
-            <div class="resource-pill" aria-label="Монеты">
-              <span class="resource-icon">¢</span>
-              <span id="coinsValue">120</span>
-            </div>
-            <div class="resource-pill" aria-label="Жизни">
-              <span class="resource-icon">♥</span>
-              <span id="livesValue">5</span>
-            </div>
-            <button class="resource-pill achievement-button" type="button" id="achievementButton" aria-label="Достижения">
-              <span class="resource-icon">★</span>
-              <span>12</span>
-            </button>
+            <div class="resource-pill coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">1280</span></div>
+            <div class="resource-pill lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
+            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Достижения"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="achievements">0</span></button>
           </div>
+          <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
+          </button>
         </header>
 
-        <div class="chapter-title-card" aria-live="polite">
-          <span class="chapter-kicker" id="chapterKicker">Глава 1</span>
-          <h2 id="chapterTitle">Солнечная поляна</h2>
-        </div>
-
-        <button class="chapter-arrow chapter-arrow-prev" type="button" id="prevChapterButton" aria-label="Предыдущая глава">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor" d="M15.7 5.3a1 1 0 0 1 0 1.4L10.41 12l5.3 5.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/>
-          </svg>
-        </button>
-
-        <button class="chapter-arrow chapter-arrow-next" type="button" id="nextChapterButton" aria-label="Следующая глава">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor" d="M8.3 18.7a1 1 0 0 1 0-1.4l5.29-5.3-5.3-5.3A1 1 0 1 1 9.7 5.3l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 0 1-1.42 0Z"/>
-          </svg>
-        </button>
-
-        <div class="chapter-stage" aria-label="Путь уровней">
-          <svg class="chapter-road" viewBox="0 0 520 1000" preserveAspectRatio="none" aria-hidden="true">
-            <path class="road-shadow" id="roadShadow" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
-            <path class="road-rim" id="roadRim" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
-            <path class="road-main" id="roadMain" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
-            <path class="road-highlight" id="roadHighlight" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
-            <path class="road-edge" id="roadEdge" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
-            <path class="road-center" id="roadCenter" d="M254 944 C 176 838, 345 776, 262 668 S 153 521, 256 418 S 373 274, 260 160 S 235 73, 300 44"></path>
-          </svg>
-          <div class="level-layer" id="levelLayer" aria-label="Уровни главы"></div>
-          <div class="final-portal" id="finalPortal" aria-hidden="true">
-            <span class="portal-core"></span>
-          </div>
-          <button class="next-chapter-cta" type="button" id="chapterCompleteButton">
-            Перейти в следующую главу
-          </button>
-        </div>
-      </div>
-
-      <div class="chapter-transition" id="chapterTransition" aria-hidden="true">
-        <div class="transition-panel">
-          <span id="transitionKicker">Новая глава</span>
-          <strong id="transitionTitle">Солнечная поляна</strong>
+        <div class="level-placeholder">
+          <span id="levelChapterLabel">Глава 1</span>
+          <h2 id="levelTitle">Уровень 1</h2>
+          <button class="menu-button play-button compact-play" type="button" id="completeLevelButton">Завершить уровень</button>
         </div>
       </div>
     </section>
+
+    <section class="final-screen screen" id="final-screen" aria-label="Финал" aria-hidden="true">
+      <div class="chapter-scene final-scene">
+        <header class="top-ui" aria-label="Верхняя панель">
+          <button class="icon-button back-button" type="button" data-action="return-chapter" aria-label="Назад к главе">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/></svg>
+          </button>
+          <div class="resource-strip" aria-label="Ресурсы">
+            <div class="resource-pill coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">1280</span></div>
+            <div class="resource-pill lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
+            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Достижения"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="achievements">0</span></button>
+          </div>
+          <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
+          </button>
+        </header>
+        <div class="final-card">
+          <span>Финал открыт</span>
+          <h2>Врата света пройдены</h2>
+          <button class="menu-button play-button compact-play" type="button" data-action="main-menu">В меню</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="settings-modal" id="settingsModal" aria-hidden="true">
+      <div class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <button class="icon-button settings-close" type="button" data-action="close-settings" aria-label="Закрыть настройки">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.7 5.3 12 10.59l5.3-5.3a1 1 0 1 1 1.4 1.42L13.41 12l5.3 5.3a1 1 0 0 1-1.42 1.4L12 13.41l-5.3 5.3a1 1 0 0 1-1.4-1.42L10.59 12l-5.3-5.3A1 1 0 1 1 6.7 5.3Z"/></svg>
+        </button>
+        <h2 id="settingsTitle">Настройки</h2>
+        <label class="toggle-row">
+          <span>Музыка</span>
+          <input type="checkbox" id="musicToggle" checked>
+        </label>
+        <label class="toggle-row">
+          <span>Звуки</span>
+          <input type="checkbox" id="soundToggle" checked>
+        </label>
+      </div>
+    </div>
   </main>
 
-  <script src="sсript.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
