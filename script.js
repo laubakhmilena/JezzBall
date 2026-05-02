@@ -5,12 +5,22 @@
   const levelChapterLabel = document.getElementById("levelChapterLabel");
   const levelTitle = document.getElementById("levelTitle");
   const completeLevelButton = document.getElementById("completeLevelButton");
+  const jezzCanvas = document.getElementById("jezzCanvas");
+  const capturePercent = document.getElementById("capturePercent");
+  const penaltyCount = document.getElementById("penaltyCount");
+  const targetPercent = document.getElementById("targetPercent");
+  const levelToast = document.getElementById("levelToast");
+  const levelCompletePanel = document.getElementById("levelCompletePanel");
+  const levelCompleteScore = document.getElementById("levelCompleteScore");
   const settingsModal = document.getElementById("settingsModal");
   const musicToggle = document.getElementById("musicToggle");
   const soundToggle = document.getElementById("soundToggle");
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 10 * 60 * 1000;
   const BASE_LEVEL_COIN_REWARD = 80;
+  const LEVEL_ONE_TARGET = 60;
+  const LINE_GROW_SPEED = 420;
+  const BALL_RADIUS = 11;
 
   const chapters = [
     { id: 1, title: "Солнечная поляна", slug: "sunny-glade", icon: "☀" },
@@ -36,6 +46,25 @@
     sound: true,
     starsByLevel: {},
     expandedChapters: new Set([1])
+  };
+
+  const levelState = {
+    running: false,
+    completed: false,
+    target: LEVEL_ONE_TARGET,
+    capturedArea: 0,
+    totalArea: 1,
+    penalties: 0,
+    rect: null,
+    activeRect: null,
+    capturedRects: [],
+    walls: [],
+    activeLine: null,
+    draftPointer: null,
+    ball: null,
+    animationId: null,
+    lastFrameAt: 0,
+    toastTimer: null
   };
 
   const clampChapterId = (chapterId) => Math.min(chapters.length, Math.max(1, chapterId));
@@ -347,7 +376,414 @@
     syncResources();
   };
 
+  const getCaptureRatio = () => levelState.totalArea > 0 ? levelState.capturedArea / levelState.totalArea : 0;
+
+  const showLevelToast = (message) => {
+    if (!levelToast) {
+      return;
+    }
+
+    levelToast.textContent = message;
+    levelToast.classList.add("is-visible");
+    window.clearTimeout(levelState.toastTimer);
+    levelState.toastTimer = window.setTimeout(() => {
+      levelToast.classList.remove("is-visible");
+    }, 1100);
+  };
+
+  const syncLevelHud = () => {
+    const percent = Math.floor(getCaptureRatio() * 100);
+    if (capturePercent) {
+      capturePercent.textContent = `${percent}%`;
+    }
+    if (penaltyCount) {
+      penaltyCount.textContent = String(levelState.penalties);
+    }
+    if (targetPercent) {
+      targetPercent.textContent = `${levelState.target}%`;
+    }
+  };
+
+  const resizeJezzCanvas = () => {
+    if (!jezzCanvas) {
+      return { width: 0, height: 0 };
+    }
+
+    const pixelRatio = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const box = jezzCanvas.getBoundingClientRect();
+    const width = Math.max(280, Math.round(box.width));
+    const height = Math.max(240, Math.round(box.height));
+    jezzCanvas.width = Math.round(width * pixelRatio);
+    jezzCanvas.height = Math.round(height * pixelRatio);
+    const ctx = jezzCanvas.getContext("2d");
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    return { width, height };
+  };
+
+  const getCanvasPoint = (event) => {
+    const rect = jezzCanvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
+  };
+
+  const pointInRect = (point, rect) => (
+    point.x >= rect.x &&
+    point.x <= rect.x + rect.w &&
+    point.y >= rect.y &&
+    point.y <= rect.y + rect.h
+  );
+
+  const rectArea = (rect) => rect.w * rect.h;
+
+  const clampBallToActiveRect = () => {
+    const ball = levelState.ball;
+    const rect = levelState.activeRect;
+    if (!ball || !rect) {
+      return;
+    }
+
+    ball.x = Math.min(rect.x + rect.w - ball.r, Math.max(rect.x + ball.r, ball.x));
+    ball.y = Math.min(rect.y + rect.h - ball.r, Math.max(rect.y + ball.r, ball.y));
+  };
+
+  const buildCompletedWall = (line, rect) => (
+    line.orientation === "vertical"
+      ? { orientation: "vertical", x: line.x, y1: rect.y, y2: rect.y + rect.h }
+      : { orientation: "horizontal", y: line.y, x1: rect.x, x2: rect.x + rect.w }
+  );
+
+  const splitActiveRect = (line) => {
+    const rect = levelState.activeRect;
+    const ball = levelState.ball;
+    if (!rect || !ball) {
+      return;
+    }
+
+    let first;
+    let second;
+
+    if (line.orientation === "vertical") {
+      first = { x: rect.x, y: rect.y, w: line.x - rect.x, h: rect.h };
+      second = { x: line.x, y: rect.y, w: rect.x + rect.w - line.x, h: rect.h };
+    } else {
+      first = { x: rect.x, y: rect.y, w: rect.w, h: line.y - rect.y };
+      second = { x: rect.x, y: line.y, w: rect.w, h: rect.y + rect.h - line.y };
+    }
+
+    if (first.w < BALL_RADIUS * 2 || first.h < BALL_RADIUS * 2 || second.w < BALL_RADIUS * 2 || second.h < BALL_RADIUS * 2) {
+      showLevelToast("Слишком близко к краю");
+      return;
+    }
+
+    const ballRect = pointInRect(ball, first) ? first : second;
+    const capturedRect = ballRect === first ? second : first;
+    levelState.activeRect = ballRect;
+    levelState.capturedRects.push(capturedRect);
+    levelState.capturedArea += rectArea(capturedRect);
+    levelState.walls.push(buildCompletedWall(line, rect));
+    clampBallToActiveRect();
+    syncLevelHud();
+
+    if (getCaptureRatio() * 100 >= levelState.target) {
+      finishJezzLevel();
+    }
+  };
+
+  const cancelActiveLine = (penalize = false) => {
+    levelState.activeLine = null;
+    if (penalize) {
+      levelState.penalties += 1;
+      syncLevelHud();
+      showLevelToast("Штраф");
+    }
+  };
+
+  const lineHitBall = (line) => {
+    const ball = levelState.ball;
+    if (!line || !ball) {
+      return false;
+    }
+
+    if (line.orientation === "vertical") {
+      const minY = Math.min(line.y, line.endA, line.endB);
+      const maxY = Math.max(line.y, line.endA, line.endB);
+      return Math.abs(ball.x - line.x) <= ball.r && ball.y >= minY - ball.r && ball.y <= maxY + ball.r;
+    }
+
+    const minX = Math.min(line.x, line.endA, line.endB);
+    const maxX = Math.max(line.x, line.endA, line.endB);
+    return Math.abs(ball.y - line.y) <= ball.r && ball.x >= minX - ball.r && ball.x <= maxX + ball.r;
+  };
+
+  const updateActiveLine = (dt) => {
+    const line = levelState.activeLine;
+    const rect = levelState.activeRect;
+    if (!line || !rect) {
+      return;
+    }
+
+    const grow = LINE_GROW_SPEED * dt;
+    if (line.orientation === "vertical") {
+      line.endA = Math.max(rect.y, line.endA - grow);
+      line.endB = Math.min(rect.y + rect.h, line.endB + grow);
+      line.done = line.endA <= rect.y && line.endB >= rect.y + rect.h;
+    } else {
+      line.endA = Math.max(rect.x, line.endA - grow);
+      line.endB = Math.min(rect.x + rect.w, line.endB + grow);
+      line.done = line.endA <= rect.x && line.endB >= rect.x + rect.w;
+    }
+
+    if (lineHitBall(line)) {
+      cancelActiveLine(true);
+      return;
+    }
+
+    if (line.done) {
+      levelState.activeLine = null;
+      splitActiveRect(line);
+    }
+  };
+
+  const updateBall = (dt) => {
+    const ball = levelState.ball;
+    const rect = levelState.activeRect;
+    if (!ball || !rect || levelState.completed) {
+      return;
+    }
+
+    ball.x += ball.vx * dt;
+    ball.y += ball.vy * dt;
+
+    if (ball.x - ball.r <= rect.x || ball.x + ball.r >= rect.x + rect.w) {
+      ball.vx *= -1;
+      ball.x = Math.min(rect.x + rect.w - ball.r, Math.max(rect.x + ball.r, ball.x));
+    }
+    if (ball.y - ball.r <= rect.y || ball.y + ball.r >= rect.y + rect.h) {
+      ball.vy *= -1;
+      ball.y = Math.min(rect.y + rect.h - ball.r, Math.max(rect.y + ball.r, ball.y));
+    }
+  };
+
+  const drawJezzLevel = () => {
+    if (!jezzCanvas) {
+      return;
+    }
+
+    const ctx = jezzCanvas.getContext("2d");
+    const width = jezzCanvas.clientWidth;
+    const height = jezzCanvas.clientHeight;
+    const rect = levelState.rect;
+    ctx.clearRect(0, 0, width, height);
+
+    if (!rect) {
+      return;
+    }
+
+    ctx.save();
+    ctx.fillStyle = "rgba(20, 92, 94, 0.52)";
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.88)";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+
+    levelState.capturedRects.forEach((captured) => {
+      ctx.fillStyle = "rgba(255, 210, 86, 0.62)";
+      ctx.fillRect(captured.x, captured.y, captured.w, captured.h);
+      ctx.strokeStyle = "rgba(255, 246, 188, 0.72)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(captured.x, captured.y, captured.w, captured.h);
+    });
+
+    ctx.strokeStyle = "rgba(255, 240, 160, 0.96)";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    levelState.walls.forEach((wall) => {
+      ctx.beginPath();
+      if (wall.orientation === "vertical") {
+        ctx.moveTo(wall.x, wall.y1);
+        ctx.lineTo(wall.x, wall.y2);
+      } else {
+        ctx.moveTo(wall.x1, wall.y);
+        ctx.lineTo(wall.x2, wall.y);
+      }
+      ctx.stroke();
+    });
+
+    const line = levelState.activeLine;
+    if (line) {
+      ctx.strokeStyle = "rgba(255, 72, 184, 0.96)";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      if (line.orientation === "vertical") {
+        ctx.moveTo(line.x, line.endA);
+        ctx.lineTo(line.x, line.endB);
+      } else {
+        ctx.moveTo(line.endA, line.y);
+        ctx.lineTo(line.endB, line.y);
+      }
+      ctx.stroke();
+    }
+
+    const ball = levelState.ball;
+    if (ball) {
+      const gradient = ctx.createRadialGradient(ball.x - 4, ball.y - 5, 2, ball.x, ball.y, ball.r + 4);
+      gradient.addColorStop(0, "#ffffff");
+      gradient.addColorStop(0.28, "#9ff7ff");
+      gradient.addColorStop(1, "#3f46ff");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+
+  function finishJezzLevel() {
+    if (levelState.completed) {
+      return;
+    }
+
+    levelState.completed = true;
+    levelState.running = false;
+    levelState.activeLine = null;
+    const percent = Math.floor(getCaptureRatio() * 100);
+    if (levelCompleteScore) {
+      levelCompleteScore.textContent = `${percent}%`;
+    }
+    levelCompletePanel?.classList.add("is-visible");
+    levelCompletePanel?.setAttribute("aria-hidden", "false");
+  }
+
+  const tickJezzLevel = (time) => {
+    if (!levelState.running) {
+      drawJezzLevel();
+      return;
+    }
+
+    const dt = Math.min(0.033, Math.max(0, (time - levelState.lastFrameAt) / 1000 || 0));
+    levelState.lastFrameAt = time;
+    updateBall(dt);
+    updateActiveLine(dt);
+    drawJezzLevel();
+    levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
+  };
+
+  const stopJezzLevel = () => {
+    levelState.running = false;
+    if (levelState.animationId) {
+      window.cancelAnimationFrame(levelState.animationId);
+      levelState.animationId = null;
+    }
+  };
+
+  const startJezzLevel = () => {
+    stopJezzLevel();
+    const size = resizeJezzCanvas();
+    const margin = Math.max(12, Math.min(22, size.width * 0.03));
+    const rect = {
+      x: margin,
+      y: margin,
+      w: size.width - margin * 2,
+      h: size.height - margin * 2
+    };
+    const speed = 190;
+    levelState.running = true;
+    levelState.completed = false;
+    levelState.target = LEVEL_ONE_TARGET;
+    levelState.capturedArea = 0;
+    levelState.totalArea = rectArea(rect);
+    levelState.penalties = 0;
+    levelState.rect = rect;
+    levelState.activeRect = { ...rect };
+    levelState.capturedRects = [];
+    levelState.walls = [];
+    levelState.activeLine = null;
+    levelState.draftPointer = null;
+    levelState.ball = {
+      x: rect.x + rect.w * 0.64,
+      y: rect.y + rect.h * 0.42,
+      vx: speed * 0.78,
+      vy: speed * 0.62,
+      r: BALL_RADIUS
+    };
+    levelCompletePanel?.classList.remove("is-visible");
+    levelCompletePanel?.setAttribute("aria-hidden", "true");
+    syncLevelHud();
+    levelState.lastFrameAt = performance.now();
+    levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
+  };
+
+  const beginLineFromPointer = (event) => {
+    if (!levelState.running || levelState.completed || levelState.activeLine || !levelState.activeRect) {
+      return;
+    }
+
+    const point = getCanvasPoint(event);
+    const rect = levelState.activeRect;
+    if (!pointInRect(point, rect)) {
+      return;
+    }
+
+    event.preventDefault();
+    jezzCanvas.setPointerCapture?.(event.pointerId);
+    levelState.draftPointer = {
+      id: event.pointerId,
+      x: point.x,
+      y: point.y
+    };
+  };
+
+  const getFallbackLineOrientation = (point, rect) => {
+    const fromLeft = point.x - rect.x;
+    const fromRight = rect.x + rect.w - point.x;
+    const fromTop = point.y - rect.y;
+    const fromBottom = rect.y + rect.h - point.y;
+    const horizontalEdge = Math.min(fromLeft, fromRight);
+    const verticalEdge = Math.min(fromTop, fromBottom);
+    return horizontalEdge <= verticalEdge ? "horizontal" : "vertical";
+  };
+
+  const startActiveLine = (point, orientation) => {
+    levelState.activeLine = orientation === "vertical"
+      ? { orientation, x: point.x, y: point.y, endA: point.y, endB: point.y, done: false }
+      : { orientation, x: point.x, y: point.y, endA: point.x, endB: point.x, done: false };
+    levelState.draftPointer = null;
+  };
+
+  const continueLineFromPointer = (event) => {
+    const draft = levelState.draftPointer;
+    if (!draft || draft.id !== event.pointerId || levelState.activeLine) {
+      return;
+    }
+
+    const point = getCanvasPoint(event);
+    const dx = point.x - draft.x;
+    const dy = point.y - draft.y;
+    if (Math.hypot(dx, dy) < 8) {
+      return;
+    }
+
+    event.preventDefault();
+    startActiveLine(draft, Math.abs(dx) >= Math.abs(dy) ? "horizontal" : "vertical");
+  };
+
+  const finishLinePointer = (event) => {
+    const draft = levelState.draftPointer;
+    if (!draft || draft.id !== event.pointerId || levelState.activeLine || !levelState.activeRect) {
+      return;
+    }
+
+    event.preventDefault();
+    startActiveLine(draft, getFallbackLineOrientation(draft, levelState.activeRect));
+  };
+
   const openChapter = (chapterId) => {
+    stopJezzLevel();
     const nextChapterId = clampChapterId(chapterId);
     state.currentChapter = nextChapterId;
     showScreen(getChapterScreenId(nextChapterId));
@@ -374,6 +810,7 @@
     levelChapterLabel.textContent = `Глава ${chapter.id} · ${chapter.title}`;
     levelTitle.textContent = `Уровень ${level}`;
     showScreen("level-screen");
+    window.requestAnimationFrame(startJezzLevel);
   };
 
   const completeSelectedLevel = () => {
@@ -411,6 +848,7 @@
     const chapterId = screen ? Number(screen.dataset.chapter) : state.currentChapter;
 
     if (action === "main-menu") {
+      stopJezzLevel();
       showScreen("main-menu");
       playButton.disabled = false;
       return;
@@ -502,8 +940,24 @@
   document.addEventListener("selectstart", blockBrowserGesture);
   document.addEventListener("dragstart", blockBrowserGesture);
   document.addEventListener("touchmove", blockBrowserGesture, { passive: false });
-  window.addEventListener("resize", syncViewportHeight);
-  window.addEventListener("orientationchange", syncViewportHeight);
+  jezzCanvas?.addEventListener("pointerdown", beginLineFromPointer);
+  jezzCanvas?.addEventListener("pointermove", continueLineFromPointer);
+  jezzCanvas?.addEventListener("pointerup", finishLinePointer);
+  jezzCanvas?.addEventListener("pointercancel", () => {
+    levelState.draftPointer = null;
+  });
+  window.addEventListener("resize", () => {
+    syncViewportHeight();
+    if (levelScreen.classList.contains("is-active")) {
+      window.requestAnimationFrame(startJezzLevel);
+    }
+  });
+  window.addEventListener("orientationchange", () => {
+    syncViewportHeight();
+    if (levelScreen.classList.contains("is-active")) {
+      window.requestAnimationFrame(startJezzLevel);
+    }
+  });
 
   syncViewportHeight();
   renderChapterScreens();

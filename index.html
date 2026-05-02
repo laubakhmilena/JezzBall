@@ -53,10 +53,32 @@
           </button>
         </header>
 
-        <div class="level-placeholder">
-          <span id="levelChapterLabel">Глава 1</span>
-          <h2 id="levelTitle">Уровень 1</h2>
-          <button class="menu-button play-button compact-play" type="button" id="completeLevelButton">Завершить уровень</button>
+        <div class="level-playfield" id="levelPlayfield">
+          <div class="level-hud" aria-label="Цель уровня">
+            <div>
+              <span id="levelChapterLabel">Глава 1</span>
+              <strong id="levelTitle">Уровень 1</strong>
+            </div>
+            <div class="level-stat">
+              <span>Захват</span>
+              <strong id="capturePercent">0%</strong>
+            </div>
+            <div class="level-stat">
+              <span>Штрафы</span>
+              <strong id="penaltyCount">0</strong>
+            </div>
+            <div class="level-stat">
+              <span>Цель</span>
+              <strong id="targetPercent">60%</strong>
+            </div>
+          </div>
+          <canvas class="jezz-canvas" id="jezzCanvas" aria-label="Игровое поле JezzBall"></canvas>
+          <div class="level-toast" id="levelToast" aria-live="polite"></div>
+          <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
+            <span>Уровень пройден</span>
+            <strong id="levelCompleteScore">60%</strong>
+            <button class="menu-button play-button compact-play" type="button" id="completeLevelButton">Продолжить</button>
+          </div>
         </div>
       </div>
     </section>
