@@ -9,6 +9,7 @@
   const capturePercent = document.getElementById("capturePercent");
   const penaltyCount = document.getElementById("penaltyCount");
   const targetPercent = document.getElementById("targetPercent");
+  const helperTargetPercent = document.getElementById("helperTargetPercent");
   const levelToast = document.getElementById("levelToast");
   const levelCompletePanel = document.getElementById("levelCompletePanel");
   const levelCompleteScore = document.getElementById("levelCompleteScore");
@@ -18,7 +19,7 @@
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 10 * 60 * 1000;
   const BASE_LEVEL_COIN_REWARD = 80;
-  const LEVEL_ONE_TARGET = 60;
+  const LEVEL_ONE_TARGET = 75;
   const LINE_GROW_SPEED = 420;
   const BALL_RADIUS = 11;
 
@@ -402,6 +403,9 @@
     if (targetPercent) {
       targetPercent.textContent = `${levelState.target}%`;
     }
+    if (helperTargetPercent) {
+      helperTargetPercent.textContent = `${levelState.target}%`;
+    }
   };
 
   const resizeJezzCanvas = () => {
@@ -582,16 +586,31 @@
     }
 
     ctx.save();
-    ctx.fillStyle = "rgba(20, 92, 94, 0.52)";
+    const boardGradient = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
+    boardGradient.addColorStop(0, "rgba(13, 10, 48, 0.94)");
+    boardGradient.addColorStop(0.5, "rgba(11, 16, 55, 0.96)");
+    boardGradient.addColorStop(1, "rgba(28, 10, 68, 0.94)");
+    ctx.fillStyle = boardGradient;
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.88)";
+    ctx.fillStyle = "rgba(177, 160, 255, 0.28)";
+    for (let x = rect.x + 16; x < rect.x + rect.w; x += 26) {
+      for (let y = rect.y + 16; y < rect.y + rect.h; y += 26) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.strokeStyle = "rgba(190, 177, 255, 0.92)";
     ctx.lineWidth = 4;
     ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
 
     levelState.capturedRects.forEach((captured) => {
-      ctx.fillStyle = "rgba(255, 210, 86, 0.62)";
+      const capturedGradient = ctx.createLinearGradient(captured.x, captured.y, captured.x + captured.w, captured.y + captured.h);
+      capturedGradient.addColorStop(0, "rgba(255, 211, 91, 0.7)");
+      capturedGradient.addColorStop(1, "rgba(255, 78, 211, 0.48)");
+      ctx.fillStyle = capturedGradient;
       ctx.fillRect(captured.x, captured.y, captured.w, captured.h);
-      ctx.strokeStyle = "rgba(255, 246, 188, 0.72)";
+      ctx.strokeStyle = "rgba(255, 242, 190, 0.78)";
       ctx.lineWidth = 2;
       ctx.strokeRect(captured.x, captured.y, captured.w, captured.h);
     });

@@ -60,26 +60,31 @@
               <strong id="levelTitle">Уровень 1</strong>
             </div>
             <div class="level-stat">
-              <span>Захват</span>
+              <span>Цель</span>
+              <strong id="targetPercent">75%</strong>
+            </div>
+            <div class="level-stat">
+              <span>Захвачено</span>
               <strong id="capturePercent">0%</strong>
             </div>
             <div class="level-stat">
               <span>Штрафы</span>
               <strong id="penaltyCount">0</strong>
             </div>
-            <div class="level-stat">
-              <span>Цель</span>
-              <strong id="targetPercent">60%</strong>
-            </div>
           </div>
           <canvas class="jezz-canvas" id="jezzCanvas" aria-label="Игровое поле JezzBall"></canvas>
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
             <span>Уровень пройден</span>
-            <strong id="levelCompleteScore">60%</strong>
+            <strong id="levelCompleteScore">75%</strong>
             <button class="menu-button play-button compact-play" type="button" id="completeLevelButton">Продолжить</button>
           </div>
         </div>
+        <aside class="level-helper-panel" aria-label="Подсказка уровня">
+          <span class="helper-icon" aria-hidden="true">✦</span>
+          <p>Рисуй линии и замыкай области, чтобы захватить пространство.</p>
+          <span class="helper-target"><strong id="helperTargetPercent">75%</strong> до цели</span>
+        </aside>
       </div>
     </section>
 
