@@ -700,6 +700,71 @@
     }
   };
 
+  const mapPointBetweenRects = (point, fromRect, toRect) => ({
+    x: toRect.x + ((point.x - fromRect.x) / fromRect.w) * toRect.w,
+    y: toRect.y + ((point.y - fromRect.y) / fromRect.h) * toRect.h
+  });
+
+  const mapRectBetweenRects = (rect, fromRect, toRect) => {
+    const start = mapPointBetweenRects({ x: rect.x, y: rect.y }, fromRect, toRect);
+    const end = mapPointBetweenRects({ x: rect.x + rect.w, y: rect.y + rect.h }, fromRect, toRect);
+    return {
+      x: start.x,
+      y: start.y,
+      w: end.x - start.x,
+      h: end.y - start.y
+    };
+  };
+
+  const mapWallBetweenRects = (wall, fromRect, toRect) => {
+    if (wall.orientation === "vertical") {
+      const top = mapPointBetweenRects({ x: wall.x, y: wall.y1 }, fromRect, toRect);
+      const bottom = mapPointBetweenRects({ x: wall.x, y: wall.y2 }, fromRect, toRect);
+      return { orientation: wall.orientation, x: top.x, y1: top.y, y2: bottom.y };
+    }
+
+    const left = mapPointBetweenRects({ x: wall.x1, y: wall.y }, fromRect, toRect);
+    const right = mapPointBetweenRects({ x: wall.x2, y: wall.y }, fromRect, toRect);
+    return { orientation: wall.orientation, y: left.y, x1: left.x, x2: right.x };
+  };
+
+  const resizeActiveJezzLevel = () => {
+    const oldRect = levelState.rect;
+    const size = resizeJezzCanvas();
+    const margin = Math.max(12, Math.min(22, size.width * 0.03));
+    const nextRect = {
+      x: margin,
+      y: margin,
+      w: size.width - margin * 2,
+      h: size.height - margin * 2
+    };
+
+    if (!oldRect || oldRect.w <= 0 || oldRect.h <= 0) {
+      startJezzLevel();
+      return;
+    }
+
+    levelState.rect = nextRect;
+    levelState.activeRect = levelState.activeRect
+      ? mapRectBetweenRects(levelState.activeRect, oldRect, nextRect)
+      : { ...nextRect };
+    levelState.capturedRects = levelState.capturedRects.map((rect) => mapRectBetweenRects(rect, oldRect, nextRect));
+    levelState.walls = levelState.walls.map((wall) => mapWallBetweenRects(wall, oldRect, nextRect));
+    levelState.capturedArea = levelState.capturedRects.reduce((sum, rect) => sum + rectArea(rect), 0);
+    levelState.totalArea = rectArea(nextRect);
+    levelState.activeLine = null;
+    levelState.draftPointer = null;
+
+    if (levelState.ball) {
+      const nextBall = mapPointBetweenRects(levelState.ball, oldRect, nextRect);
+      levelState.ball.x = nextBall.x;
+      levelState.ball.y = nextBall.y;
+    }
+
+    syncLevelHud();
+    drawJezzLevel();
+  };
+
   const startJezzLevel = () => {
     stopJezzLevel();
     const size = resizeJezzCanvas();
@@ -968,13 +1033,13 @@
   window.addEventListener("resize", () => {
     syncViewportHeight();
     if (levelScreen.classList.contains("is-active")) {
-      window.requestAnimationFrame(startJezzLevel);
+      window.requestAnimationFrame(resizeActiveJezzLevel);
     }
   });
   window.addEventListener("orientationchange", () => {
     syncViewportHeight();
     if (levelScreen.classList.contains("is-active")) {
-      window.requestAnimationFrame(startJezzLevel);
+      window.requestAnimationFrame(resizeActiveJezzLevel);
     }
   });
 
