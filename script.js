@@ -4,7 +4,9 @@
   const levelScreen = document.getElementById("level-screen");
   const levelChapterLabel = document.getElementById("levelChapterLabel");
   const levelTitle = document.getElementById("levelTitle");
-  const completeLevelButton = document.getElementById("completeLevelButton");
+  const completeMapButton = document.getElementById("completeMapButton");
+  const completeNextButton = document.getElementById("completeNextButton");
+  const completeCloseButton = document.getElementById("completeCloseButton");
   const jezzCanvas = document.getElementById("jezzCanvas");
   const capturePercent = document.getElementById("capturePercent");
   const penaltyCount = document.getElementById("penaltyCount");
@@ -13,13 +15,22 @@
   const levelToast = document.getElementById("levelToast");
   const levelCompletePanel = document.getElementById("levelCompletePanel");
   const levelCompleteScore = document.getElementById("levelCompleteScore");
+  const rewardStars = document.getElementById("rewardStars");
+  const rewardStarCount = document.getElementById("rewardStarCount");
+  const rewardCoins = document.getElementById("rewardCoins");
+  const rewardLifePrize = document.getElementById("rewardLifePrize");
+  const rewardLife = document.getElementById("rewardLife");
   const settingsModal = document.getElementById("settingsModal");
   const musicToggle = document.getElementById("musicToggle");
   const soundToggle = document.getElementById("soundToggle");
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 10 * 60 * 1000;
-  const BASE_LEVEL_COIN_REWARD = 80;
   const LEVEL_ONE_TARGET = 75;
+  const STAR_REWARDS = {
+    1: { coins: 80, restoreLife: false },
+    2: { coins: 120, restoreLife: false },
+    3: { coins: 180, restoreLife: true }
+  };
   const LINE_GROW_SPEED = 420;
   const BALL_RADIUS = 11;
 
@@ -65,7 +76,8 @@
     ball: null,
     animationId: null,
     lastFrameAt: 0,
-    toastTimer: null
+    toastTimer: null,
+    lastCompletion: null
   };
 
   const clampChapterId = (chapterId) => Math.min(chapters.length, Math.max(1, chapterId));
@@ -74,7 +86,20 @@
   const getChapterForLevel = (level) => Math.min(chapters.length, Math.max(1, Math.ceil(level / 10)));
   const getChapterLevelStart = (chapterId) => (chapterId - 1) * 10 + 1;
   const getChapterLevelEnd = (chapterId) => chapterId * 10;
-  const getLevelCoinReward = (level) => BASE_LEVEL_COIN_REWARD + Math.max(0, getChapterForLevel(level) - 1) * 10;
+  const getStarReward = (stars) => STAR_REWARDS[Math.max(1, Math.min(3, stars))] || STAR_REWARDS[1];
+  const getLevelCoinReward = (_level, stars = 1) => getStarReward(stars).coins;
+
+  const getStarsForResult = (percent, penalties) => {
+    if (percent >= 90 && penalties === 0) {
+      return 3;
+    }
+
+    if (percent >= 80 && penalties <= 1) {
+      return 2;
+    }
+
+    return percent >= LEVEL_ONE_TARGET ? 1 : 0;
+  };
 
   const createIconButton = (action, label, path, extraClass = "") => `
     <button class="icon-button ${extraClass}" type="button" data-action="${action}" aria-label="${label}">
@@ -88,6 +113,7 @@
       <div class="resource-strip" aria-label="Ресурсы">
         <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
         <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
+        <div class="resource-pill resource-counter achievement-button" aria-label="Звёзды"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></div>
       </div>
       ${createIconButton("settings", "Настройки", "M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z", "settings-button")}
     </header>
@@ -243,8 +269,13 @@
     document.querySelectorAll('[data-resource="lives"]').forEach((node) => {
       node.textContent = state.lives;
     });
-    document.querySelectorAll('[data-resource="achievements"]').forEach((node) => {
+    document.querySelectorAll('[data-resource="achievements"], [data-resource="total-stars"]').forEach((node) => {
       node.textContent = state.achievements;
+    });
+    document.querySelectorAll('[data-resource="level-stars"]').forEach((node) => {
+      node.textContent = levelState.completed && levelState.lastCompletion
+        ? levelState.lastCompletion.stars
+        : (state.starsByLevel[state.selectedLevel] || 0);
     });
   };
 
@@ -671,11 +702,39 @@
     levelState.running = false;
     levelState.activeLine = null;
     const percent = Math.floor(getCaptureRatio() * 100);
+    const stars = getStarsForResult(percent, levelState.penalties);
+    const reward = getStarReward(stars);
+    levelState.lastCompletion = {
+      level: state.selectedLevel,
+      percent,
+      penalties: levelState.penalties,
+      stars,
+      coins: reward.coins,
+      restoreLife: reward.restoreLife,
+      applied: false
+    };
     if (levelCompleteScore) {
       levelCompleteScore.textContent = `${percent}%`;
     }
+    if (rewardStarCount) {
+      rewardStarCount.textContent = `+${stars * 10}`;
+    }
+    if (rewardCoins) {
+      rewardCoins.textContent = `+${reward.coins}`;
+    }
+    if (rewardLife) {
+      rewardLife.textContent = reward.restoreLife ? "+1" : "0";
+    }
+    rewardLifePrize?.classList.toggle("is-muted", !reward.restoreLife);
+    if (rewardStars) {
+      rewardStars.dataset.stars = String(stars);
+      rewardStars.querySelectorAll("[data-star]").forEach((star) => {
+        star.classList.toggle("is-earned", Number(star.dataset.star) <= stars);
+      });
+    }
     levelCompletePanel?.classList.add("is-visible");
     levelCompletePanel?.setAttribute("aria-hidden", "false");
+    syncResources();
   }
 
   const tickJezzLevel = (time) => {
@@ -788,6 +847,7 @@
     levelState.walls = [];
     levelState.activeLine = null;
     levelState.draftPointer = null;
+    levelState.lastCompletion = null;
     levelState.ball = {
       x: rect.x + rect.w * 0.64,
       y: rect.y + rect.h * 0.42,
@@ -798,6 +858,7 @@
     levelCompletePanel?.classList.remove("is-visible");
     levelCompletePanel?.setAttribute("aria-hidden", "true");
     syncLevelHud();
+    syncResources();
     levelState.lastFrameAt = performance.now();
     levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
   };
@@ -882,8 +943,8 @@
       return;
     }
 
-    if (state.lives <= 0) {
-      syncResources();
+    if (!spendLife()) {
+      showToast("Нужна жизнь для старта уровня");
       return;
     }
 
@@ -897,14 +958,46 @@
     window.requestAnimationFrame(startJezzLevel);
   };
 
-  const completeSelectedLevel = () => {
+  const completeSelectedLevel = (destination = "map") => {
     const completedChapterId = getChapterForLevel(state.selectedLevel);
+    const completion = levelState.lastCompletion || {
+      level: state.selectedLevel,
+      stars: 1,
+      coins: STAR_REWARDS[1].coins,
+      restoreLife: false,
+      applied: false
+    };
 
-    if (state.selectedLevel === state.currentLevel) {
-      state.starsByLevel[state.selectedLevel] = 3;
-      state.coins += getLevelCoinReward(state.selectedLevel);
-      state.currentLevel = Math.min(101, state.currentLevel + 1);
-      renderChapterScreens();
+    if (!completion.applied) {
+      const previousStars = state.starsByLevel[state.selectedLevel] || 0;
+      const improvedStars = completion.stars > previousStars;
+
+      if (improvedStars) {
+        state.starsByLevel[state.selectedLevel] = completion.stars;
+      }
+
+      if (state.selectedLevel === state.currentLevel) {
+        state.coins += completion.coins;
+        if (completion.restoreLife) {
+          restoreLife();
+        }
+        state.currentLevel = Math.min(101, state.currentLevel + 1);
+        completion.applied = true;
+        levelState.lastCompletion = completion;
+        renderChapterScreens();
+      } else if (improvedStars) {
+        renderChapterScreens();
+      }
+    }
+
+    if (destination === "next" && state.currentLevel <= 100) {
+      openLevel(state.currentLevel);
+      return;
+    }
+
+    if (destination === "next") {
+      showScreen("final-screen");
+      return;
     }
 
     openChapter(completedChapterId);
@@ -1007,7 +1100,9 @@
     }, 220);
   });
 
-  completeLevelButton.addEventListener("click", completeSelectedLevel);
+  completeMapButton?.addEventListener("click", () => completeSelectedLevel("map"));
+  completeNextButton?.addEventListener("click", () => completeSelectedLevel("next"));
+  completeCloseButton?.addEventListener("click", () => completeSelectedLevel("map"));
   musicToggle.addEventListener("change", () => {
     state.music = musicToggle.checked;
   });

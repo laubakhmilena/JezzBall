@@ -46,7 +46,7 @@
           <div class="resource-strip" aria-label="Ресурсы">
             <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
             <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
-            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Достижения"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="achievements">0</span></button>
+            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Звёзды за уровень"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="level-stars">0</span></button>
           </div>
           <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
@@ -75,9 +75,35 @@
           <canvas class="jezz-canvas" id="jezzCanvas" aria-label="Игровое поле JezzBall"></canvas>
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
-            <span>Уровень пройден</span>
-            <strong id="levelCompleteScore">75%</strong>
-            <button class="menu-button play-button compact-play" type="button" id="completeLevelButton">Продолжить</button>
+            <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
+              <button class="reward-close" type="button" id="completeCloseButton" aria-label="Закрыть">×</button>
+              <div class="reward-ribbon" id="rewardTitle">Уровень пройден!</div>
+              <div class="reward-stars" id="rewardStars" aria-label="Полученные звезды">
+                <span data-star="1">★</span>
+                <span data-star="2">★</span>
+                <span data-star="3">★</span>
+              </div>
+              <p class="reward-capture">Ты захватил <strong id="levelCompleteScore">75%</strong> поля!</p>
+              <div class="reward-prizes" aria-label="Ваши награды">
+                <h3>Награды</h3>
+                <div class="reward-prize">
+                  <span class="reward-prize-icon coin-icon" aria-hidden="true">●</span>
+                  <strong id="rewardCoins">+180</strong>
+                </div>
+                <div class="reward-prize" id="rewardLifePrize">
+                  <span class="reward-prize-icon heart-icon" aria-hidden="true">♥</span>
+                  <strong id="rewardLife">+1</strong>
+                </div>
+                <div class="reward-prize">
+                  <span class="reward-prize-icon score-icon" aria-hidden="true">★</span>
+                  <strong id="rewardStarCount">+3</strong>
+                </div>
+              </div>
+              <div class="reward-actions">
+                <button class="menu-button map-reward-button compact-play" type="button" id="completeMapButton">На карту</button>
+                <button class="menu-button play-button compact-play" type="button" id="completeNextButton">Следующий уровень</button>
+              </div>
+            </div>
           </div>
         </div>
         <aside class="level-helper-panel" aria-label="Подсказка уровня">
@@ -97,7 +123,7 @@
           <div class="resource-strip" aria-label="Ресурсы">
             <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
             <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
-            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Достижения"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="achievements">0</span></button>
+            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Всего звёзд"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></button>
           </div>
           <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
