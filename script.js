@@ -4,9 +4,9 @@
   const levelScreen = document.getElementById("level-screen");
   const levelChapterLabel = document.getElementById("levelChapterLabel");
   const levelTitle = document.getElementById("levelTitle");
-  const completeMapButton = document.getElementById("completeMapButton");
-  const completeNextButton = document.getElementById("completeNextButton");
   const completeCloseButton = document.getElementById("completeCloseButton");
+  const completeReplayButton = document.getElementById("completeReplayButton");
+  const completeNextButton = document.getElementById("completeNextButton");
   const jezzCanvas = document.getElementById("jezzCanvas");
   const capturePercent = document.getElementById("capturePercent");
   const penaltyCount = document.getElementById("penaltyCount");
@@ -16,7 +16,7 @@
   const levelCompletePanel = document.getElementById("levelCompletePanel");
   const levelCompleteScore = document.getElementById("levelCompleteScore");
   const rewardStars = document.getElementById("rewardStars");
-  const rewardStarCount = document.getElementById("rewardStarCount");
+  const rewardPrizes = document.getElementById("rewardPrizes");
   const rewardCoins = document.getElementById("rewardCoins");
   const rewardLifePrize = document.getElementById("rewardLifePrize");
   const rewardLife = document.getElementById("rewardLife");
@@ -89,6 +89,19 @@
   const getChapterLevelEnd = (chapterId) => chapterId * 10;
   const getStarReward = (stars) => STAR_REWARDS[Math.max(1, Math.min(3, stars))] || STAR_REWARDS[1];
   const getLevelCoinReward = (_level, stars = 1) => getStarReward(stars).coins;
+  const getRewardDelta = (stars, previousStars = 0) => {
+    const bestStars = Math.max(0, Math.min(3, previousStars));
+    const nextStars = Math.max(0, Math.min(3, stars));
+    if (nextStars <= bestStars) {
+      return { stars: 0, coins: 0, restoreLife: false };
+    }
+
+    return {
+      stars: nextStars - bestStars,
+      coins: getStarReward(nextStars).coins - (bestStars > 0 ? getStarReward(bestStars).coins : 0),
+      restoreLife: nextStars >= 3 && bestStars < 3
+    };
+  };
 
   const getStarsForResult = (percent, penalties) => {
     if (percent >= 90 && penalties === 0) {
@@ -732,12 +745,14 @@
     levelState.activeLine = null;
     const percent = Math.floor(getCaptureRatio() * 100);
     const stars = getStarsForResult(percent, levelState.penalties);
-    const reward = getStarReward(stars);
+    const previousStars = state.starsByLevel[state.selectedLevel] || 0;
+    const reward = getRewardDelta(stars, previousStars);
     levelState.lastCompletion = {
       level: state.selectedLevel,
       percent,
       penalties: levelState.penalties,
       stars,
+      awardedStars: reward.stars,
       coins: reward.coins,
       restoreLife: reward.restoreLife,
       applied: false
@@ -745,16 +760,18 @@
     if (levelCompleteScore) {
       levelCompleteScore.textContent = `${percent}%`;
     }
-    if (rewardStarCount) {
-      rewardStarCount.textContent = `+${stars * 10}`;
-    }
     if (rewardCoins) {
       rewardCoins.textContent = `+${reward.coins}`;
     }
     if (rewardLife) {
       rewardLife.textContent = reward.restoreLife ? "+1" : "0";
     }
-    rewardLifePrize?.classList.toggle("is-muted", !reward.restoreLife);
+    if (rewardLifePrize) {
+      rewardLifePrize.hidden = !reward.restoreLife;
+    }
+    if (rewardPrizes) {
+      rewardPrizes.dataset.prizeCount = reward.restoreLife ? "2" : "1";
+    }
     if (rewardStars) {
       rewardStars.dataset.stars = String(stars);
       rewardStars.querySelectorAll("[data-star]").forEach((star) => {
@@ -909,7 +926,26 @@
     const orientation = levelState.aimPointer && pointInRect(levelState.aimPointer, rect)
       ? levelState.aimPointer.orientation
       : getFallbackLineOrientation(point, rect);
+    if (isTouchLikePointer(event)) {
+      levelState.draftPointer = {
+        x: point.x,
+        y: point.y,
+        orientation
+      };
+      drawJezzLevel();
+      return;
+    }
+
     startActiveLine(point, orientation);
+  };
+
+  const isTouchLikePointer = (event) => {
+    if (event.pointerType === "touch" || event.pointerType === "pen") {
+      return true;
+    }
+
+    return event.pointerType === "mouse"
+      && window.matchMedia?.("(pointer: coarse)").matches;
   };
 
   const getFallbackLineOrientation = (point, rect) => {
@@ -935,13 +971,22 @@
       return;
     }
 
-    const point = getCanvasPoint(event);
-    if (!pointInRect(point, levelState.activeRect)) {
-      levelState.aimPointer = null;
+    const touchLike = isTouchLikePointer(event);
+    if (touchLike && !levelState.draftPointer) {
       return;
     }
 
-    const previousAim = levelState.aimPointer;
+    const point = getCanvasPoint(event);
+    if (!pointInRect(point, levelState.activeRect)) {
+      if (!levelState.draftPointer) {
+        levelState.aimPointer = null;
+        drawJezzLevel();
+      }
+      return;
+    }
+
+    event.preventDefault();
+    const previousAim = levelState.draftPointer || levelState.aimPointer;
     const dx = previousAim ? point.x - previousAim.x : 0;
     const dy = previousAim ? point.y - previousAim.y : 0;
     const movedEnough = Math.hypot(dx, dy) >= 3;
@@ -949,14 +994,41 @@
       ? (Math.abs(dx) >= Math.abs(dy) ? "horizontal" : "vertical")
       : getFallbackLineOrientation(point, levelState.activeRect);
 
+    if (levelState.draftPointer) {
+      levelState.draftPointer = {
+        x: point.x,
+        y: point.y,
+        orientation
+      };
+      drawJezzLevel();
+      return;
+    }
+
     levelState.aimPointer = {
       x: point.x,
       y: point.y,
       orientation
     };
+    drawJezzLevel();
   };
 
   const finishLinePointer = (event) => {
+    if (levelState.draftPointer && levelState.running && !levelState.completed && !levelState.activeLine && levelState.activeRect) {
+      const point = getCanvasPoint(event);
+      const draft = pointInRect(point, levelState.activeRect)
+        ? {
+          x: point.x,
+          y: point.y,
+          orientation: levelState.draftPointer.orientation
+        }
+        : levelState.draftPointer;
+      levelState.draftPointer = null;
+      levelState.aimPointer = null;
+      event.preventDefault();
+      startActiveLine(draft, draft.orientation);
+      return;
+    }
+
     levelState.draftPointer = null;
   };
 
@@ -991,12 +1063,13 @@
     window.requestAnimationFrame(startJezzLevel);
   };
 
-  const completeSelectedLevel = (destination = "map") => {
+  const completeSelectedLevel = (destination = "chapters") => {
     const completedChapterId = getChapterForLevel(state.selectedLevel);
     const completion = levelState.lastCompletion || {
       level: state.selectedLevel,
       stars: 1,
-      coins: STAR_REWARDS[1].coins,
+      awardedStars: 1,
+      coins: getRewardDelta(1, state.starsByLevel[state.selectedLevel] || 0).coins,
       restoreLife: false,
       applied: false
     };
@@ -1004,22 +1077,41 @@
     if (!completion.applied) {
       const previousStars = state.starsByLevel[state.selectedLevel] || 0;
       const improvedStars = completion.stars > previousStars;
+      const reward = getRewardDelta(completion.stars, previousStars);
 
       if (improvedStars) {
         state.starsByLevel[state.selectedLevel] = completion.stars;
       }
 
       if (state.selectedLevel === state.currentLevel) {
-        state.coins += completion.coins;
-        if (completion.restoreLife) {
+        state.coins += reward.coins;
+        if (reward.restoreLife) {
           restoreLife();
         }
         state.currentLevel = Math.min(101, state.currentLevel + 1);
         completion.applied = true;
+        completion.awardedStars = reward.stars;
+        completion.coins = reward.coins;
+        completion.restoreLife = reward.restoreLife;
         levelState.lastCompletion = completion;
         renderChapterScreens();
       } else if (improvedStars) {
+        state.coins += reward.coins;
+        if (reward.restoreLife) {
+          restoreLife();
+        }
+        completion.applied = true;
+        completion.awardedStars = reward.stars;
+        completion.coins = reward.coins;
+        completion.restoreLife = reward.restoreLife;
+        levelState.lastCompletion = completion;
         renderChapterScreens();
+      } else {
+        completion.applied = true;
+        completion.awardedStars = 0;
+        completion.coins = 0;
+        completion.restoreLife = false;
+        levelState.lastCompletion = completion;
       }
     }
 
@@ -1033,7 +1125,16 @@
       return;
     }
 
+    if (destination === "stay") {
+      return;
+    }
+
     openChapter(completedChapterId);
+  };
+
+  const replayCompletedLevel = () => {
+    completeSelectedLevel("stay");
+    openLevel(state.selectedLevel);
   };
 
   const loseSelectedLevel = () => {
@@ -1133,9 +1234,9 @@
     }, 220);
   });
 
-  completeMapButton?.addEventListener("click", () => completeSelectedLevel("map"));
+  completeCloseButton?.addEventListener("click", () => completeSelectedLevel("chapters"));
+  completeReplayButton?.addEventListener("click", replayCompletedLevel);
   completeNextButton?.addEventListener("click", () => completeSelectedLevel("next"));
-  completeCloseButton?.addEventListener("click", () => completeSelectedLevel("map"));
   musicToggle.addEventListener("change", () => {
     state.music = musicToggle.checked;
   });
@@ -1158,9 +1259,13 @@
   jezzCanvas?.addEventListener("pointercancel", () => {
     levelState.draftPointer = null;
     levelState.aimPointer = null;
+    drawJezzLevel();
   });
   jezzCanvas?.addEventListener("pointerleave", () => {
     levelState.aimPointer = null;
+    if (!levelState.draftPointer) {
+      drawJezzLevel();
+    }
   });
   window.addEventListener("resize", () => {
     syncViewportHeight();

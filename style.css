@@ -884,6 +884,7 @@ button {
     0 0 30px rgba(255, 79, 213, 0.36),
     0 18px 38px rgba(8, 3, 34, 0.42),
     inset 0 0 34px rgba(0, 0, 0, 0.42);
+  cursor: crosshair;
   touch-action: none;
 }
 
@@ -983,7 +984,7 @@ button {
   z-index: 12;
   display: grid;
   place-items: center;
-  padding: clamp(8px, 2vmin, 18px);
+  padding: clamp(6px, 1.7vmin, 16px);
   background:
     radial-gradient(circle at 50% 18%, rgba(255, 73, 206, 0.2), transparent 34%),
     rgba(7, 3, 26, 0.5);
@@ -1012,11 +1013,13 @@ button {
   position: relative;
   display: grid;
   justify-items: center;
-  gap: clamp(13px, 2.1vmin, 19px);
+  align-content: center;
+  gap: clamp(8px, 1.6vmin, 14px);
   width: min(100%, 520px);
+  min-height: 0;
   max-height: 100%;
-  overflow: auto;
-  padding: clamp(34px, 6vmin, 52px) clamp(16px, 4vmin, 30px) clamp(16px, 3vmin, 24px);
+  overflow: hidden;
+  padding: clamp(18px, 4vmin, 38px) clamp(14px, 3.5vmin, 28px) clamp(14px, 2.8vmin, 22px);
   border: 0;
   border-radius: 8px;
   background:
@@ -1045,11 +1048,12 @@ button {
 
 .reward-close {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: clamp(6px, 1.8vmin, 10px);
+  right: clamp(6px, 1.8vmin, 10px);
+  z-index: 2;
   display: grid;
   place-items: center;
-  width: clamp(38px, 7vmin, 48px);
+  width: clamp(30px, 6vmin, 42px);
   aspect-ratio: 1;
   border: 2px solid rgba(255, 144, 244, 0.78);
   border-radius: 50%;
@@ -1057,7 +1061,8 @@ button {
     radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.18), transparent 48%),
     rgba(35, 13, 71, 0.82);
   color: #fff8ff;
-  font-size: clamp(1.55rem, 4vmin, 2rem);
+  font-size: clamp(1.25rem, 3.4vmin, 1.75rem);
+  font-weight: 800;
   line-height: 1;
   box-shadow:
     0 0 18px rgba(255, 80, 220, 0.42),
@@ -1067,7 +1072,8 @@ button {
 .reward-ribbon {
   position: relative;
   min-width: min(92%, 360px);
-  padding: 12px clamp(18px, 4vmin, 34px);
+  max-width: min(100%, 390px);
+  padding: clamp(8px, 2.2vmin, 12px) clamp(18px, 4vmin, 34px);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 48%),
@@ -1090,19 +1096,19 @@ button {
   position: absolute;
   top: 33%;
   z-index: -1;
-  width: clamp(52px, 13vmin, 78px);
+  width: clamp(38px, 10vmin, 72px);
   height: 62%;
   background: linear-gradient(135deg, #c42b82, #7e2674);
   box-shadow: 0 10px 20px rgba(8, 2, 32, 0.28);
 }
 
 .reward-ribbon::before {
-  left: -44px;
+  left: max(-44px, -9vmin);
   clip-path: polygon(0 0, 100% 15%, 82% 100%, 0 82%, 24% 48%);
 }
 
 .reward-ribbon::after {
-  right: -44px;
+  right: max(-44px, -9vmin);
   clip-path: polygon(0 15%, 100% 0, 76% 48%, 100% 82%, 18% 100%);
 }
 
@@ -1111,7 +1117,7 @@ button {
   justify-content: center;
   align-items: center;
   gap: clamp(8px, 2.4vmin, 18px);
-  min-height: clamp(82px, 18vmin, 128px);
+  min-height: clamp(74px, 15vmin, 118px);
 }
 
 .reward-stars span,
@@ -1123,7 +1129,7 @@ button {
 
 .reward-stars span {
   display: inline-block;
-  font-size: clamp(4rem, 14vmin, 6.7rem);
+  font-size: clamp(3.55rem, 12.5vmin, 6.25rem);
   line-height: 0.9;
   opacity: 0.86;
   transform: translateY(12px) scale(0.86) rotate(-8deg);
@@ -1192,67 +1198,90 @@ button {
 }
 
 .reward-prizes {
+  width: fit-content;
+  min-width: min(100%, 170px);
+  max-width: min(100%, 330px);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
   gap: 0;
-  padding: 12px 14px;
+  align-items: center;
+  padding: 8px 14px;
+}
+
+.reward-prizes[data-prize-count="1"] {
+  grid-template-columns: auto auto;
+  min-width: 178px;
+}
+
+.reward-prizes[data-prize-count="2"] {
+  grid-template-columns: repeat(2, minmax(74px, 1fr));
+  min-width: 230px;
 }
 
 .reward-prizes h3 {
   grid-column: 1 / -1;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: rgba(255, 244, 255, 0.9);
   font-size: clamp(0.86rem, 2.2vmin, 1rem);
   font-weight: 900;
 }
 
+.reward-prizes[data-prize-count="1"] h3 {
+  grid-column: auto;
+  margin: 0 12px 0 0;
+}
+
 .reward-prize {
   display: grid;
   justify-items: center;
-  gap: 7px;
-  min-height: 64px;
-  padding: 6px 4px;
+  gap: 5px;
+  min-height: 50px;
+  padding: 4px;
   text-align: center;
 }
 
-.reward-prize.is-muted {
-  opacity: 0.45;
+.reward-prizes[data-prize-count="1"] .reward-prize {
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0;
+}
+
+.reward-prize[hidden] {
+  display: none;
 }
 
 .reward-prize-icon {
   display: grid;
   place-items: center;
-  width: clamp(36px, 6.6vmin, 48px);
+  width: clamp(32px, 5.8vmin, 44px);
   aspect-ratio: 1;
   border-radius: 50%;
   font-size: clamp(1.45rem, 3.6vmin, 2rem);
 }
 
 .coin-icon {
-  color: #ffd54f;
-  background: radial-gradient(circle at 34% 25%, #fff7ae, #ffc12f 45%, #d98112);
-  box-shadow: 0 0 18px rgba(255, 205, 61, 0.56), inset 0 0 0 3px rgba(255, 239, 132, 0.5);
+  object-fit: contain;
+  filter:
+    drop-shadow(0 3px 0 rgba(117, 48, 0, 0.42))
+    drop-shadow(0 0 16px rgba(255, 205, 61, 0.58));
 }
 
 .heart-icon {
-  color: #ff4d8e;
-  background: radial-gradient(circle at 35% 25%, rgba(255,255,255,0.7), transparent 28%);
-  text-shadow: 0 0 16px rgba(255, 75, 142, 0.82);
-}
-
-.score-icon {
-  color: #ffd955;
-  background: transparent;
-  border-radius: 0;
-  filter: drop-shadow(0 0 12px rgba(255, 217, 85, 0.7));
+  object-fit: contain;
+  filter:
+    drop-shadow(0 3px 0 rgba(93, 7, 45, 0.44))
+    drop-shadow(0 0 16px rgba(255, 75, 142, 0.72));
 }
 
 .reward-actions {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(10px, 2.8vmin, 16px);
   width: 100%;
   max-width: 460px;
+  min-width: 0;
 }
 
 .map-reward-button {
@@ -1262,6 +1291,72 @@ button {
   box-shadow:
     0 0 0 1px rgba(255, 188, 246, 0.3),
     0 14px 30px rgba(5, 2, 24, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.reward-actions .compact-play {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: clamp(48px, 7vmin, 58px);
+  padding: 0 clamp(14px, 3.4vmin, 24px);
+  border: 1.5px solid rgba(189, 240, 255, 0.8);
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.24), transparent 34%),
+    linear-gradient(135deg, rgba(255, 83, 215, 0.26), rgba(100, 86, 255, 0.22) 52%, rgba(42, 214, 255, 0.28)),
+    rgba(17, 8, 55, 0.42);
+  color: #fffaff;
+  font-size: clamp(0.92rem, 2.45vmin, 1.08rem);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.72), 0 0 18px rgba(75, 220, 255, 0.48);
+  box-shadow:
+    0 0 0 1px rgba(255, 91, 221, 0.28),
+    0 0 18px rgba(255, 87, 218, 0.38),
+    0 0 24px rgba(42, 214, 255, 0.24),
+    0 14px 28px rgba(5, 2, 24, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -14px 24px rgba(20, 9, 64, 0.18);
+  backdrop-filter: blur(8px);
+}
+
+.reward-actions .compact-play::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+  opacity: 0.56;
+  transform: translateX(-74%);
+  transition: transform 420ms ease;
+  pointer-events: none;
+}
+
+.reward-actions .compact-play:hover {
+  filter: brightness(1.12) saturate(1.14);
+  box-shadow:
+    0 0 0 1px rgba(255, 151, 237, 0.5),
+    0 0 24px rgba(255, 87, 218, 0.58),
+    0 0 34px rgba(42, 214, 255, 0.42),
+    0 16px 34px rgba(5, 2, 24, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.reward-actions .compact-play:hover::before {
+  transform: translateX(74%);
+}
+
+.reward-actions .map-reward-button {
+  border-color: rgba(211, 151, 255, 0.68);
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(111, 57, 203, 0.34), rgba(45, 21, 105, 0.28)),
+    rgba(20, 10, 58, 0.48);
+  box-shadow:
+    0 0 0 1px rgba(229, 132, 255, 0.28),
+    0 0 18px rgba(163, 92, 255, 0.42),
+    0 12px 26px rgba(5, 2, 24, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
@@ -1293,6 +1388,7 @@ button {
 
   .level-screen .resource-strip {
     width: 100%;
+    justify-content: stretch;
     gap: 6px;
     min-width: 0;
   }
@@ -1305,6 +1401,7 @@ button {
     gap: 6px;
     border-width: 1.5px;
     font-size: 0.78rem;
+    overflow: hidden;
   }
 
   .level-screen .resource-icon {
@@ -1362,9 +1459,60 @@ button {
   }
 
   .reward-actions {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.45fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+}
+
+@media (max-width: 520px) {
+  .level-complete-panel {
+    inset: calc(var(--safe-top) + 6px) calc(var(--safe-right) + 6px) calc(var(--safe-bottom) + 6px) calc(var(--safe-left) + 6px);
+    padding: 6px;
+  }
+
+  .reward-card {
+    width: min(100%, 430px);
+    gap: clamp(7px, 2.1vw, 11px);
+    padding: clamp(14px, 4vw, 20px) clamp(10px, 3.2vw, 16px);
+  }
+
+  .reward-ribbon {
+    min-width: 0;
+    max-width: min(82vw, 340px);
+    font-size: clamp(1.08rem, 5.5vw, 1.45rem);
+  }
+
+  .reward-ribbon::before,
+  .reward-ribbon::after {
+    width: clamp(30px, 11vw, 52px);
+  }
+
+  .reward-ribbon::before {
+    left: max(-32px, -7vw);
+  }
+
+  .reward-ribbon::after {
+    right: max(-32px, -7vw);
+  }
+
+  .reward-stars {
+    min-height: clamp(60px, 18vw, 82px);
+  }
+
+  .reward-stars span {
+    font-size: clamp(3rem, 16vw, 4.35rem);
+  }
+
+  .reward-actions {
+    grid-template-columns: 1fr;
+    max-width: min(86vw, 330px);
+  }
+
+  .reward-actions .compact-play {
+    width: 100%;
+    min-height: 46px;
+    font-size: clamp(0.92rem, 4.2vw, 1.08rem);
+  }
 }
 
 @media (max-height: 560px) {
@@ -1420,10 +1568,10 @@ button {
 
 @media (orientation: landscape) and (max-height: 560px) {
   .level-screen .top-ui {
-    top: calc(var(--safe-top) + 8px);
+    top: calc(var(--safe-top) + 10px);
     left: calc(var(--safe-left) + 10px);
-    right: auto;
-    width: clamp(238px, 41vw, 300px);
+    right: calc(var(--safe-right) + 10px);
+    width: auto;
     grid-template-columns: 34px minmax(0, 1fr) 34px;
     gap: 6px;
   }
@@ -1433,6 +1581,7 @@ button {
   }
 
   .level-screen .resource-strip {
+    justify-content: start;
     gap: 5px;
   }
 
@@ -1467,7 +1616,7 @@ button {
   }
 
   .level-playfield {
-    top: calc(var(--safe-top) + 8px);
+    top: calc(var(--safe-top) + 48px);
     right: calc(var(--safe-right) + 10px);
     bottom: calc(var(--safe-bottom) + 8px);
     left: calc(var(--safe-left) + 10px);
@@ -1486,7 +1635,7 @@ button {
     align-content: start;
     gap: 7px;
     min-width: 0;
-    padding-top: 46px;
+    padding-top: 0;
   }
 
   .level-hud > div,
@@ -1498,7 +1647,7 @@ button {
 
   .level-hud > div:first-child {
     grid-column: auto;
-    min-height: 58px;
+    min-height: 52px;
     padding: 9px 10px;
   }
 
@@ -1528,40 +1677,105 @@ button {
   }
 
   .level-complete-panel {
-    inset: calc(var(--safe-top) + 6px) calc(var(--safe-right) + 6px) calc(var(--safe-bottom) + 6px) calc(var(--safe-left) + 6px);
+    inset: calc(var(--safe-top) + 5px) calc(var(--safe-right) + 5px) calc(var(--safe-bottom) + 5px) calc(var(--safe-left) + 5px);
+    padding: 5px;
   }
 
   .reward-card {
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    gap: 8px 14px;
-    width: min(100%, 860px);
-    padding: 14px;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-content: center;
+    gap: clamp(4px, 1.5vh, 7px);
+    width: min(100%, 640px);
+    max-height: 100%;
+    padding: clamp(7px, 2vh, 11px) clamp(8px, 2.2vw, 14px);
   }
 
   .reward-ribbon,
   .reward-stars,
   .reward-capture,
+  .reward-prizes,
   .reward-actions {
     grid-column: 1 / -1;
   }
 
   .reward-ribbon {
     min-width: 0;
-    padding: 9px 18px;
-    font-size: clamp(1.05rem, 5vh, 1.55rem);
+    max-width: min(76vw, 320px);
+    padding: clamp(6px, 1.6vh, 8px) clamp(16px, 5vw, 28px);
+    font-size: clamp(0.98rem, 4.2vh, 1.28rem);
+  }
+
+  .reward-ribbon::before,
+  .reward-ribbon::after {
+    width: clamp(30px, 8vw, 52px);
+  }
+
+  .reward-ribbon::before {
+    left: max(-32px, -7vw);
+  }
+
+  .reward-ribbon::after {
+    right: max(-32px, -7vw);
   }
 
   .reward-stars {
-    min-height: 58px;
+    min-height: clamp(38px, 13vh, 52px);
+    gap: clamp(6px, 1.8vw, 12px);
   }
 
   .reward-stars span {
-    font-size: clamp(2.8rem, 13vh, 4.2rem);
+    font-size: clamp(2.15rem, 11vh, 3.15rem);
+    line-height: 0.86;
+  }
+
+  .reward-capture {
+    margin: -2px 0 0;
+    font-size: clamp(0.78rem, 3.3vh, 0.98rem);
   }
 
   .reward-prize {
-    min-height: 46px;
+    min-height: clamp(38px, 11vh, 48px);
+    gap: 3px;
+  }
+
+  .reward-prizes {
+    padding: clamp(5px, 1.4vh, 7px) 10px;
+  }
+
+  .reward-prizes[data-prize-count="1"] {
+    min-width: 160px;
+  }
+
+  .reward-prizes h3 {
+    margin-bottom: 3px;
+    font-size: clamp(0.72rem, 2.9vh, 0.9rem);
+  }
+
+  .reward-prizes[data-prize-count="1"] h3 {
+    margin: 0 9px 0 0;
+  }
+
+  .reward-prize-icon {
+    width: clamp(24px, 7.2vh, 34px);
+  }
+
+  .reward-prize strong {
+    font-size: clamp(0.82rem, 3.1vh, 1rem);
+  }
+
+  .reward-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(6px, 1.8vw, 10px);
+    max-width: min(92vw, 440px);
+  }
+
+  .reward-actions .compact-play {
+    min-height: clamp(36px, 9vh, 46px);
+    padding-inline: clamp(10px, 3vw, 18px);
+    font-size: clamp(0.92rem, 2.45vmin, 1.08rem);
+    font-weight: 950;
+    line-height: 1;
   }
 
 }

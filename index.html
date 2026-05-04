@@ -76,7 +76,7 @@
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
             <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
-              <button class="reward-close" type="button" id="completeCloseButton" aria-label="Закрыть">×</button>
+              <button class="reward-close" type="button" id="completeCloseButton" aria-label="К главам">×</button>
               <div class="reward-ribbon" id="rewardTitle">Уровень пройден!</div>
               <div class="reward-stars" id="rewardStars" aria-label="Полученные звезды">
                 <span data-star="1">★</span>
@@ -84,23 +84,19 @@
                 <span data-star="3">★</span>
               </div>
               <p class="reward-capture">Ты захватил <strong id="levelCompleteScore">75%</strong> поля!</p>
-              <div class="reward-prizes" aria-label="Ваши награды">
+              <div class="reward-prizes" id="rewardPrizes" data-prize-count="1" aria-label="Ваши награды">
                 <h3>Награды</h3>
                 <div class="reward-prize">
-                  <span class="reward-prize-icon coin-icon" aria-hidden="true">●</span>
+                  <img class="reward-prize-icon coin-icon" src="assets/images/coin.svg" alt="" aria-hidden="true">
                   <strong id="rewardCoins">+180</strong>
                 </div>
                 <div class="reward-prize" id="rewardLifePrize">
-                  <span class="reward-prize-icon heart-icon" aria-hidden="true">♥</span>
+                  <img class="reward-prize-icon heart-icon" src="assets/images/heart.svg" alt="" aria-hidden="true">
                   <strong id="rewardLife">+1</strong>
-                </div>
-                <div class="reward-prize">
-                  <span class="reward-prize-icon score-icon" aria-hidden="true">★</span>
-                  <strong id="rewardStarCount">+3</strong>
                 </div>
               </div>
               <div class="reward-actions">
-                <button class="menu-button map-reward-button compact-play" type="button" id="completeMapButton">На карту</button>
+                <button class="menu-button map-reward-button compact-play" type="button" id="completeReplayButton">Играть еще раз</button>
                 <button class="menu-button play-button compact-play" type="button" id="completeNextButton">Следующий уровень</button>
               </div>
             </div>
