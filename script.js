@@ -73,6 +73,7 @@
     walls: [],
     activeLine: null,
     draftPointer: null,
+    aimPointer: null,
     ball: null,
     animationId: null,
     lastFrameAt: 0,
@@ -676,6 +677,34 @@
       ctx.stroke();
     }
 
+    const aim = levelState.draftPointer || levelState.aimPointer;
+    if (aim && !line && levelState.activeRect) {
+      const orientation = aim.orientation || getFallbackLineOrientation(aim, levelState.activeRect);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 246, 145, 0.94)";
+      ctx.lineWidth = levelState.draftPointer ? 4 : 3;
+      ctx.lineCap = "round";
+      ctx.setLineDash(levelState.draftPointer ? [14, 10] : [8, 9]);
+      ctx.shadowColor = "rgba(255, 219, 76, 0.82)";
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      if (orientation === "vertical") {
+        ctx.moveTo(aim.x, levelState.activeRect.y + 8);
+        ctx.lineTo(aim.x, levelState.activeRect.y + levelState.activeRect.h - 8);
+      } else {
+        ctx.moveTo(levelState.activeRect.x + 8, aim.y);
+        ctx.lineTo(levelState.activeRect.x + levelState.activeRect.w - 8, aim.y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(255, 246, 145, 0.96)";
+      ctx.font = "900 26px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(orientation === "vertical" ? "↕" : "↔", aim.x, aim.y);
+      ctx.restore();
+    }
+
     const ball = levelState.ball;
     if (ball) {
       const gradient = ctx.createRadialGradient(ball.x - 4, ball.y - 5, 2, ball.x, ball.y, ball.r + 4);
@@ -847,6 +876,7 @@
     levelState.walls = [];
     levelState.activeLine = null;
     levelState.draftPointer = null;
+    levelState.aimPointer = null;
     levelState.lastCompletion = null;
     levelState.ball = {
       x: rect.x + rect.w * 0.64,
@@ -876,11 +906,10 @@
 
     event.preventDefault();
     jezzCanvas.setPointerCapture?.(event.pointerId);
-    levelState.draftPointer = {
-      id: event.pointerId,
-      x: point.x,
-      y: point.y
-    };
+    const orientation = levelState.aimPointer && pointInRect(levelState.aimPointer, rect)
+      ? levelState.aimPointer.orientation
+      : getFallbackLineOrientation(point, rect);
+    startActiveLine(point, orientation);
   };
 
   const getFallbackLineOrientation = (point, rect) => {
@@ -898,33 +927,37 @@
       ? { orientation, x: point.x, y: point.y, endA: point.y, endB: point.y, done: false }
       : { orientation, x: point.x, y: point.y, endA: point.x, endB: point.x, done: false };
     levelState.draftPointer = null;
+    levelState.aimPointer = null;
   };
 
   const continueLineFromPointer = (event) => {
-    const draft = levelState.draftPointer;
-    if (!draft || draft.id !== event.pointerId || levelState.activeLine) {
+    if (!levelState.running || levelState.completed || levelState.activeLine || !levelState.activeRect) {
       return;
     }
 
     const point = getCanvasPoint(event);
-    const dx = point.x - draft.x;
-    const dy = point.y - draft.y;
-    if (Math.hypot(dx, dy) < 8) {
+    if (!pointInRect(point, levelState.activeRect)) {
+      levelState.aimPointer = null;
       return;
     }
 
-    event.preventDefault();
-    startActiveLine(draft, Math.abs(dx) >= Math.abs(dy) ? "horizontal" : "vertical");
+    const previousAim = levelState.aimPointer;
+    const dx = previousAim ? point.x - previousAim.x : 0;
+    const dy = previousAim ? point.y - previousAim.y : 0;
+    const movedEnough = Math.hypot(dx, dy) >= 3;
+    const orientation = movedEnough
+      ? (Math.abs(dx) >= Math.abs(dy) ? "horizontal" : "vertical")
+      : getFallbackLineOrientation(point, levelState.activeRect);
+
+    levelState.aimPointer = {
+      x: point.x,
+      y: point.y,
+      orientation
+    };
   };
 
   const finishLinePointer = (event) => {
-    const draft = levelState.draftPointer;
-    if (!draft || draft.id !== event.pointerId || levelState.activeLine || !levelState.activeRect) {
-      return;
-    }
-
-    event.preventDefault();
-    startActiveLine(draft, getFallbackLineOrientation(draft, levelState.activeRect));
+    levelState.draftPointer = null;
   };
 
   const openChapter = (chapterId) => {
@@ -1124,6 +1157,10 @@
   jezzCanvas?.addEventListener("pointerup", finishLinePointer);
   jezzCanvas?.addEventListener("pointercancel", () => {
     levelState.draftPointer = null;
+    levelState.aimPointer = null;
+  });
+  jezzCanvas?.addEventListener("pointerleave", () => {
+    levelState.aimPointer = null;
   });
   window.addEventListener("resize", () => {
     syncViewportHeight();
