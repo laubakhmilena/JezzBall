@@ -21,8 +21,14 @@
   const rewardLifePrize = document.getElementById("rewardLifePrize");
   const rewardLife = document.getElementById("rewardLife");
   const settingsModal = document.getElementById("settingsModal");
+  const confirmModal = document.getElementById("confirmModal");
+  const confirmTitle = document.getElementById("confirmTitle");
+  const confirmMessage = document.getElementById("confirmMessage");
+  const confirmCancelButton = document.getElementById("confirmCancelButton");
+  const confirmAcceptButton = document.getElementById("confirmAcceptButton");
   const musicToggle = document.getElementById("musicToggle");
   const soundToggle = document.getElementById("soundToggle");
+  const SAVE_KEY = "jezzball-progress-v1";
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 10 * 60 * 1000;
   const LEVEL_ONE_TARGET = 75;
@@ -80,6 +86,8 @@
     toastTimer: null,
     lastCompletion: null
   };
+
+  let confirmResolve = null;
 
   const clampChapterId = (chapterId) => Math.min(chapters.length, Math.max(1, chapterId));
   const getChapter = (chapterId) => chapters[clampChapterId(chapterId) - 1];
@@ -270,6 +278,85 @@
     });
   }
 
+  const saveProgress = () => {
+    try {
+      window.localStorage.setItem(SAVE_KEY, JSON.stringify({
+        currentChapter: state.currentChapter,
+        currentLevel: state.currentLevel,
+        selectedLevel: state.selectedLevel,
+        coins: state.coins,
+        lives: state.lives,
+        nextLifeAt: state.nextLifeAt,
+        music: state.music,
+        sound: state.sound,
+        starsByLevel: state.starsByLevel,
+        expandedChapters: Array.from(state.expandedChapters)
+      }));
+    } catch (_error) {
+      // Some embedded browsers disable storage; the game still works for the session.
+    }
+  };
+
+  const loadProgress = () => {
+    try {
+      const raw = window.localStorage.getItem(SAVE_KEY);
+      if (!raw) {
+        return;
+      }
+
+      const saved = JSON.parse(raw);
+      state.currentChapter = clampChapterId(Number(saved.currentChapter) || state.currentChapter);
+      state.currentLevel = Math.max(1, Math.min(101, Math.round(Number(saved.currentLevel) || state.currentLevel)));
+      state.selectedLevel = Math.max(1, Math.min(100, Math.round(Number(saved.selectedLevel) || state.selectedLevel)));
+      state.coins = Math.max(0, Math.round(Number(saved.coins) || 0));
+      state.lives = Math.max(0, Math.min(MAX_LIVES, Math.round(Number(saved.lives) || 0)));
+      state.nextLifeAt = Number.isFinite(Number(saved.nextLifeAt)) ? Number(saved.nextLifeAt) : null;
+      state.music = saved.music !== false;
+      state.sound = saved.sound !== false;
+      state.starsByLevel = saved.starsByLevel && typeof saved.starsByLevel === "object" ? saved.starsByLevel : {};
+      state.expandedChapters = new Set(
+        Array.isArray(saved.expandedChapters)
+          ? saved.expandedChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
+          : [getChapterForLevel(state.currentLevel)]
+      );
+      state.expandedChapters.add(getChapterForLevel(state.currentLevel));
+    } catch (_error) {
+      state.expandedChapters = new Set([getChapterForLevel(state.currentLevel)]);
+    }
+  };
+
+  const showConfirm = ({ title, message, acceptText = "Да", cancelText = "Остаться" }) => {
+    if (!confirmModal) {
+      return Promise.resolve(true);
+    }
+
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmAcceptButton.textContent = acceptText;
+    confirmCancelButton.textContent = cancelText;
+    confirmModal.classList.add("is-open");
+    confirmModal.setAttribute("aria-hidden", "false");
+    confirmAcceptButton.focus();
+
+    return new Promise((resolve) => {
+      confirmResolve = resolve;
+    });
+  };
+
+  const closeConfirm = (result) => {
+    if (!confirmModal || !confirmResolve) {
+      return;
+    }
+
+    confirmModal.classList.remove("is-open");
+    confirmModal.setAttribute("aria-hidden", "true");
+    const resolve = confirmResolve;
+    confirmResolve = null;
+    resolve(result);
+  };
+
+  const isCompletedLevel = (level) => level < state.currentLevel || (state.starsByLevel[level] || 0) > 0;
+
   const getEarnedStars = () => Object.values(state.starsByLevel).reduce((sum, stars) => sum + stars, 0);
 
   const syncResources = () => {
@@ -291,6 +378,7 @@
         ? levelState.lastCompletion.stars
         : (state.starsByLevel[state.selectedLevel] || 0);
     });
+    saveProgress();
   };
 
   const restoreLife = () => {
@@ -1037,19 +1125,51 @@
     const nextChapterId = clampChapterId(chapterId);
     state.currentChapter = nextChapterId;
     showScreen(getChapterScreenId(nextChapterId));
+    saveProgress();
   };
 
   const openProgressChapter = () => {
     openChapter(getChapterForLevel(state.currentLevel));
   };
 
-  const openLevel = (level) => {
+  const confirmLeaveLevel = async () => {
+    if (!levelScreen.classList.contains("is-active") || levelState.completed || !levelState.running) {
+      return true;
+    }
+
+    return showConfirm({
+      title: "Выйти из уровня?",
+      message: "Прогресс текущей попытки не сохранится. Остаться в игре?",
+      acceptText: "Выйти",
+      cancelText: "Остаться"
+    });
+  };
+
+  const openLevel = async (level, options = {}) => {
     if (level > state.currentLevel) {
       return;
     }
 
+    if (!options.skipReplayConfirm && isCompletedLevel(level)) {
+      const shouldReplay = await showConfirm({
+        title: "Пройти уровень заново?",
+        message: `Уровень ${level} уже пройден. Начать его еще раз?`,
+        acceptText: "Играть",
+        cancelText: "Отмена"
+      });
+
+      if (!shouldReplay) {
+        return;
+      }
+    }
+
     if (!spendLife()) {
-      showToast("Нужна жизнь для старта уровня");
+      await showConfirm({
+        title: "Нет жизней",
+        message: "Нужна жизнь для старта уровня. Подожди восстановления или получи жизнь за награду.",
+        acceptText: "Понятно",
+        cancelText: "Закрыть"
+      });
       return;
     }
 
@@ -1060,6 +1180,7 @@
     levelChapterLabel.textContent = `Глава ${chapter.id} · ${chapter.title}`;
     levelTitle.textContent = `Уровень ${level}`;
     showScreen("level-screen");
+    saveProgress();
     window.requestAnimationFrame(startJezzLevel);
   };
 
@@ -1116,7 +1237,7 @@
     }
 
     if (destination === "next" && state.currentLevel <= 100) {
-      openLevel(state.currentLevel);
+      openLevel(state.currentLevel, { skipReplayConfirm: true });
       return;
     }
 
@@ -1134,7 +1255,7 @@
 
   const replayCompletedLevel = () => {
     completeSelectedLevel("stay");
-    openLevel(state.selectedLevel);
+    openLevel(state.selectedLevel, { skipReplayConfirm: true });
   };
 
   const loseSelectedLevel = () => {
@@ -1148,7 +1269,7 @@
     settingsModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
   };
 
-  const handleAction = (event) => {
+  const handleAction = async (event) => {
     const button = event.target.closest("[data-action]");
     if (!button) {
       return;
@@ -1159,6 +1280,9 @@
     const chapterId = screen ? Number(screen.dataset.chapter) : state.currentChapter;
 
     if (action === "main-menu") {
+      if (!(await confirmLeaveLevel())) {
+        return;
+      }
       stopJezzLevel();
       showScreen("main-menu");
       playButton.disabled = false;
@@ -1202,6 +1326,9 @@
     }
 
     if (action === "return-chapter") {
+      if (!(await confirmLeaveLevel())) {
+        return;
+      }
       openChapter(state.currentChapter);
       return;
     }
@@ -1239,13 +1366,22 @@
   completeNextButton?.addEventListener("click", () => completeSelectedLevel("next"));
   musicToggle.addEventListener("change", () => {
     state.music = musicToggle.checked;
+    saveProgress();
   });
   soundToggle.addEventListener("change", () => {
     state.sound = soundToggle.checked;
+    saveProgress();
   });
   settingsModal.addEventListener("click", (event) => {
     if (event.target === settingsModal) {
       toggleSettings(false);
+    }
+  });
+  confirmCancelButton?.addEventListener("click", () => closeConfirm(false));
+  confirmAcceptButton?.addEventListener("click", () => closeConfirm(true));
+  confirmModal?.addEventListener("click", (event) => {
+    if (event.target === confirmModal) {
+      closeConfirm(false);
     }
   });
   window.setInterval(updateLifeRestore, 1000);
@@ -1280,6 +1416,10 @@
     }
   });
 
+  loadProgress();
+  musicToggle.checked = state.music;
+  soundToggle.checked = state.sound;
+  updateLifeRestore();
   syncViewportHeight();
   renderChapterScreens();
 
