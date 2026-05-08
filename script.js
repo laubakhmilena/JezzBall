@@ -39,6 +39,71 @@
   };
   const LINE_GROW_SPEED = 420;
   const BALL_RADIUS = 11;
+  const OBSTACLE_THICKNESS = 12;
+  const LEVEL_SPEEDS = {
+    slow: 150,
+    medium: 190,
+    fast: 235
+  };
+  const LEVEL_CONFIGS = {
+    1: { target: 75, balls: 1, speed: "medium", obstacles: [] },
+    2: {
+      target: 75,
+      balls: 1,
+      speed: "slow",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, moving: false }]
+    },
+    3: { target: 80, balls: 2, speed: "slow", obstacles: [] },
+    4: {
+      target: 80,
+      balls: 2,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.2, y2: 0.8, moving: true, axis: "y", amplitude: 0.16, phase: 0 }]
+    },
+    5: { target: 85, balls: 2, speed: "medium", obstacles: [] },
+    6: {
+      target: 85,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.28, x1: 0.18, x2: 0.82, moving: false }]
+    },
+    7: {
+      target: 90,
+      balls: 3,
+      speed: "fast",
+      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, moving: true, axis: "x", amplitude: 0.14, phase: 0.35 }]
+    },
+    8: {
+      target: 90,
+      balls: 3,
+      speed: "fast",
+      obstacles: [
+        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, moving: false },
+        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, moving: false }
+      ]
+    },
+    9: {
+      target: 95,
+      balls: 4,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, moving: true, axis: "y", amplitude: 0.18, phase: 0.55 }]
+    },
+    10: {
+      target: 95,
+      balls: 4,
+      speed: "fast",
+      obstacles: [
+        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, moving: true, axis: "y", amplitude: 0.17, phase: 0.1 },
+        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, moving: true, axis: "x", amplitude: 0.17, phase: 0.6 }
+      ]
+    }
+  };
+  const BALL_STARTS = [
+    { x: 0.64, y: 0.42, vx: 0.78, vy: 0.62 },
+    { x: 0.32, y: 0.66, vx: -0.7, vy: 0.72 },
+    { x: 0.73, y: 0.72, vx: 0.64, vy: -0.76 },
+    { x: 0.27, y: 0.32, vx: -0.82, vy: -0.58 }
+  ];
 
   const chapters = [
     { id: 1, title: "Солнечная поляна", slug: "sunny-glade", icon: "☀" },
@@ -292,18 +357,23 @@
   const levelState = {
     running: false,
     completed: false,
+    config: LEVEL_CONFIGS[1],
     target: LEVEL_ONE_TARGET,
     capturedArea: 0,
     totalArea: 1,
     penalties: 0,
     rect: null,
     activeRect: null,
+    activeRects: [],
     capturedRects: [],
     walls: [],
+    obstacles: [],
+    elapsed: 0,
     activeLine: null,
     draftPointer: null,
     aimPointer: null,
     ball: null,
+    balls: [],
     animationId: null,
     lastFrameAt: 0,
     toastTimer: null,
@@ -464,7 +534,7 @@
       return 2;
     }
 
-    return percent >= LEVEL_ONE_TARGET ? 1 : 0;
+    return percent >= levelState.target ? 1 : 0;
   };
 
   const createIconButton = (action, label, path, extraClass = "") => `
@@ -950,9 +1020,55 @@
 
   const rectArea = (rect) => rect.w * rect.h;
 
-  const clampBallToActiveRect = () => {
-    const ball = levelState.ball;
-    const rect = levelState.activeRect;
+  const getLevelConfig = (level) => LEVEL_CONFIGS[level] || LEVEL_CONFIGS[1];
+
+  const getSpeedValue = (speed) => LEVEL_SPEEDS[speed] || LEVEL_SPEEDS.medium;
+
+  const createObstacle = (definition, rect, index = 0) => {
+    const obstacle = {
+      ...definition,
+      baseX: definition.x,
+      baseY: definition.y,
+      x1Ratio: definition.x1,
+      x2Ratio: definition.x2,
+      y1Ratio: definition.y1,
+      y2Ratio: definition.y2,
+      phase: definition.phase || index * 0.27,
+      thickness: OBSTACLE_THICKNESS
+    };
+    return updateObstacleGeometry(obstacle, rect, 0);
+  };
+
+  function updateObstacleGeometry(obstacle, rect, elapsed) {
+    const wave = obstacle.moving ? Math.sin((elapsed * 0.9) + obstacle.phase * Math.PI * 2) * (obstacle.amplitude || 0.12) : 0;
+    if (obstacle.orientation === "vertical") {
+      const offsetY = obstacle.axis === "y" ? wave : 0;
+      const offsetX = obstacle.axis === "x" ? wave : 0;
+      obstacle.x = rect.x + rect.w * Math.min(0.92, Math.max(0.08, (obstacle.baseX ?? 0.5) + offsetX));
+      obstacle.y1 = rect.y + rect.h * Math.min(0.92, Math.max(0.08, (obstacle.y1Ratio ?? obstacle.y1) + offsetY));
+      obstacle.y2 = rect.y + rect.h * Math.min(0.92, Math.max(0.08, (obstacle.y2Ratio ?? obstacle.y2) + offsetY));
+      if (obstacle.y1 > obstacle.y2) [obstacle.y1, obstacle.y2] = [obstacle.y2, obstacle.y1];
+    } else {
+      const offsetX = obstacle.axis === "x" ? wave : 0;
+      const offsetY = obstacle.axis === "y" ? wave : 0;
+      obstacle.y = rect.y + rect.h * Math.min(0.92, Math.max(0.08, (obstacle.baseY ?? obstacle.y ?? 0.5) + offsetY));
+      obstacle.x1 = rect.x + rect.w * Math.min(0.92, Math.max(0.08, (obstacle.x1Ratio ?? obstacle.x1) + offsetX));
+      obstacle.x2 = rect.x + rect.w * Math.min(0.92, Math.max(0.08, (obstacle.x2Ratio ?? obstacle.x2) + offsetX));
+      if (obstacle.x1 > obstacle.x2) [obstacle.x1, obstacle.x2] = [obstacle.x2, obstacle.x1];
+    }
+    return obstacle;
+  }
+
+  const ballRect = (ball) => levelState.activeRects.find((rect) => pointInRect(ball, rect)) || levelState.activeRect || levelState.rect;
+
+  const getPointerActiveRect = (point) => levelState.activeRects.find((rect) => pointInRect(point, rect)) || null;
+
+  const forEachBall = (callback) => {
+    const balls = levelState.balls && levelState.balls.length ? levelState.balls : (levelState.ball ? [levelState.ball] : []);
+    balls.forEach(callback);
+  };
+
+  const clampBallToRect = (ball, rect) => {
     if (!ball || !rect) {
       return;
     }
@@ -961,16 +1077,57 @@
     ball.y = Math.min(rect.y + rect.h - ball.r, Math.max(rect.y + ball.r, ball.y));
   };
 
+  const clampBallsToActiveRects = () => {
+    forEachBall((ball) => clampBallToRect(ball, ballRect(ball)));
+  };
+
   const buildCompletedWall = (line, rect) => (
     line.orientation === "vertical"
       ? { orientation: "vertical", x: line.x, y1: rect.y, y2: rect.y + rect.h }
       : { orientation: "horizontal", y: line.y, x1: rect.x, x2: rect.x + rect.w }
   );
 
+  const lineHitsObstacle = (line, obstacle) => {
+    const pad = (obstacle.thickness || OBSTACLE_THICKNESS) * 0.5;
+    if (line.orientation === "vertical") {
+      const minY = Math.min(line.y, line.endA, line.endB);
+      const maxY = Math.max(line.y, line.endA, line.endB);
+      if (obstacle.orientation === "vertical") {
+        return Math.abs(line.x - obstacle.x) <= pad
+          && maxY >= obstacle.y1 - pad
+          && minY <= obstacle.y2 + pad;
+      }
+
+      return line.x >= obstacle.x1 - pad
+        && line.x <= obstacle.x2 + pad
+        && obstacle.y >= minY - pad
+        && obstacle.y <= maxY + pad;
+    }
+
+    const minX = Math.min(line.x, line.endA, line.endB);
+    const maxX = Math.max(line.x, line.endA, line.endB);
+    if (obstacle.orientation === "horizontal") {
+      return Math.abs(line.y - obstacle.y) <= pad
+        && maxX >= obstacle.x1 - pad
+        && minX <= obstacle.x2 + pad;
+    }
+
+    return line.y >= obstacle.y1 - pad
+      && line.y <= obstacle.y2 + pad
+      && obstacle.x >= minX - pad
+      && obstacle.x <= maxX + pad;
+  };
+
+  const pointHitsObstacle = (point) => levelState.obstacles.some((obstacle) => {
+    const pad = (obstacle.thickness || OBSTACLE_THICKNESS) * 0.65;
+    return obstacle.orientation === "vertical"
+      ? Math.abs(point.x - obstacle.x) <= pad && point.y >= obstacle.y1 - pad && point.y <= obstacle.y2 + pad
+      : Math.abs(point.y - obstacle.y) <= pad && point.x >= obstacle.x1 - pad && point.x <= obstacle.x2 + pad;
+  });
+
   const splitActiveRect = (line) => {
-    const rect = levelState.activeRect;
-    const ball = levelState.ball;
-    if (!rect || !ball) {
+    const rect = line.rect || levelState.activeRect;
+    if (!rect) {
       return;
     }
 
@@ -990,13 +1147,27 @@
       return;
     }
 
-    const ballRect = pointInRect(ball, first) ? first : second;
-    const capturedRect = ballRect === first ? second : first;
-    levelState.activeRect = ballRect;
-    levelState.capturedRects.push(capturedRect);
-    levelState.capturedArea += rectArea(capturedRect);
+    const firstBalls = levelState.balls.filter((ball) => pointInRect(ball, first));
+    const secondBalls = levelState.balls.filter((ball) => pointInRect(ball, second));
+    const rectIndex = levelState.activeRects.indexOf(rect);
+    if (rectIndex >= 0) {
+      levelState.activeRects.splice(rectIndex, 1);
+    }
+    if (firstBalls.length) {
+      levelState.activeRects.push(first);
+    } else {
+      levelState.capturedRects.push(first);
+      levelState.capturedArea += rectArea(first);
+    }
+    if (secondBalls.length) {
+      levelState.activeRects.push(second);
+    } else {
+      levelState.capturedRects.push(second);
+      levelState.capturedArea += rectArea(second);
+    }
+    levelState.activeRect = levelState.activeRects[0] || null;
     levelState.walls.push(buildCompletedWall(line, rect));
-    clampBallToActiveRect();
+    clampBallsToActiveRects();
     syncLevelHud();
 
     if (getCaptureRatio() * 100 >= levelState.target) {
@@ -1014,25 +1185,24 @@
   };
 
   const lineHitBall = (line) => {
-    const ball = levelState.ball;
-    if (!line || !ball) {
+    if (!line) {
       return false;
     }
 
     if (line.orientation === "vertical") {
       const minY = Math.min(line.y, line.endA, line.endB);
       const maxY = Math.max(line.y, line.endA, line.endB);
-      return Math.abs(ball.x - line.x) <= ball.r && ball.y >= minY - ball.r && ball.y <= maxY + ball.r;
+      return levelState.balls.some((ball) => Math.abs(ball.x - line.x) <= ball.r && ball.y >= minY - ball.r && ball.y <= maxY + ball.r);
     }
 
     const minX = Math.min(line.x, line.endA, line.endB);
     const maxX = Math.max(line.x, line.endA, line.endB);
-    return Math.abs(ball.y - line.y) <= ball.r && ball.x >= minX - ball.r && ball.x <= maxX + ball.r;
+    return levelState.balls.some((ball) => Math.abs(ball.y - line.y) <= ball.r && ball.x >= minX - ball.r && ball.x <= maxX + ball.r);
   };
 
   const updateActiveLine = (dt) => {
     const line = levelState.activeLine;
-    const rect = levelState.activeRect;
+    const rect = line?.rect || levelState.activeRect;
     if (!line || !rect) {
       return;
     }
@@ -1048,7 +1218,7 @@
       line.done = line.endA <= rect.x && line.endB >= rect.x + rect.w;
     }
 
-    if (lineHitBall(line)) {
+    if (lineHitBall(line) || levelState.obstacles.some((obstacle) => lineHitsObstacle(line, obstacle))) {
       cancelActiveLine(true);
       return;
     }
@@ -1059,24 +1229,50 @@
     }
   };
 
-  const updateBall = (dt) => {
-    const ball = levelState.ball;
-    const rect = levelState.activeRect;
-    if (!ball || !rect || levelState.completed) {
+  const bounceBallOffObstacle = (ball, obstacle) => {
+    const pad = (obstacle.thickness || OBSTACLE_THICKNESS) * 0.5;
+    if (obstacle.orientation === "vertical") {
+      const inY = ball.y >= obstacle.y1 - ball.r && ball.y <= obstacle.y2 + ball.r;
+      if (inY && Math.abs(ball.x - obstacle.x) <= ball.r + pad) {
+        ball.vx *= -1;
+        ball.x = obstacle.x + (ball.x < obstacle.x ? -1 : 1) * (ball.r + pad);
+      }
       return;
     }
 
-    ball.x += ball.vx * dt;
-    ball.y += ball.vy * dt;
-
-    if (ball.x - ball.r <= rect.x || ball.x + ball.r >= rect.x + rect.w) {
-      ball.vx *= -1;
-      ball.x = Math.min(rect.x + rect.w - ball.r, Math.max(rect.x + ball.r, ball.x));
-    }
-    if (ball.y - ball.r <= rect.y || ball.y + ball.r >= rect.y + rect.h) {
+    const inX = ball.x >= obstacle.x1 - ball.r && ball.x <= obstacle.x2 + ball.r;
+    if (inX && Math.abs(ball.y - obstacle.y) <= ball.r + pad) {
       ball.vy *= -1;
-      ball.y = Math.min(rect.y + rect.h - ball.r, Math.max(rect.y + ball.r, ball.y));
+      ball.y = obstacle.y + (ball.y < obstacle.y ? -1 : 1) * (ball.r + pad);
     }
+  };
+
+  const updateBalls = (dt) => {
+    if (levelState.completed) {
+      return;
+    }
+
+    levelState.balls.forEach((ball) => {
+      const rect = ballRect(ball);
+      if (!rect) {
+        return;
+      }
+
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+
+      if (ball.x - ball.r <= rect.x || ball.x + ball.r >= rect.x + rect.w) {
+        ball.vx *= -1;
+        ball.x = Math.min(rect.x + rect.w - ball.r, Math.max(rect.x + ball.r, ball.x));
+      }
+      if (ball.y - ball.r <= rect.y || ball.y + ball.r >= rect.y + rect.h) {
+        ball.vy *= -1;
+        ball.y = Math.min(rect.y + rect.h - ball.r, Math.max(rect.y + ball.r, ball.y));
+      }
+
+      levelState.obstacles.forEach((obstacle) => bounceBallOffObstacle(ball, obstacle));
+      clampBallToRect(ball, rect);
+    });
   };
 
   const drawJezzLevel = () => {
@@ -1139,6 +1335,25 @@
       ctx.stroke();
     });
 
+    levelState.obstacles.forEach((obstacle) => {
+      ctx.save();
+      ctx.strokeStyle = obstacle.moving ? "rgba(103, 246, 255, 0.96)" : "rgba(255, 160, 92, 0.96)";
+      ctx.lineWidth = obstacle.thickness || OBSTACLE_THICKNESS;
+      ctx.lineCap = "round";
+      ctx.shadowColor = obstacle.moving ? "rgba(103, 246, 255, 0.55)" : "rgba(255, 160, 92, 0.5)";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      if (obstacle.orientation === "vertical") {
+        ctx.moveTo(obstacle.x, obstacle.y1);
+        ctx.lineTo(obstacle.x, obstacle.y2);
+      } else {
+        ctx.moveTo(obstacle.x1, obstacle.y);
+        ctx.lineTo(obstacle.x2, obstacle.y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    });
+
     const line = levelState.activeLine;
     if (line) {
       ctx.strokeStyle = "rgba(255, 72, 184, 0.96)";
@@ -1155,8 +1370,9 @@
     }
 
     const aim = levelState.draftPointer || levelState.aimPointer;
-    if (aim && !line && levelState.activeRect) {
-      const orientation = aim.orientation || getFallbackLineOrientation(aim, levelState.activeRect);
+    if (aim && !line && (aim.rect || levelState.activeRect)) {
+      const aimRect = aim.rect || levelState.activeRect;
+      const orientation = aim.orientation || getFallbackLineOrientation(aim, aimRect);
       ctx.save();
       ctx.strokeStyle = "rgba(255, 246, 145, 0.94)";
       ctx.lineWidth = levelState.draftPointer ? 4 : 3;
@@ -1166,11 +1382,11 @@
       ctx.shadowBlur = 14;
       ctx.beginPath();
       if (orientation === "vertical") {
-        ctx.moveTo(aim.x, levelState.activeRect.y + 8);
-        ctx.lineTo(aim.x, levelState.activeRect.y + levelState.activeRect.h - 8);
+        ctx.moveTo(aim.x, aimRect.y + 8);
+        ctx.lineTo(aim.x, aimRect.y + aimRect.h - 8);
       } else {
-        ctx.moveTo(levelState.activeRect.x + 8, aim.y);
-        ctx.lineTo(levelState.activeRect.x + levelState.activeRect.w - 8, aim.y);
+        ctx.moveTo(aimRect.x + 8, aim.y);
+        ctx.lineTo(aimRect.x + aimRect.w - 8, aim.y);
       }
       ctx.stroke();
       ctx.setLineDash([]);
@@ -1182,8 +1398,7 @@
       ctx.restore();
     }
 
-    const ball = levelState.ball;
-    if (ball) {
+    levelState.balls.forEach((ball) => {
       const gradient = ctx.createRadialGradient(ball.x - 4, ball.y - 5, 2, ball.x, ball.y, ball.r + 4);
       gradient.addColorStop(0, "#ffffff");
       gradient.addColorStop(0.28, "#9ff7ff");
@@ -1195,7 +1410,7 @@
       ctx.strokeStyle = "rgba(255,255,255,0.85)";
       ctx.lineWidth = 2;
       ctx.stroke();
-    }
+    });
     ctx.restore();
   };
 
@@ -1261,7 +1476,9 @@
 
     const dt = Math.min(0.033, Math.max(0, (time - levelState.lastFrameAt) / 1000 || 0));
     levelState.lastFrameAt = time;
-    updateBall(dt);
+    levelState.elapsed += dt;
+    levelState.obstacles.forEach((obstacle) => updateObstacleGeometry(obstacle, levelState.rect, levelState.elapsed));
+    updateBalls(dt);
     updateActiveLine(dt);
     drawJezzLevel();
     levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
@@ -1323,18 +1540,24 @@
     levelState.activeRect = levelState.activeRect
       ? mapRectBetweenRects(levelState.activeRect, oldRect, nextRect)
       : { ...nextRect };
+    levelState.activeRects = levelState.activeRects.length
+      ? levelState.activeRects.map((rect) => mapRectBetweenRects(rect, oldRect, nextRect))
+      : [levelState.activeRect];
     levelState.capturedRects = levelState.capturedRects.map((rect) => mapRectBetweenRects(rect, oldRect, nextRect));
     levelState.walls = levelState.walls.map((wall) => mapWallBetweenRects(wall, oldRect, nextRect));
+    levelState.obstacles = (levelState.config.obstacles || []).map((obstacle, index) => createObstacle(obstacle, nextRect, index));
+    levelState.obstacles.forEach((obstacle) => updateObstacleGeometry(obstacle, nextRect, levelState.elapsed));
     levelState.capturedArea = levelState.capturedRects.reduce((sum, rect) => sum + rectArea(rect), 0);
     levelState.totalArea = rectArea(nextRect);
     levelState.activeLine = null;
     levelState.draftPointer = null;
 
-    if (levelState.ball) {
-      const nextBall = mapPointBetweenRects(levelState.ball, oldRect, nextRect);
-      levelState.ball.x = nextBall.x;
-      levelState.ball.y = nextBall.y;
-    }
+    levelState.balls.forEach((ball) => {
+      const nextBall = mapPointBetweenRects(ball, oldRect, nextRect);
+      ball.x = nextBall.x;
+      ball.y = nextBall.y;
+    });
+    levelState.ball = levelState.balls[0] || null;
 
     syncLevelHud();
     drawJezzLevel();
@@ -1350,28 +1573,34 @@
       w: size.width - margin * 2,
       h: size.height - margin * 2
     };
-    const speed = 190;
+    const config = getLevelConfig(state.selectedLevel);
+    const speed = getSpeedValue(config.speed);
     levelState.running = true;
     levelState.completed = false;
-    levelState.target = LEVEL_ONE_TARGET;
+    levelState.config = config;
+    levelState.target = config.target;
     levelState.capturedArea = 0;
     levelState.totalArea = rectArea(rect);
     levelState.penalties = 0;
     levelState.rect = rect;
     levelState.activeRect = { ...rect };
+    levelState.activeRects = [{ ...rect }];
     levelState.capturedRects = [];
     levelState.walls = [];
+    levelState.obstacles = (config.obstacles || []).map((obstacle, index) => createObstacle(obstacle, rect, index));
+    levelState.elapsed = 0;
     levelState.activeLine = null;
     levelState.draftPointer = null;
     levelState.aimPointer = null;
     levelState.lastCompletion = null;
-    levelState.ball = {
-      x: rect.x + rect.w * 0.64,
-      y: rect.y + rect.h * 0.42,
-      vx: speed * 0.78,
-      vy: speed * 0.62,
+    levelState.balls = BALL_STARTS.slice(0, config.balls).map((start) => ({
+      x: rect.x + rect.w * start.x,
+      y: rect.y + rect.h * start.y,
+      vx: speed * start.vx,
+      vy: speed * start.vy,
       r: BALL_RADIUS
-    };
+    }));
+    levelState.ball = levelState.balls[0] || null;
     levelCompletePanel?.classList.remove("is-visible");
     levelCompletePanel?.setAttribute("aria-hidden", "true");
     syncLevelHud();
@@ -1386,8 +1615,8 @@
     }
 
     const point = getCanvasPoint(event);
-    const rect = levelState.activeRect;
-    if (!pointInRect(point, rect)) {
+    const rect = getPointerActiveRect(point);
+    if (!rect || pointHitsObstacle(point)) {
       return;
     }
 
@@ -1400,13 +1629,14 @@
       levelState.draftPointer = {
         x: point.x,
         y: point.y,
-        orientation
+        orientation,
+        rect
       };
       drawJezzLevel();
       return;
     }
 
-    startActiveLine(point, orientation);
+    startActiveLine(point, orientation, rect);
   };
 
   const isTouchLikePointer = (event) => {
@@ -1428,10 +1658,14 @@
     return horizontalEdge <= verticalEdge ? "horizontal" : "vertical";
   };
 
-  const startActiveLine = (point, orientation) => {
+  const startActiveLine = (point, orientation, rect = getPointerActiveRect(point)) => {
+    if (!rect) {
+      return;
+    }
+    levelState.activeRect = rect;
     levelState.activeLine = orientation === "vertical"
-      ? { orientation, x: point.x, y: point.y, endA: point.y, endB: point.y, done: false }
-      : { orientation, x: point.x, y: point.y, endA: point.x, endB: point.x, done: false };
+      ? { orientation, x: point.x, y: point.y, endA: point.y, endB: point.y, done: false, rect }
+      : { orientation, x: point.x, y: point.y, endA: point.x, endB: point.x, done: false, rect };
     levelState.draftPointer = null;
     levelState.aimPointer = null;
   };
@@ -1447,7 +1681,8 @@
     }
 
     const point = getCanvasPoint(event);
-    if (!pointInRect(point, levelState.activeRect)) {
+    const rect = getPointerActiveRect(point);
+    if (!rect || pointHitsObstacle(point)) {
       if (!levelState.draftPointer) {
         levelState.aimPointer = null;
         drawJezzLevel();
@@ -1462,13 +1697,14 @@
     const movedEnough = Math.hypot(dx, dy) >= 3;
     const orientation = movedEnough
       ? (Math.abs(dx) >= Math.abs(dy) ? "horizontal" : "vertical")
-      : getFallbackLineOrientation(point, levelState.activeRect);
+      : getFallbackLineOrientation(point, rect);
 
     if (levelState.draftPointer) {
       levelState.draftPointer = {
         x: point.x,
         y: point.y,
-        orientation
+        orientation,
+        rect
       };
       drawJezzLevel();
       return;
@@ -1477,7 +1713,8 @@
     levelState.aimPointer = {
       x: point.x,
       y: point.y,
-      orientation
+      orientation,
+      rect
     };
     drawJezzLevel();
   };
@@ -1485,17 +1722,19 @@
   const finishLinePointer = (event) => {
     if (levelState.draftPointer && levelState.running && !levelState.completed && !levelState.activeLine && levelState.activeRect) {
       const point = getCanvasPoint(event);
-      const draft = pointInRect(point, levelState.activeRect)
+      const rect = getPointerActiveRect(point) || levelState.draftPointer.rect;
+      const draft = rect && pointInRect(point, rect) && !pointHitsObstacle(point)
         ? {
           x: point.x,
           y: point.y,
-          orientation: levelState.draftPointer.orientation
+          orientation: levelState.draftPointer.orientation,
+          rect
         }
         : levelState.draftPointer;
       levelState.draftPointer = null;
       levelState.aimPointer = null;
       event.preventDefault();
-      startActiveLine(draft, draft.orientation);
+      startActiveLine(draft, draft.orientation, draft.rect);
       return;
     }
 
