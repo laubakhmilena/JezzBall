@@ -30,7 +30,7 @@
   const soundToggle = document.getElementById("soundToggle");
   const SAVE_KEY = "jezzball-progress-v1";
   const MAX_LIVES = 5;
-  const LIFE_RESTORE_MS = 10 * 60 * 1000;
+  const LIFE_RESTORE_MS = 3 * 60 * 1000;
   const LEVEL_ONE_TARGET = 75;
   const STAR_REWARDS = {
     1: { coins: 80, restoreLife: false },
@@ -477,7 +477,7 @@
     <header class="top-ui" aria-label="${t("topPanel")}">
       ${createIconButton("main-menu", t("toMenu"), "M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z", "chapter-top-back")}
       <div class="resource-strip" aria-label="${t("resources")}">
-        <div class="resource-pill resource-counter lives-pill" aria-label="${t("lives")}"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
+        <div class="resource-pill resource-counter lives-pill" aria-label="${t("lives")}"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
         <div class="resource-pill resource-counter coins-pill" aria-label="${t("coins")}"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
         <div class="resource-pill resource-counter achievement-button" aria-label="${t("stars")}"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></div>
       </div>
@@ -703,6 +703,23 @@
 
   const getEarnedStars = () => Object.values(state.starsByLevel).reduce((sum, stars) => sum + stars, 0);
 
+  const formatLifeRestoreTime = (ms) => {
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const syncLifeRestoreTimer = () => {
+    const showTimer = Boolean(state.nextLifeAt && state.lives < MAX_LIVES);
+    const text = showTimer ? formatLifeRestoreTime(state.nextLifeAt - Date.now()) : "";
+
+    document.querySelectorAll("[data-life-timer]").forEach((node) => {
+      node.hidden = !showTimer;
+      node.textContent = text;
+    });
+  };
+
   const syncResources = () => {
     state.achievements = getEarnedStars();
     state.lives = Math.min(MAX_LIVES, Math.max(0, state.lives));
@@ -722,6 +739,7 @@
         ? levelState.lastCompletion.stars
         : (state.starsByLevel[state.selectedLevel] || 0);
     });
+    syncLifeRestoreTimer();
     saveProgress();
   };
 
@@ -733,19 +751,33 @@
     }
 
     state.lives += 1;
-    state.nextLifeAt = state.lives < MAX_LIVES ? Date.now() + LIFE_RESTORE_MS : null;
+    if (state.lives >= MAX_LIVES) {
+      state.nextLifeAt = null;
+    } else if (!state.nextLifeAt) {
+      state.nextLifeAt = Date.now() + LIFE_RESTORE_MS;
+    }
     syncResources();
   };
 
   const updateLifeRestore = () => {
     if (!state.nextLifeAt || state.lives >= MAX_LIVES) {
       state.nextLifeAt = null;
+      syncLifeRestoreTimer();
       return;
     }
 
-    if (Date.now() >= state.nextLifeAt) {
-      restoreLife();
+    const now = Date.now();
+    if (now >= state.nextLifeAt) {
+      const restoredLives = 1 + Math.floor((now - state.nextLifeAt) / LIFE_RESTORE_MS);
+      state.lives = Math.min(MAX_LIVES, state.lives + restoredLives);
+      state.nextLifeAt = state.lives < MAX_LIVES
+        ? state.nextLifeAt + restoredLives * LIFE_RESTORE_MS
+        : null;
+      syncResources();
+      return;
     }
+
+    syncLifeRestoreTimer();
   };
 
   const spendLife = () => {
@@ -1633,9 +1665,13 @@
       if (!(await confirmLeaveLevel())) {
         return;
       }
+      if (levelState.completed) {
+        completeSelectedLevel("stay");
+      }
       stopJezzLevel();
       showScreen("main-menu");
       playButton.disabled = false;
+      saveProgress();
       return;
     }
 
@@ -1678,6 +1714,9 @@
     if (action === "return-chapter") {
       if (!(await confirmLeaveLevel())) {
         return;
+      }
+      if (levelState.completed) {
+        completeSelectedLevel("stay");
       }
       openChapter(state.currentChapter);
       return;

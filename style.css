@@ -361,6 +361,28 @@ button {
   pointer-events: none;
 }
 
+.lives-pill {
+  min-width: clamp(108px, 15.5vmin, 150px);
+}
+
+.life-restore-timer {
+  display: inline-grid;
+  place-items: center;
+  min-width: 3.1em;
+  padding-left: 0.62em;
+  border-left: 1px solid rgba(255, 255, 255, 0.34);
+  color: rgba(255, 234, 248, 0.94);
+  font-size: 0.74em;
+  line-height: 1;
+  font-weight: 900;
+  text-shadow: 0 1px 0 rgba(55, 24, 86, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.life-restore-timer[hidden] {
+  display: none;
+}
+
 .resource-counter [data-resource] {
   position: relative;
   display: inline-grid;
