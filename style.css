@@ -1036,37 +1036,79 @@ button {
 .confirm-panel {
   width: min(100%, 420px);
   display: grid;
-  gap: 16px;
-  padding: clamp(20px, 4.5vmin, 30px);
-  border: 1.5px solid rgba(255, 159, 232, 0.44);
-  border-radius: 8px;
+  gap: 14px;
+  padding: clamp(26px, 5.2vmin, 38px) clamp(22px, 5vmin, 34px);
+  border: 1px solid rgba(190, 120, 255, 0.35);
+  border-radius: 12px;
   background:
-    radial-gradient(circle at 50% 0%, rgba(255, 80, 220, 0.22), transparent 64%),
-    rgba(20, 8, 52, 0.94);
+    radial-gradient(circle at 72% 72%, rgba(91, 222, 255, 0.16), transparent 36%),
+    radial-gradient(circle at 50% 67%, rgba(255, 73, 210, 0.16), transparent 42%),
+    radial-gradient(circle at 50% 18%, rgba(83, 48, 148, 0.5), transparent 58%),
+    linear-gradient(180deg, rgba(27, 10, 70, 0.96), rgba(12, 5, 38, 0.98));
   text-align: center;
   box-shadow:
-    0 26px 72px rgba(5, 2, 24, 0.52),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    0 28px 78px rgba(5, 2, 24, 0.62),
+    0 0 36px rgba(140, 75, 255, 0.18),
+    inset 0 0 42px rgba(232, 126, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .confirm-panel h2 {
   margin: 0;
   font-size: clamp(1.24rem, 4vmin, 1.72rem);
+  font-weight: 950;
   line-height: 1.08;
 }
 
 .confirm-panel p {
   margin: 0;
-  color: rgba(255, 248, 255, 0.86);
-  font-size: clamp(0.98rem, 2.8vmin, 1.08rem);
-  font-weight: 800;
-  line-height: 1.35;
+  color: rgba(255, 248, 255, 0.78);
+  font-size: clamp(0.88rem, 2.45vmin, 0.98rem);
+  font-weight: 650;
+  line-height: 1.4;
 }
 
 .confirm-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
+  margin-top: clamp(8px, 2vmin, 14px);
+}
+
+.confirm-actions .compact-play {
+  width: 100%;
+  min-height: clamp(54px, 8vmin, 64px);
+  padding: 0 clamp(16px, 4vmin, 28px);
+  font-size: clamp(1rem, 2.55vmin, 1.17rem);
+  line-height: 1;
+}
+
+.confirm-panel p:empty {
+  display: none;
+}
+
+#confirmAcceptButton {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background:
+    linear-gradient(110deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 34%),
+    linear-gradient(135deg, #e860e6, #6d67ff 58%, #37cfff);
+  box-shadow:
+    0 0 22px rgba(255, 87, 218, 0.38),
+    0 0 24px rgba(48, 207, 255, 0.22),
+    0 15px 30px rgba(5, 2, 24, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+#confirmCancelButton {
+  border: 1px solid rgba(214, 171, 255, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(55, 28, 105, 0.72);
+  color: rgba(255, 248, 255, 0.82);
+  font-weight: 750;
+  box-shadow:
+    0 12px 24px rgba(5, 2, 24, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .reward-card {

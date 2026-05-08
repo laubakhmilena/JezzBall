@@ -53,6 +53,229 @@
     { id: 10, title: "Врата света", slug: "gates-of-light", icon: "◈" }
   ];
 
+  const SUPPORTED_LANGUAGES = ["ru", "en", "it"];
+  const FALLBACK_LANGUAGE = "en";
+  const yandexState = {
+    sdk: null,
+    lang: "ru",
+    readySent: false
+  };
+
+  const messages = {
+    ru: {
+      pageTitle: "JezzBall - карта глав",
+      gameRoot: "Экран игры JezzBall",
+      subtitleStart: "Проведи линию. ",
+      subtitleAccent: "Захвати пространство.",
+      mainMenu: "Главное меню",
+      play: "Играть",
+      levelScreen: "Экран уровня",
+      topPanel: "Верхняя панель",
+      backToChapter: "Назад к главе",
+      resources: "Ресурсы",
+      coins: "Монеты",
+      lives: "Жизни",
+      levelStars: "Звезды за уровень",
+      totalStars: "Всего звезд",
+      settings: "Настройки",
+      levelGoal: "Цель уровня",
+      chapter: "Глава",
+      level: "Уровень",
+      target: "Цель",
+      captured: "Захвачено",
+      penalties: "Штрафы",
+      playfield: "Игровое поле JezzBall",
+      toChapters: "К главам",
+      levelComplete: "Уровень пройден!",
+      earnedStars: "Полученные звезды",
+      capturedField: "Ты захватил {percent}% поля!",
+      rewards: "Награды",
+      replay: "Играть еще раз",
+      nextLevel: "Следующий уровень",
+      levelHintPanel: "Подсказка уровня",
+      levelHint: "Рисуй линии и замыкай области, чтобы захватить пространство.",
+      toGoal: "до цели",
+      final: "Финал",
+      finalUnlocked: "Финал открыт",
+      finalTitle: "Врата света пройдены",
+      toMenu: "В меню",
+      closeSettings: "Закрыть настройки",
+      music: "Музыка",
+      sounds: "Звуки",
+      confirm: "Подтверждение",
+      continue: "Продолжить?",
+      stay: "Остаться",
+      yes: "Да",
+      shop: "Магазин",
+      achievements: "Достижения",
+      chapterSelect: "Выбор главы",
+      chapterSelectHint: "Проходите уровни и открывайте новые главы",
+      shopAndAchievements: "Магазин и достижения",
+      stars: "Звезды",
+      nextChapter: "Перейти в следующую главу",
+      toFinal: "Перейти в финал",
+      collapseChapter: "Свернуть главу",
+      expandChapter: "Раскрыть главу",
+      currentLevel: "Текущий уровень {level}",
+      completedLevel: "Пройденный уровень {level}, звезд: {stars}",
+      lockedLevel: "Уровень {level} заблокирован",
+      tooClose: "Слишком близко к краю",
+      penalty: "Штраф",
+      leaveTitle: "Выйти из уровня?",
+      leaveMessage: "Прогресс текущей попытки не сохранится. Остаться в игре?",
+      leaveAccept: "Выйти",
+      replayTitle: "Пройти уровень заново?",
+      replayMessage: "",
+      cancel: "Отмена",
+      noLivesTitle: "Нет жизней",
+      noLivesMessage: "Нужна жизнь для старта уровня. Подожди восстановления или получи жизнь за награду.",
+      ok: "Понятно"
+    },
+    en: {
+      pageTitle: "JezzBall - chapter map",
+      gameRoot: "JezzBall game screen",
+      subtitleStart: "Draw a line. ",
+      subtitleAccent: "Claim the space.",
+      mainMenu: "Main menu",
+      play: "Play",
+      levelScreen: "Level screen",
+      topPanel: "Top panel",
+      backToChapter: "Back to chapter",
+      resources: "Resources",
+      coins: "Coins",
+      lives: "Lives",
+      levelStars: "Level stars",
+      totalStars: "Total stars",
+      settings: "Settings",
+      levelGoal: "Level goal",
+      chapter: "Chapter",
+      level: "Level",
+      target: "Goal",
+      captured: "Captured",
+      penalties: "Penalties",
+      playfield: "JezzBall playfield",
+      toChapters: "To chapters",
+      levelComplete: "Level complete!",
+      earnedStars: "Earned stars",
+      capturedField: "You captured {percent}% of the field!",
+      rewards: "Rewards",
+      replay: "Play again",
+      nextLevel: "Next level",
+      levelHintPanel: "Level hint",
+      levelHint: "Draw lines and close areas to capture space.",
+      toGoal: "to goal",
+      final: "Final",
+      finalUnlocked: "Final unlocked",
+      finalTitle: "The Gates of Light are complete",
+      toMenu: "Menu",
+      closeSettings: "Close settings",
+      music: "Music",
+      sounds: "Sounds",
+      confirm: "Confirmation",
+      continue: "Continue?",
+      stay: "Stay",
+      yes: "Yes",
+      shop: "Shop",
+      achievements: "Achievements",
+      chapterSelect: "Chapter select",
+      chapterSelectHint: "Complete levels and unlock new chapters",
+      shopAndAchievements: "Shop and achievements",
+      stars: "Stars",
+      nextChapter: "Go to the next chapter",
+      toFinal: "Go to the final",
+      collapseChapter: "Collapse chapter",
+      expandChapter: "Expand chapter",
+      currentLevel: "Current level {level}",
+      completedLevel: "Completed level {level}, stars: {stars}",
+      lockedLevel: "Level {level} locked",
+      tooClose: "Too close to the edge",
+      penalty: "Penalty",
+      leaveTitle: "Leave the level?",
+      leaveMessage: "Progress in the current attempt will not be saved. Stay in the game?",
+      leaveAccept: "Leave",
+      replayTitle: "Replay this level?",
+      replayMessage: "Level {level} is already complete. Start it again?",
+      cancel: "Cancel",
+      noLivesTitle: "No lives",
+      noLivesMessage: "You need a life to start a level. Wait for recovery or earn one as a reward.",
+      ok: "OK"
+    },
+    it: {
+      pageTitle: "JezzBall - mappa dei capitoli",
+      gameRoot: "Schermata di gioco JezzBall",
+      subtitleStart: "Disegna una linea. ",
+      subtitleAccent: "Conquista lo spazio.",
+      mainMenu: "Menu principale",
+      play: "Gioca",
+      levelScreen: "Schermata livello",
+      topPanel: "Pannello superiore",
+      backToChapter: "Torna al capitolo",
+      resources: "Risorse",
+      coins: "Monete",
+      lives: "Vite",
+      levelStars: "Stelle del livello",
+      totalStars: "Stelle totali",
+      settings: "Impostazioni",
+      levelGoal: "Obiettivo del livello",
+      chapter: "Capitolo",
+      level: "Livello",
+      target: "Obiettivo",
+      captured: "Conquistato",
+      penalties: "Penalita",
+      playfield: "Campo di gioco JezzBall",
+      toChapters: "Ai capitoli",
+      levelComplete: "Livello completato!",
+      earnedStars: "Stelle ottenute",
+      capturedField: "Hai conquistato il {percent}% del campo!",
+      rewards: "Ricompense",
+      replay: "Gioca ancora",
+      nextLevel: "Livello successivo",
+      levelHintPanel: "Suggerimento livello",
+      levelHint: "Disegna linee e chiudi aree per conquistare spazio.",
+      toGoal: "all'obiettivo",
+      final: "Finale",
+      finalUnlocked: "Finale sbloccato",
+      finalTitle: "Le Porte della Luce sono completate",
+      toMenu: "Menu",
+      closeSettings: "Chiudi impostazioni",
+      music: "Musica",
+      sounds: "Suoni",
+      confirm: "Conferma",
+      continue: "Continuare?",
+      stay: "Resta",
+      yes: "Si",
+      shop: "Negozio",
+      achievements: "Traguardi",
+      chapterSelect: "Seleziona capitolo",
+      chapterSelectHint: "Completa i livelli e sblocca nuovi capitoli",
+      shopAndAchievements: "Negozio e traguardi",
+      stars: "Stelle",
+      nextChapter: "Vai al capitolo successivo",
+      toFinal: "Vai al finale",
+      collapseChapter: "Comprimi capitolo",
+      expandChapter: "Espandi capitolo",
+      currentLevel: "Livello attuale {level}",
+      completedLevel: "Livello {level} completato, stelle: {stars}",
+      lockedLevel: "Livello {level} bloccato",
+      tooClose: "Troppo vicino al bordo",
+      penalty: "Penalita",
+      leaveTitle: "Uscire dal livello?",
+      leaveMessage: "I progressi del tentativo attuale non saranno salvati. Restare in gioco?",
+      leaveAccept: "Esci",
+      replayTitle: "Rigiocare il livello?",
+      replayMessage: "Il livello {level} e gia completato. Iniziarlo di nuovo?",
+      cancel: "Annulla",
+      noLivesTitle: "Nessuna vita",
+      noLivesMessage: "Serve una vita per iniziare un livello. Attendi il recupero o ottienine una come ricompensa.",
+      ok: "OK"
+    }
+  };
+
+  const chapterTitles = {
+    en: ["Sunny Glade", "Mysterious Forest", "Crystal Caves", "Forgotten Tower", "Fiery Peaks", "Sky Islands", "City Lights", "Neon Rhythm", "Star Path", "Gates of Light"],
+    it: ["Radura soleggiata", "Foresta misteriosa", "Grotte di cristallo", "Torre dimenticata", "Cime infuocate", "Isole del cielo", "Luci della citta", "Ritmo neon", "Sentiero stellare", "Porte della Luce"]
+  };
+
   const state = {
     currentChapter: 1,
     currentLevel: 1,
@@ -88,6 +311,127 @@
   };
 
   let confirmResolve = null;
+
+  const normalizeLanguage = (lang) => {
+    const code = String(lang || "").toLowerCase().split("-")[0];
+    return SUPPORTED_LANGUAGES.includes(code) ? code : FALLBACK_LANGUAGE;
+  };
+
+  const t = (key, values = {}) => {
+    const template = (messages[yandexState.lang] && messages[yandexState.lang][key]) || messages.ru[key] || messages[FALLBACK_LANGUAGE][key] || key;
+    return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
+  };
+
+  const getChapterTitle = (chapterId) => {
+    const chapter = chapters[clampChapterId(chapterId) - 1];
+    const titles = chapterTitles[yandexState.lang];
+    return titles ? titles[chapter.id - 1] : chapter.title;
+  };
+
+  const setText = (selector, value) => {
+    const node = document.querySelector(selector);
+    if (node) {
+      node.textContent = value;
+    }
+  };
+
+  const setAttribute = (selector, attribute, value) => {
+    const node = document.querySelector(selector);
+    if (node) {
+      node.setAttribute(attribute, value);
+    }
+  };
+
+  const localizeStaticDom = () => {
+    document.documentElement.lang = yandexState.lang;
+    document.title = t("pageTitle");
+    setAttribute("#gameRoot", "aria-label", t("gameRoot"));
+    setText(".game-subtitle", t("subtitleStart"));
+    const subtitle = document.querySelector(".game-subtitle");
+    if (subtitle) {
+      const accent = document.createElement("span");
+      accent.textContent = t("subtitleAccent");
+      subtitle.append(accent);
+    }
+    setAttribute(".menu-actions", "aria-label", t("mainMenu"));
+    setText("#playButton > span:last-child", t("play"));
+    setAttribute("#level-screen", "aria-label", t("levelScreen"));
+    setAttribute("#level-screen .top-ui", "aria-label", t("topPanel"));
+    setAttribute("#level-screen [data-action='return-chapter']", "aria-label", t("backToChapter"));
+    setAttribute("#level-screen .resource-strip", "aria-label", t("resources"));
+    setAttribute("#level-screen .coins-pill", "aria-label", t("coins"));
+    setAttribute("#level-screen .lives-pill", "aria-label", t("lives"));
+    setAttribute("#level-screen [data-action='achievements']", "aria-label", t("levelStars"));
+    setAttribute("#level-screen [data-action='settings']", "aria-label", t("settings"));
+    setAttribute(".level-hud", "aria-label", t("levelGoal"));
+    const levelStats = document.querySelectorAll(".level-stat span");
+    if (levelStats[0]) levelStats[0].textContent = t("target");
+    if (levelStats[1]) levelStats[1].textContent = t("captured");
+    if (levelStats[2]) levelStats[2].textContent = t("penalties");
+    setAttribute("#jezzCanvas", "aria-label", t("playfield"));
+    setAttribute("#completeCloseButton", "aria-label", t("toChapters"));
+    setText("#rewardTitle", t("levelComplete"));
+    setAttribute("#rewardStars", "aria-label", t("earnedStars"));
+    if (levelCompleteScore) {
+      const percent = levelCompleteScore.textContent.replace("%", "") || "75";
+      const [before, after] = t("capturedField", { percent }).split(`${percent}%`);
+      document.querySelector(".reward-capture")?.replaceChildren(before || "", levelCompleteScore, after || "");
+    }
+    setText(".reward-prizes h3", t("rewards"));
+    setText("#completeReplayButton", t("replay"));
+    setText("#completeNextButton", t("nextLevel"));
+    setAttribute(".level-helper-panel", "aria-label", t("levelHintPanel"));
+    setText(".level-helper-panel p", t("levelHint"));
+    const helperTarget = document.querySelector(".helper-target");
+    if (helperTarget) {
+      helperTarget.childNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          node.textContent = ` ${t("toGoal")}`;
+        }
+      });
+    }
+    setAttribute("#final-screen", "aria-label", t("final"));
+    setAttribute("#final-screen .top-ui", "aria-label", t("topPanel"));
+    setAttribute("#final-screen [data-action='return-chapter']", "aria-label", t("backToChapter"));
+    setAttribute("#final-screen .resource-strip", "aria-label", t("resources"));
+    setAttribute("#final-screen .coins-pill", "aria-label", t("coins"));
+    setAttribute("#final-screen .lives-pill", "aria-label", t("lives"));
+    setAttribute("#final-screen [data-action='achievements']", "aria-label", t("totalStars"));
+    setAttribute("#final-screen [data-action='settings']", "aria-label", t("settings"));
+    setText(".final-card span", t("finalUnlocked"));
+    setText(".final-card h2", t("finalTitle"));
+    setText(".final-card [data-action='main-menu']", t("toMenu"));
+    setAttribute(".settings-close", "aria-label", t("closeSettings"));
+    setText("#settingsTitle", t("settings"));
+    setText(".toggle-row:nth-of-type(1) span", t("music"));
+    setText(".toggle-row:nth-of-type(2) span", t("sounds"));
+    setText("#confirmTitle", t("confirm"));
+    setText("#confirmMessage", t("continue"));
+    setText("#confirmCancelButton", t("stay"));
+    setText("#confirmAcceptButton", t("yes"));
+  };
+
+  const applyLanguage = (lang) => {
+    yandexState.lang = normalizeLanguage(lang);
+    localizeStaticDom();
+  };
+
+  const initYandexSdk = async () => {
+    if (!window.YaGames || typeof window.YaGames.init !== "function") {
+      applyLanguage("ru");
+      return;
+    }
+
+    try {
+      yandexState.sdk = await window.YaGames.init();
+      applyLanguage(yandexState.sdk?.environment?.i18n?.lang || navigator.language);
+      renderChapterScreens();
+      yandexState.sdk?.features?.LoadingAPI?.ready?.();
+      yandexState.readySent = true;
+    } catch (_error) {
+      applyLanguage("ru");
+    }
+  };
 
   const clampChapterId = (chapterId) => Math.min(chapters.length, Math.max(1, chapterId));
   const getChapter = (chapterId) => chapters[clampChapterId(chapterId) - 1];
@@ -130,14 +474,14 @@
   `;
 
   const createTopUi = () => `
-    <header class="top-ui" aria-label="Верхняя панель">
-      ${createIconButton("main-menu", "В меню", "M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z", "chapter-top-back")}
-      <div class="resource-strip" aria-label="Ресурсы">
-        <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
-        <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
-        <div class="resource-pill resource-counter achievement-button" aria-label="Звёзды"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></div>
+    <header class="top-ui" aria-label="${t("topPanel")}">
+      ${createIconButton("main-menu", t("toMenu"), "M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z", "chapter-top-back")}
+      <div class="resource-strip" aria-label="${t("resources")}">
+        <div class="resource-pill resource-counter lives-pill" aria-label="${t("lives")}"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span></div>
+        <div class="resource-pill resource-counter coins-pill" aria-label="${t("coins")}"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
+        <div class="resource-pill resource-counter achievement-button" aria-label="${t("stars")}"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></div>
       </div>
-      ${createIconButton("settings", "Настройки", "M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z", "settings-button")}
+      ${createIconButton("settings", t("settings"), "M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z", "settings-button")}
     </header>
   `;
 
@@ -168,14 +512,14 @@
 
     if (isCurrent) {
       button.classList.add("is-current");
-      button.setAttribute("aria-label", `Текущий уровень ${level}`);
+      button.setAttribute("aria-label", t("currentLevel", { level }));
     } else if (isCompleted) {
       button.classList.add("is-completed");
-      button.setAttribute("aria-label", `Пройденный уровень ${level}, звёзд: ${stars}`);
+      button.setAttribute("aria-label", t("completedLevel", { level, stars }));
     } else {
       button.classList.add("is-locked");
       button.disabled = true;
-      button.setAttribute("aria-label", `Уровень ${level} заблокирован`);
+      button.setAttribute("aria-label", t("lockedLevel", { level }));
     }
 
     if (isUnlocked) {
@@ -192,7 +536,7 @@
   const isChapterUnlocked = (chapterId) => getChapterLevelStart(chapterId) <= state.currentLevel;
 
   const createChapterExpansionMarkup = (chapter) => {
-    const nextText = chapter.id === chapters.length ? "Перейти в финал" : "Перейти в следующую главу";
+    const nextText = chapter.id === chapters.length ? t("toFinal") : t("nextChapter");
     const nextAction = chapter.id === chapters.length ? "final" : "next-progress-chapter";
 
     return `
@@ -212,10 +556,10 @@
         <div class="chapter-card-head">
           <span class="chapter-badge" aria-hidden="true"><span class="chapter-badge-icon">${chapter.icon}</span></span>
           <span class="chapter-card-copy">
-            <span class="chapter-kicker">Глава ${chapter.id}</span>
-            <span class="chapter-card-title">${chapter.title}</span>
+            <span class="chapter-kicker">${t("chapter")} ${chapter.id}</span>
+            <span class="chapter-card-title">${getChapterTitle(chapter.id)}</span>
           </span>
-          <button class="chapter-toggle" type="button" data-action="toggle-chapter" data-chapter-id="${chapter.id}" aria-expanded="${isExpanded ? "true" : "false"}" aria-label="${isExpanded ? "Свернуть главу" : "Раскрыть главу"}">
+          <button class="chapter-toggle" type="button" data-action="toggle-chapter" data-chapter-id="${chapter.id}" aria-expanded="${isExpanded ? "true" : "false"}" aria-label="${isExpanded ? t("collapseChapter") : t("expandChapter")}">
             <span class="chapter-chevron" aria-hidden="true">${isExpanded ? "⌃" : "⌄"}</span>
           </button>
         </div>
@@ -227,22 +571,22 @@
   const createChapterScreen = (chapter) => {
     const screen = document.getElementById(getChapterScreenId(chapter.id));
 
-    screen.setAttribute("aria-label", `Глава ${chapter.id} ${chapter.title}`);
+    screen.setAttribute("aria-label", `${t("chapter")} ${chapter.id} ${getChapterTitle(chapter.id)}`);
     screen.innerHTML = `
       <div class="chapter-scene">
         ${createTopUi()}
         <div class="chapter-select">
           <div class="chapter-select-title">
-            <h2><span aria-hidden="true">✦</span>Выбор главы<span aria-hidden="true">✦</span></h2>
-            <p>Проходите уровни и открывайте новые главы</p>
+            <h2><span aria-hidden="true">✦</span>${t("chapterSelect")}<span aria-hidden="true">✦</span></h2>
+            <p>${t("chapterSelectHint")}</p>
           </div>
           <div class="chapter-list">
             ${chapters.map((item) => createChapterItem(item)).join("")}
           </div>
         </div>
-        <nav class="chapter-action-bar" aria-label="Магазин и достижения">
-          <button type="button" data-action="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14.26c-.75 0-1.41-.41-1.75-1.03L2 6.2V5h3.21l.94 2h12.9c.75 0 1.24.78.92 1.45l-2.42 5.05A2 2 0 0 1 15.74 14H8.1l-1.1 2h12v2H7c-1.52 0-2.48-1.63-1.75-2.96l1.03-1.86-.12-.24ZM7.1 9l1.42 3h7.22l1.44-3H7.1Z"/></svg>Магазин</button>
-          <button type="button" data-action="achievements"><span aria-hidden="true">★</span>Достижения</button>
+        <nav class="chapter-action-bar" aria-label="${t("shopAndAchievements")}">
+          <button type="button" data-action="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14.26c-.75 0-1.41-.41-1.75-1.03L2 6.2V5h3.21l.94 2h12.9c.75 0 1.24.78.92 1.45l-2.42 5.05A2 2 0 0 1 15.74 14H8.1l-1.1 2h12v2H7c-1.52 0-2.48-1.63-1.75-2.96l1.03-1.86-.12-.24ZM7.1 9l1.42 3h7.22l1.44-3H7.1Z"/></svg>${t("shop")}</button>
+          <button type="button" data-action="achievements"><span aria-hidden="true">★</span>${t("achievements")}</button>
         </nav>
       </div>
     `;
@@ -325,7 +669,7 @@
     }
   };
 
-  const showConfirm = ({ title, message, acceptText = "Да", cancelText = "Остаться" }) => {
+  const showConfirm = ({ title, message, acceptText = t("yes"), cancelText = t("stay") }) => {
     if (!confirmModal) {
       return Promise.resolve(true);
     }
@@ -483,7 +827,7 @@
 
       card.classList.toggle("is-expanded", isExpanded);
       toggle?.setAttribute("aria-expanded", isExpanded ? "true" : "false");
-      toggle?.setAttribute("aria-label", isExpanded ? "Свернуть главу" : "Раскрыть главу");
+      toggle?.setAttribute("aria-label", isExpanded ? t("collapseChapter") : t("expandChapter"));
       if (chevron) {
         chevron.textContent = isExpanded ? "⌃" : "⌄";
       }
@@ -610,7 +954,7 @@
     }
 
     if (first.w < BALL_RADIUS * 2 || first.h < BALL_RADIUS * 2 || second.w < BALL_RADIUS * 2 || second.h < BALL_RADIUS * 2) {
-      showLevelToast("Слишком близко к краю");
+      showLevelToast(t("tooClose"));
       return;
     }
 
@@ -633,7 +977,7 @@
     if (penalize) {
       levelState.penalties += 1;
       syncLevelHud();
-      showLevelToast("Штраф");
+      showLevelToast(t("penalty"));
     }
   };
 
@@ -847,6 +1191,12 @@
     };
     if (levelCompleteScore) {
       levelCompleteScore.textContent = `${percent}%`;
+    }
+    const rewardCapture = document.querySelector(".reward-capture");
+    if (rewardCapture && levelCompleteScore) {
+      const [before, after] = t("capturedField", { percent }).split(`${percent}%`);
+      levelCompleteScore.textContent = `${percent}%`;
+      rewardCapture.replaceChildren(before || "", levelCompleteScore, after || "");
     }
     if (rewardCoins) {
       rewardCoins.textContent = `+${reward.coins}`;
@@ -1138,10 +1488,10 @@
     }
 
     return showConfirm({
-      title: "Выйти из уровня?",
-      message: "Прогресс текущей попытки не сохранится. Остаться в игре?",
-      acceptText: "Выйти",
-      cancelText: "Остаться"
+      title: t("leaveTitle"),
+      message: t("leaveMessage"),
+      acceptText: t("leaveAccept"),
+      cancelText: t("stay")
     });
   };
 
@@ -1153,7 +1503,7 @@
     if (!options.skipReplayConfirm && isCompletedLevel(level)) {
       const shouldReplay = await showConfirm({
         title: "Пройти уровень заново?",
-        message: `Уровень ${level} уже пройден. Начать его еще раз?`,
+        message: "",
         acceptText: "Играть",
         cancelText: "Отмена"
       });
@@ -1165,10 +1515,10 @@
 
     if (!spendLife()) {
       await showConfirm({
-        title: "Нет жизней",
-        message: "Нужна жизнь для старта уровня. Подожди восстановления или получи жизнь за награду.",
-        acceptText: "Понятно",
-        cancelText: "Закрыть"
+        title: t("noLivesTitle"),
+        message: t("noLivesMessage"),
+        acceptText: t("ok"),
+        cancelText: t("closeSettings")
       });
       return;
     }
@@ -1177,8 +1527,8 @@
     state.selectedLevel = level;
     state.currentChapter = chapter.id;
     levelScreen.className = `level-screen screen chapter-${chapter.id}`;
-    levelChapterLabel.textContent = `Глава ${chapter.id} · ${chapter.title}`;
-    levelTitle.textContent = `Уровень ${level}`;
+    levelChapterLabel.textContent = `${t("chapter")} ${chapter.id} · ${getChapterTitle(chapter.id)}`;
+    levelTitle.textContent = `${t("level")} ${level}`;
     showScreen("level-screen");
     saveProgress();
     window.requestAnimationFrame(startJezzLevel);
@@ -1422,6 +1772,7 @@
   updateLifeRestore();
   syncViewportHeight();
   renderChapterScreens();
+  initYandexSdk();
 
   window.showScreen = showScreen;
   window.JezzBallChapterMap = {
