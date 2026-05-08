@@ -37,6 +37,18 @@
     2: { coins: 120, restoreLife: false },
     3: { coins: 180, restoreLife: true }
   };
+  const LEVEL_REWARDS = {
+    1: { 1: { coins: 50 }, 2: { coins: 80 }, 3: { coins: 100, restoreLife: true } },
+    2: { 1: { coins: 50 }, 2: { coins: 80 }, 3: { coins: 120 } },
+    3: { 1: { coins: 60 }, 2: { coins: 90 }, 3: { coins: 140, restoreLife: true } },
+    4: { 1: { coins: 60 }, 2: { coins: 100 }, 3: { coins: 160, restoreLife: true } },
+    5: { 1: { coins: 70 }, 2: { coins: 110 }, 3: { coins: 180, restoreLife: true } },
+    6: { 1: { coins: 70 }, 2: { coins: 120 }, 3: { coins: 200, restoreLife: true } },
+    7: { 1: { coins: 80 }, 2: { coins: 140 }, 3: { coins: 220, restoreLife: true } },
+    8: { 1: { coins: 80 }, 2: { coins: 150 }, 3: { coins: 240, restoreLife: true } },
+    9: { 1: { coins: 90 }, 2: { coins: 160 }, 3: { coins: 260, restoreLife: true } },
+    10: { 1: { coins: 90 }, 2: { coins: 170 }, 3: { coins: 280, restoreLife: true } }
+  };
   const LINE_GROW_SPEED = 420;
   const BALL_RADIUS = 11;
   const OBSTACLE_THICKNESS = 12;
@@ -51,50 +63,56 @@
       target: 75,
       balls: 1,
       speed: "slow",
-      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, moving: false }]
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, type: "static", safe: false, color: "#ff4e7a" }]
     },
     3: { target: 80, balls: 2, speed: "slow", obstacles: [] },
     4: {
       target: 80,
       balls: 2,
       speed: "medium",
-      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.2, y2: 0.8, moving: true, axis: "y", amplitude: 0.16, phase: 0 }]
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.2, y2: 0.8, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.16, phase: 0 }]
     },
-    5: { target: 85, balls: 2, speed: "medium", obstacles: [] },
+    5: {
+      target: 85,
+      balls: 2,
+      speed: "fast",
+      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.28, x2: 0.72, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: false }]
+    },
     6: {
       target: 85,
       balls: 3,
       speed: "medium",
-      obstacles: [{ orientation: "horizontal", y: 0.28, x1: 0.18, x2: 0.82, moving: false }]
+      obstacles: [{ orientation: "horizontal", y: 0.28, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#ff4e7a" }]
     },
     7: {
       target: 90,
       balls: 3,
       speed: "fast",
-      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, moving: true, axis: "x", amplitude: 0.14, phase: 0.35 }]
+      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "x", amplitude: 0.14, phase: 0.35 }]
     },
     8: {
       target: 90,
       balls: 3,
       speed: "fast",
       obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, moving: false },
-        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, moving: false }
+        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" },
+        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#7c1d49" }
       ]
     },
     9: {
       target: 95,
       balls: 4,
       speed: "medium",
-      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, moving: true, axis: "y", amplitude: 0.18, phase: 0.55 }]
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.18, phase: 0.55 }]
     },
     10: {
       target: 95,
       balls: 4,
       speed: "fast",
       obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, moving: true, axis: "y", amplitude: 0.17, phase: 0.1 },
-        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, moving: true, axis: "x", amplitude: 0.17, phase: 0.6 }
+        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.17, phase: 0.1 },
+        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "moving", safe: false, color: "#ff4e7a", axis: "x", amplitude: 0.17, phase: 0.6 },
+        { orientation: "vertical", x: 0.28, y1: 0.25, y2: 0.75, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: false }
       ]
     }
   };
@@ -509,8 +527,11 @@
   const getChapterForLevel = (level) => Math.min(chapters.length, Math.max(1, Math.ceil(level / 10)));
   const getChapterLevelStart = (chapterId) => (chapterId - 1) * 10 + 1;
   const getChapterLevelEnd = (chapterId) => chapterId * 10;
-  const getStarReward = (stars) => STAR_REWARDS[Math.max(1, Math.min(3, stars))] || STAR_REWARDS[1];
-  const getLevelCoinReward = (_level, stars = 1) => getStarReward(stars).coins;
+  const getStarReward = (stars, level = state.selectedLevel) => {
+    const safeStars = Math.max(1, Math.min(3, stars));
+    return LEVEL_REWARDS[level]?.[safeStars] || STAR_REWARDS[safeStars] || STAR_REWARDS[1];
+  };
+  const getLevelCoinReward = (level, stars = 1) => getStarReward(stars, level).coins;
   const getRewardDelta = (stars, previousStars = 0) => {
     const bestStars = Math.max(0, Math.min(3, previousStars));
     const nextStars = Math.max(0, Math.min(3, stars));
@@ -521,20 +542,24 @@
     return {
       stars: nextStars - bestStars,
       coins: getStarReward(nextStars).coins - (bestStars > 0 ? getStarReward(bestStars).coins : 0),
-      restoreLife: nextStars >= 3 && bestStars < 3
+      restoreLife: Boolean(getStarReward(nextStars).restoreLife) && !Boolean(bestStars > 0 && getStarReward(bestStars).restoreLife)
     };
   };
 
   const getStarsForResult = (percent, penalties) => {
-    if (percent >= 90 && penalties === 0) {
+    if (percent < levelState.target) {
+      return 0;
+    }
+
+    if (penalties === 0) {
       return 3;
     }
 
-    if (percent >= 80 && penalties <= 1) {
+    if (penalties <= 1) {
       return 2;
     }
 
-    return percent >= levelState.target ? 1 : 0;
+    return 1;
   };
 
   const createIconButton = (action, label, path, extraClass = "") => `
@@ -1027,8 +1052,14 @@
   const createObstacle = (definition, rect, index = 0) => {
     const obstacle = {
       ...definition,
+      type: definition.type || (definition.moving ? "moving" : "static"),
+      safe: Boolean(definition.safe),
+      moving: definition.type ? definition.type === "moving" : Boolean(definition.moving),
+      blocksBall: definition.blocksBall ?? !definition.safe,
       baseX: definition.x,
       baseY: definition.y,
+      wRatio: definition.w,
+      hRatio: definition.h,
       x1Ratio: definition.x1,
       x2Ratio: definition.x2,
       y1Ratio: definition.y1,
@@ -1041,6 +1072,18 @@
 
   function updateObstacleGeometry(obstacle, rect, elapsed) {
     const wave = obstacle.moving ? Math.sin((elapsed * 0.9) + obstacle.phase * Math.PI * 2) * (obstacle.amplitude || 0.12) : 0;
+    if (obstacle.wRatio !== undefined && obstacle.hRatio !== undefined) {
+      const offsetX = obstacle.axis === "x" ? wave : 0;
+      const offsetY = obstacle.axis === "y" ? wave : 0;
+      const maxX = Math.max(0.02, 0.98 - obstacle.wRatio);
+      const maxY = Math.max(0.02, 0.98 - obstacle.hRatio);
+      obstacle.x = rect.x + rect.w * Math.min(maxX, Math.max(0.02, (obstacle.baseX ?? 0.5) + offsetX));
+      obstacle.y = rect.y + rect.h * Math.min(maxY, Math.max(0.02, (obstacle.baseY ?? 0.5) + offsetY));
+      obstacle.w = rect.w * obstacle.wRatio;
+      obstacle.h = rect.h * obstacle.hRatio;
+      return obstacle;
+    }
+
     if (obstacle.orientation === "vertical") {
       const offsetY = obstacle.axis === "y" ? wave : 0;
       const offsetX = obstacle.axis === "x" ? wave : 0;
@@ -1092,6 +1135,13 @@
     if (line.orientation === "vertical") {
       const minY = Math.min(line.y, line.endA, line.endB);
       const maxY = Math.max(line.y, line.endA, line.endB);
+      if (obstacle.w !== undefined && obstacle.h !== undefined) {
+        return line.x >= obstacle.x - pad
+          && line.x <= obstacle.x + obstacle.w + pad
+          && maxY >= obstacle.y - pad
+          && minY <= obstacle.y + obstacle.h + pad;
+      }
+
       if (obstacle.orientation === "vertical") {
         return Math.abs(line.x - obstacle.x) <= pad
           && maxY >= obstacle.y1 - pad
@@ -1106,6 +1156,13 @@
 
     const minX = Math.min(line.x, line.endA, line.endB);
     const maxX = Math.max(line.x, line.endA, line.endB);
+    if (obstacle.w !== undefined && obstacle.h !== undefined) {
+      return line.y >= obstacle.y - pad
+        && line.y <= obstacle.y + obstacle.h + pad
+        && maxX >= obstacle.x - pad
+        && minX <= obstacle.x + obstacle.w + pad;
+    }
+
     if (obstacle.orientation === "horizontal") {
       return Math.abs(line.y - obstacle.y) <= pad
         && maxX >= obstacle.x1 - pad
@@ -1119,7 +1176,18 @@
   };
 
   const pointHitsObstacle = (point) => levelState.obstacles.some((obstacle) => {
+    if (obstacle.safe) {
+      return false;
+    }
+
     const pad = (obstacle.thickness || OBSTACLE_THICKNESS) * 0.65;
+    if (obstacle.w !== undefined && obstacle.h !== undefined) {
+      return point.x >= obstacle.x - pad
+        && point.x <= obstacle.x + obstacle.w + pad
+        && point.y >= obstacle.y - pad
+        && point.y <= obstacle.y + obstacle.h + pad;
+    }
+
     return obstacle.orientation === "vertical"
       ? Math.abs(point.x - obstacle.x) <= pad && point.y >= obstacle.y1 - pad && point.y <= obstacle.y2 + pad
       : Math.abs(point.y - obstacle.y) <= pad && point.x >= obstacle.x1 - pad && point.x <= obstacle.x2 + pad;
@@ -1218,7 +1286,7 @@
       line.done = line.endA <= rect.x && line.endB >= rect.x + rect.w;
     }
 
-    if (lineHitBall(line) || levelState.obstacles.some((obstacle) => lineHitsObstacle(line, obstacle))) {
+    if (lineHitBall(line) || levelState.obstacles.some((obstacle) => !obstacle.safe && lineHitsObstacle(line, obstacle))) {
       cancelActiveLine(true);
       return;
     }
@@ -1230,7 +1298,28 @@
   };
 
   const bounceBallOffObstacle = (ball, obstacle) => {
+    if (!obstacle.blocksBall) {
+      return;
+    }
+
     const pad = (obstacle.thickness || OBSTACLE_THICKNESS) * 0.5;
+    if (obstacle.w !== undefined && obstacle.h !== undefined) {
+      const nearestX = Math.max(obstacle.x, Math.min(ball.x, obstacle.x + obstacle.w));
+      const nearestY = Math.max(obstacle.y, Math.min(ball.y, obstacle.y + obstacle.h));
+      const dx = ball.x - nearestX;
+      const dy = ball.y - nearestY;
+      if ((dx * dx) + (dy * dy) <= (ball.r + pad) ** 2) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          ball.vx *= -1;
+          ball.x = nearestX + Math.sign(dx || ball.vx || 1) * (ball.r + pad);
+        } else {
+          ball.vy *= -1;
+          ball.y = nearestY + Math.sign(dy || ball.vy || 1) * (ball.r + pad);
+        }
+      }
+      return;
+    }
+
     if (obstacle.orientation === "vertical") {
       const inY = ball.y >= obstacle.y1 - ball.r && ball.y <= obstacle.y2 + ball.r;
       if (inY && Math.abs(ball.x - obstacle.x) <= ball.r + pad) {
@@ -1337,27 +1426,49 @@
 
     levelState.obstacles.forEach((obstacle) => {
       ctx.save();
-      ctx.strokeStyle = obstacle.moving ? "rgba(103, 246, 255, 0.96)" : "rgba(255, 160, 92, 0.96)";
-      ctx.lineWidth = obstacle.thickness || OBSTACLE_THICKNESS;
+      const obstacleColor = obstacle.color || (obstacle.safe ? "rgba(173, 246, 255, 0.92)" : (obstacle.moving ? "#8d2454" : "#ff4e7a"));
+      ctx.strokeStyle = obstacleColor;
+      ctx.fillStyle = obstacleColor;
+      ctx.lineWidth = obstacle.safe ? Math.max(4, (obstacle.thickness || OBSTACLE_THICKNESS) * 0.48) : (obstacle.thickness || OBSTACLE_THICKNESS);
       ctx.lineCap = "round";
-      ctx.shadowColor = obstacle.moving ? "rgba(103, 246, 255, 0.55)" : "rgba(255, 160, 92, 0.5)";
-      ctx.shadowBlur = 12;
+      ctx.shadowColor = obstacle.safe ? "rgba(106, 235, 255, 0.62)" : "rgba(255, 78, 122, 0.7)";
+      ctx.shadowBlur = obstacle.safe ? 9 : 16;
+      if (obstacle.safe) {
+        ctx.setLineDash([13, 11]);
+      }
       ctx.beginPath();
-      if (obstacle.orientation === "vertical") {
+      if (obstacle.w !== undefined && obstacle.h !== undefined) {
+        ctx.roundRect?.(obstacle.x, obstacle.y, obstacle.w, obstacle.h, 6);
+        if (!ctx.roundRect) {
+          ctx.rect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+        }
+        ctx.globalAlpha = obstacle.safe ? 0.68 : 0.92;
+        ctx.fill();
+      } else if (obstacle.orientation === "vertical") {
         ctx.moveTo(obstacle.x, obstacle.y1);
         ctx.lineTo(obstacle.x, obstacle.y2);
+        ctx.stroke();
       } else {
         ctx.moveTo(obstacle.x1, obstacle.y);
         ctx.lineTo(obstacle.x2, obstacle.y);
+        ctx.stroke();
       }
-      ctx.stroke();
       ctx.restore();
     });
 
     const line = levelState.activeLine;
     if (line) {
-      ctx.strokeStyle = "rgba(255, 72, 184, 0.96)";
+      const lineGradient = line.orientation === "vertical"
+        ? ctx.createLinearGradient(line.x, line.endA, line.x, line.endB)
+        : ctx.createLinearGradient(line.endA, line.y, line.endB, line.y);
+      lineGradient.addColorStop(0, "rgba(126, 247, 255, 0.96)");
+      lineGradient.addColorStop(0.5, "rgba(255, 246, 145, 0.98)");
+      lineGradient.addColorStop(1, "rgba(255, 91, 218, 0.96)");
+      ctx.strokeStyle = lineGradient;
       ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.shadowColor = "rgba(255, 237, 132, 0.58)";
+      ctx.shadowBlur = 14;
       ctx.beginPath();
       if (line.orientation === "vertical") {
         ctx.moveTo(line.x, line.endA);

@@ -73,6 +73,16 @@
             </div>
           </div>
           <canvas class="jezz-canvas" id="jezzCanvas" aria-label="Игровое поле JezzBall"></canvas>
+          <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
+            <span class="obstacle-legend-item">
+              <span class="obstacle-swatch obstacle-swatch-danger" aria-hidden="true"></span>
+              Яркая или темная линия - штраф при касании
+            </span>
+            <span class="obstacle-legend-item">
+              <span class="obstacle-swatch obstacle-swatch-safe" aria-hidden="true"></span>
+              Пунктирная светлая линия - можно задевать
+            </span>
+          </div>
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
             <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
