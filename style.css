@@ -330,6 +330,13 @@ button {
   border-radius: 50%;
 }
 
+.level-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(7px, 1.4vmin, 10px);
+  min-width: 0;
+}
+
 .icon-button svg {
   width: 52%;
   height: 52%;
@@ -1145,8 +1152,13 @@ button {
 .confirm-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: center;
   gap: 12px;
   margin-top: clamp(8px, 2vmin, 14px);
+}
+
+.confirm-actions[data-count="1"] {
+  grid-template-columns: minmax(170px, 220px);
 }
 
 .confirm-actions .compact-play {
@@ -1371,6 +1383,9 @@ button {
   color: #ffffff;
   font-size: clamp(0.95rem, 2.5vmin, 1.12rem);
   font-weight: 950;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .reward-prizes {
@@ -1458,6 +1473,64 @@ button {
   width: 100%;
   max-width: 460px;
   min-width: 0;
+}
+
+.chapter-chest-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 5vmin, 44px);
+  background: rgba(9, 4, 28, 0.66);
+  backdrop-filter: blur(10px);
+}
+
+.chapter-chest-card {
+  width: min(100%, 360px);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: clamp(22px, 5vmin, 34px);
+  border: 1.5px solid rgba(255, 218, 112, 0.78);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 221, 92, 0.24), transparent 62%),
+    linear-gradient(180deg, rgba(71, 29, 126, 0.96), rgba(22, 10, 63, 0.98));
+  color: #ffffff;
+  text-align: center;
+  box-shadow:
+    0 24px 70px rgba(4, 1, 18, 0.54),
+    0 0 34px rgba(255, 205, 61, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.chapter-chest-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffda56, #ff7dbd);
+  color: #39103c;
+  font-size: 2.4rem;
+  font-weight: 950;
+}
+
+.chapter-chest-card h2,
+.chapter-chest-card p {
+  margin: 0;
+}
+
+.chapter-chest-card h2 {
+  font-size: clamp(1.3rem, 4vmin, 1.8rem);
+  font-weight: 950;
+}
+
+.chapter-chest-card p {
+  color: rgba(255, 246, 255, 0.84);
+  font-size: clamp(0.96rem, 2.6vmin, 1.06rem);
+  line-height: 1.35;
 }
 
 .map-reward-button {
@@ -1553,13 +1626,17 @@ button {
     top: calc(var(--safe-top) + 12px);
     left: calc(var(--safe-left) + 12px);
     right: calc(var(--safe-right) + 12px);
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    grid-template-columns: auto minmax(0, 1fr) 40px;
     gap: 8px;
   }
 
   .level-screen .icon-button {
     width: 40px;
     border-width: 1.5px;
+  }
+
+  .level-screen .level-nav-actions {
+    gap: 6px;
   }
 
   .level-screen .resource-strip {
@@ -1748,12 +1825,12 @@ button {
     left: calc(var(--safe-left) + 10px);
     right: calc(var(--safe-right) + 10px);
     width: auto;
-    grid-template-columns: 34px minmax(0, 1fr) 34px;
-    gap: 6px;
+    grid-template-columns: auto minmax(0, 1fr) 42px;
+    gap: 8px;
   }
 
   .level-screen .icon-button {
-    width: 34px;
+    width: 42px;
   }
 
   .level-screen .resource-strip {
@@ -1762,11 +1839,11 @@ button {
   }
 
   .level-screen .resource-pill {
-    min-width: 58px;
-    height: 32px;
-    padding: 0 5px;
-    gap: 3px;
-    font-size: 0.68rem;
+    min-width: 62px;
+    height: 36px;
+    padding: 0 7px;
+    gap: 4px;
+    font-size: 0.74rem;
   }
 
   .level-screen .resource-counter [data-resource],
@@ -1959,9 +2036,9 @@ button {
   }
 
   .reward-actions .compact-play {
-    min-height: clamp(36px, 9vh, 46px);
-    padding-inline: clamp(10px, 3vw, 18px);
-    font-size: clamp(0.92rem, 2.45vmin, 1.08rem);
+    min-height: clamp(42px, 10vh, 52px);
+    padding-inline: clamp(14px, 3.4vw, 22px);
+    font-size: clamp(1rem, 2.7vmin, 1.14rem);
     font-weight: 950;
     line-height: 1;
   }
@@ -2936,6 +3013,31 @@ button {
   min-width: min(74vw, 520px);
 }
 
+.chapter-card .chapter-complete-status {
+  display: none;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 221, 126, 0.52);
+  border-radius: 999px;
+  background: rgba(33, 18, 72, 0.54);
+  color: #fff4b8;
+  font-size: clamp(0.68rem, 1.55vmin, 0.78rem);
+  font-weight: 850;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow:
+    0 6px 14px rgba(10, 4, 36, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.chapter-card .chapter-complete-status.is-visible {
+  display: inline-flex;
+  align-items: center;
+}
+
 .chapter-card .next-chapter-cta:not(.is-visible) {
   display: none;
 }
@@ -3253,6 +3355,100 @@ button {
 
   .chapter-card .level-stars {
     bottom: 10%;
-    font-size: clamp(0.38rem, 1.8vmin, 0.62rem);
+    font-size: clamp(0.52rem, 2.35vmin, 0.82rem);
+  }
+}
+
+@media (max-width: 430px) {
+  .level-screen .top-ui,
+  .chapter-screen .top-ui {
+    left: calc(var(--safe-left) + 8px);
+    right: calc(var(--safe-right) + 8px);
+    gap: 6px;
+  }
+
+  .level-screen .top-ui {
+    grid-template-columns: auto minmax(0, 1fr) 38px;
+  }
+
+  .level-screen .icon-button,
+  .chapter-screen .icon-button,
+  .chapter-screen .chapter-top-back,
+  .chapter-screen .settings-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .level-screen .level-nav-actions {
+    gap: 5px;
+  }
+
+  .level-screen .resource-strip,
+  .chapter-screen .resource-strip {
+    gap: 5px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .level-screen .resource-pill,
+  .chapter-screen .resource-pill {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 34px;
+    padding: 0 6px;
+    gap: 4px;
+    font-size: 0.72rem;
+  }
+
+  .level-screen .lives-pill,
+  .chapter-screen .lives-pill {
+    flex-grow: 1.35;
+  }
+
+  .level-screen .resource-counter [data-resource],
+  .level-screen .achievement-button [data-resource],
+  .chapter-screen .resource-counter [data-resource],
+  .chapter-screen .achievement-button [data-resource] {
+    min-width: auto;
+    padding-left: 0;
+    font-size: 1.18em;
+  }
+
+  .level-screen .resource-counter [data-resource]::before,
+  .level-screen .achievement-button [data-resource]::before,
+  .chapter-screen .resource-counter [data-resource]::before,
+  .chapter-screen .achievement-button [data-resource]::before {
+    display: none;
+  }
+
+  .level-screen .resource-icon,
+  .chapter-screen .resource-icon {
+    width: 1.05em;
+    min-width: 1.05em;
+  }
+
+  .level-screen .life-restore-timer,
+  .chapter-screen .life-restore-timer {
+    min-width: 2.45em;
+    padding-left: 0.36em;
+    font-size: 0.62em;
+    border-left-color: rgba(255, 255, 255, 0.24);
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .chapter-action-bar {
+    width: min(80vw, 560px);
+    min-height: 48px;
+  }
+
+  .chapter-action-bar button {
+    min-height: 48px;
+    font-size: 0.88rem;
+  }
+
+  .reward-actions .compact-play {
+    min-height: clamp(44px, 10vh, 54px);
+    font-size: clamp(1rem, 3vmin, 1.16rem);
   }
 }

@@ -34,22 +34,27 @@
   const LIFE_RESTORE_MS = 3 * 60 * 1000;
   const TOTAL_LEVELS = 100;
   const LEVEL_ONE_TARGET = 70;
+  const STAR_COIN_MULTIPLIERS = {
+    1: 1,
+    2: 1.5,
+    3: 2.2
+  };
   const STAR_REWARDS = {
-    1: { coins: 80, restoreLife: false },
-    2: { coins: 120, restoreLife: false },
-    3: { coins: 180, restoreLife: true }
+    1: { coins: 80 },
+    2: { coins: 120 },
+    3: { coins: 176 }
   };
   const LEVEL_REWARDS = {
-    1: { 1: { coins: 50 }, 2: { coins: 80 }, 3: { coins: 100, restoreLife: true } },
+    1: { 1: { coins: 50 }, 2: { coins: 75 }, 3: { coins: 110 } },
     2: { 1: { coins: 50 }, 2: { coins: 80 }, 3: { coins: 120 } },
-    3: { 1: { coins: 60 }, 2: { coins: 90 }, 3: { coins: 140, restoreLife: true } },
-    4: { 1: { coins: 60 }, 2: { coins: 100 }, 3: { coins: 160, restoreLife: true } },
-    5: { 1: { coins: 70 }, 2: { coins: 110 }, 3: { coins: 180, restoreLife: true } },
-    6: { 1: { coins: 70 }, 2: { coins: 120 }, 3: { coins: 200, restoreLife: true } },
-    7: { 1: { coins: 80 }, 2: { coins: 140 }, 3: { coins: 220, restoreLife: true } },
-    8: { 1: { coins: 80 }, 2: { coins: 150 }, 3: { coins: 240, restoreLife: true } },
-    9: { 1: { coins: 90 }, 2: { coins: 160 }, 3: { coins: 260, restoreLife: true } },
-    10: { 1: { coins: 90 }, 2: { coins: 170 }, 3: { coins: 280, restoreLife: true } }
+    3: { 1: { coins: 60 }, 2: { coins: 90 }, 3: { coins: 132 } },
+    4: { 1: { coins: 60 }, 2: { coins: 90 }, 3: { coins: 132 } },
+    5: { 1: { coins: 70 }, 2: { coins: 105 }, 3: { coins: 154 } },
+    6: { 1: { coins: 70 }, 2: { coins: 105 }, 3: { coins: 154 } },
+    7: { 1: { coins: 80 }, 2: { coins: 120 }, 3: { coins: 176 } },
+    8: { 1: { coins: 80 }, 2: { coins: 120 }, 3: { coins: 176 } },
+    9: { 1: { coins: 90 }, 2: { coins: 135 }, 3: { coins: 198 } },
+    10: { 1: { coins: 90 }, 2: { coins: 135 }, 3: { coins: 198 } }
   };
   const LINE_GROW_SPEED = 420;
   const BALL_RADIUS = 11;
@@ -114,41 +119,39 @@
     4: { target: 74, balls: 1, speed: "medium", obstacles: [], purpose: "tutorial-lines" },
     5: { target: 75, balls: 1, speed: "medium", obstacles: [], purpose: "tutorial-lines" },
     6: {
-      target: 85,
-      balls: 3,
+      target: 75,
+      balls: 1,
       speed: "medium",
-      obstacles: [{ orientation: "horizontal", y: 0.28, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#ff4e7a" }]
+      obstacles: [{ orientation: "horizontal", y: 0.32, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "first-challenge"
     },
     7: {
-      target: 90,
-      balls: 3,
-      speed: "fast",
-      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "x", amplitude: 0.14, phase: 0.35 }]
+      target: 75,
+      balls: 2,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.36, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#8d2454" }],
+      purpose: "first-challenge"
     },
     8: {
-      target: 90,
-      balls: 3,
-      speed: "fast",
-      obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" },
-        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#7c1d49" }
-      ]
+      target: 75,
+      balls: 2,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.16, x2: 0.84, type: "static", safe: false, color: "#7c1d49" }],
+      purpose: "first-challenge"
     },
     9: {
-      target: 95,
-      balls: 4,
+      target: 75,
+      balls: 2,
       speed: "medium",
-      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.18, phase: 0.55 }]
+      obstacles: [{ orientation: "vertical", x: 0.64, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "first-challenge"
     },
     10: {
-      target: 95,
-      balls: 4,
-      speed: "fast",
-      obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.17, phase: 0.1 },
-        { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "moving", safe: false, color: "#ff4e7a", axis: "x", amplitude: 0.17, phase: 0.6 },
-        { orientation: "vertical", x: 0.28, y1: 0.25, y2: 0.75, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: false }
-      ]
+      target: 75,
+      balls: 2,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.68, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#8d2454" }],
+      purpose: "first-challenge"
     },
     ...generatedLevelConfigs
   };
@@ -212,6 +215,11 @@
       rewards: "Награды",
       replay: "Играть еще раз",
       nextLevel: "Следующий уровень",
+      exitBack: "Выйти обратно",
+      chapterComplete: "Глава завершена",
+      chestClaimed: "Сундук получен",
+      chapterChestTitle: "Сундук главы",
+      chapterChestMessage: "Глава {chapter} завершена. Сундук получен!",
       levelHintPanel: "Подсказка уровня",
       levelHint: "Рисуй линии и замыкай области, чтобы захватить пространство.",
       toGoal: "до цели",
@@ -244,11 +252,15 @@
       leaveTitle: "Выйти из уровня?",
       leaveMessage: "Прогресс текущей попытки не сохранится. Остаться в игре?",
       leaveAccept: "Выйти",
+      restartLevel: "Играть уровень заново",
+      restartTitle: "Сыграть заново?",
+      restartMessage: "Текущая попытка начнется сначала.",
       replayTitle: "Пройти уровень заново?",
       replayMessage: "Уровень {level} уже пройден. Начать заново?",
       cancel: "Отмена",
       noLivesTitle: "Нет жизней",
       noLivesMessage: "Нужна жизнь для старта уровня. Подожди восстановления или получи жизнь за награду.",
+      livesFull: "Жизни полные",
       ok: "Понятно",
       shopSummary: "У вас {coins} монет и {lives} жизней. Магазин с бустами будет подключен к этой экономике.",
       achievementSummary: "Звезд получено: {stars} из {total}. Проходите уровни без штрафов, чтобы собрать максимум.",
@@ -267,6 +279,8 @@
     music: true,
     sound: true,
     starsByLevel: {},
+    perfectChapters: new Set(),
+    chapterChests: new Set(),
     expandedChapters: new Set([1])
   };
 
@@ -293,7 +307,8 @@
     animationId: null,
     lastFrameAt: 0,
     toastTimer: null,
-    lastCompletion: null
+    lastCompletion: null,
+    replayingCompleted: false
   };
 
   let confirmResolve = null;
@@ -343,6 +358,7 @@
     setAttribute("#level-screen", "aria-label", t("levelScreen"));
     setAttribute("#level-screen .top-ui", "aria-label", t("topPanel"));
     setAttribute("#level-screen [data-action='return-chapter']", "aria-label", t("backToChapter"));
+    setAttribute("#level-screen [data-action='restart-level']", "aria-label", t("restartLevel"));
     setAttribute("#level-screen .resource-strip", "aria-label", t("resources"));
     setAttribute("#level-screen .coins-pill", "aria-label", t("coins"));
     setAttribute("#level-screen .lives-pill", "aria-label", t("lives"));
@@ -367,7 +383,7 @@
     }
     setText(".reward-prizes h3", t("rewards"));
     setText("#completeReplayButton", t("replay"));
-    setText("#completeNextButton", t("nextLevel"));
+    setText("#completeNextButton", levelState.replayingCompleted ? t("exitBack") : t("nextLevel"));
     setAttribute(".level-helper-panel", "aria-label", t("levelHintPanel"));
     setText(".level-helper-panel p", t("levelHint"));
     const helperTarget = document.querySelector(".helper-target");
@@ -448,27 +464,76 @@
 
     return {
       1: { coins: baseCoins },
-      2: { coins: Math.round(baseCoins * 1.55) },
-      3: { coins: Math.round(baseCoins * 2.2), restoreLife: level % 3 === 0 }
+      2: { coins: Math.round(baseCoins * STAR_COIN_MULTIPLIERS[2]) },
+      3: { coins: Math.round(baseCoins * STAR_COIN_MULTIPLIERS[3]) }
     };
+  };
+
+  const getBaseCoinReward = (level) => {
+    const levelRewards = LEVEL_REWARDS[level] || getGeneratedLevelRewards(level);
+    return levelRewards?.[1]?.coins || STAR_REWARDS[1].coins;
   };
 
   const getStarReward = (stars, level = state.selectedLevel) => {
     const safeStars = Math.max(1, Math.min(3, stars));
-    return (LEVEL_REWARDS[level] || getGeneratedLevelRewards(level))[safeStars] || STAR_REWARDS[safeStars] || STAR_REWARDS[1];
+    return {
+      coins: Math.round(getBaseCoinReward(level) * (STAR_COIN_MULTIPLIERS[safeStars] || STAR_COIN_MULTIPLIERS[1]))
+    };
   };
   const getLevelCoinReward = (level, stars = 1) => getStarReward(stars, level).coins;
+  const isChapterPerfectAfter = (level, stars) => {
+    if (stars < 3) {
+      return false;
+    }
+
+    const chapterId = getChapterForLevel(level);
+    const chapterStart = getChapterLevelStart(chapterId);
+    const chapterEnd = getChapterLevelEnd(chapterId);
+
+    for (let chapterLevel = chapterStart; chapterLevel <= chapterEnd; chapterLevel += 1) {
+      const earnedStars = chapterLevel === level ? stars : (state.starsByLevel[chapterLevel] || 0);
+      if (earnedStars < 3) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const getLifeRewardInfo = (stars, previousStars, level) => {
+    if (stars < 3 || previousStars >= 3) {
+      return { eligible: false, restoreLife: false, lifeFull: false, perfectChapterId: null };
+    }
+
+    const chapterId = getChapterForLevel(level);
+    const perfectChapterId = isChapterPerfectAfter(level, stars) && !state.perfectChapters.has(chapterId)
+      ? chapterId
+      : null;
+    const eligible = level % 10 === 0 || Boolean(perfectChapterId);
+
+    return {
+      eligible,
+      restoreLife: eligible && state.lives < MAX_LIVES,
+      lifeFull: eligible && state.lives >= MAX_LIVES,
+      perfectChapterId
+    };
+  };
+
   const getRewardDelta = (stars, previousStars = 0, level = state.selectedLevel) => {
     const bestStars = Math.max(0, Math.min(3, previousStars));
     const nextStars = Math.max(0, Math.min(3, stars));
     if (nextStars <= bestStars) {
-      return { stars: 0, coins: 0, restoreLife: false };
+      return { stars: 0, coins: 0, restoreLife: false, lifeFull: false, perfectChapterId: null };
     }
+
+    const lifeReward = getLifeRewardInfo(nextStars, bestStars, level);
 
     return {
       stars: nextStars - bestStars,
       coins: getStarReward(nextStars, level).coins - (bestStars > 0 ? getStarReward(bestStars, level).coins : 0),
-      restoreLife: Boolean(getStarReward(nextStars, level).restoreLife) && !Boolean(bestStars > 0 && getStarReward(bestStars, level).restoreLife)
+      restoreLife: lifeReward.restoreLife,
+      lifeFull: lifeReward.lifeFull,
+      perfectChapterId: lifeReward.perfectChapterId
     };
   };
 
@@ -559,7 +624,6 @@
   const createChapterExpansionMarkup = (chapter) => {
     const nextText = chapter.id === chapters.length ? t("toFinal") : t("nextChapter");
     const nextAction = chapter.id === chapters.length ? "final" : "next-progress-chapter";
-
     return `
       <div class="level-layer" data-level-layer="${chapter.id}"></div>
       <button class="next-chapter-cta" type="button" data-chapter-cta="${chapter.id}" data-action="${nextAction}">${nextText}<span aria-hidden="true">→</span></button>
@@ -571,6 +635,7 @@
     const isUnlocked = isChapterUnlocked(chapter.id);
     const isCurrentChapter = chapter.id === getChapterForLevel(state.currentLevel);
     const levelsMarkup = isExpanded ? createChapterExpansionMarkup(chapter) : "";
+    const statusText = state.chapterChests.has(chapter.id) ? t("chestClaimed") : t("chapterComplete");
 
     return `
       <article class="chapter-card ${isExpanded ? "is-expanded" : ""} ${isUnlocked ? "is-unlocked" : "is-locked"} ${isCurrentChapter ? "is-current-chapter" : ""}" data-chapter-card="${chapter.id}">
@@ -579,6 +644,7 @@
           <span class="chapter-card-copy">
             <span class="chapter-kicker">${t("chapter")} ${chapter.id}</span>
             <span class="chapter-card-title">${getChapterTitle(chapter.id)}</span>
+            <span class="chapter-complete-status" data-chapter-status="${chapter.id}" aria-hidden="true">${statusText}</span>
           </span>
           <button class="chapter-toggle" type="button" data-action="toggle-chapter" data-chapter-id="${chapter.id}" aria-expanded="${isExpanded ? "true" : "false"}" aria-label="${isExpanded ? t("collapseChapter") : t("expandChapter")}">
             <span class="chapter-chevron" aria-hidden="true">${isExpanded ? "⌃" : "⌄"}</span>
@@ -655,6 +721,8 @@
         music: state.music,
         sound: state.sound,
         starsByLevel: state.starsByLevel,
+        perfectChapters: Array.from(state.perfectChapters),
+        chapterChests: Array.from(state.chapterChests),
         expandedChapters: Array.from(state.expandedChapters)
       }));
     } catch (_error) {
@@ -679,6 +747,16 @@
       state.music = saved.music !== false;
       state.sound = saved.sound !== false;
       state.starsByLevel = saved.starsByLevel && typeof saved.starsByLevel === "object" ? saved.starsByLevel : {};
+      state.perfectChapters = new Set(
+        Array.isArray(saved.perfectChapters)
+          ? saved.perfectChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
+          : []
+      );
+      state.chapterChests = new Set(
+        Array.isArray(saved.chapterChests)
+          ? saved.chapterChests.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
+          : []
+      );
       state.expandedChapters = new Set(
         Array.isArray(saved.expandedChapters)
           ? saved.expandedChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
@@ -686,6 +764,8 @@
       );
       state.expandedChapters.add(getChapterForLevel(state.currentLevel));
     } catch (_error) {
+      state.perfectChapters = new Set();
+      state.chapterChests = new Set();
       state.expandedChapters = new Set([getChapterForLevel(state.currentLevel)]);
     }
   };
@@ -696,9 +776,18 @@
     }
 
     confirmTitle.textContent = title;
-    confirmMessage.textContent = message;
+    if (message) {
+      confirmMessage.hidden = false;
+      confirmMessage.textContent = message;
+    } else {
+      confirmMessage.hidden = true;
+      confirmMessage.textContent = "";
+    }
     confirmAcceptButton.textContent = acceptText;
-    confirmCancelButton.textContent = cancelText;
+    const hasCancel = Boolean(cancelText);
+    confirmCancelButton.hidden = !hasCancel;
+    confirmCancelButton.textContent = hasCancel ? cancelText : "";
+    confirmCancelButton.parentElement?.setAttribute("data-count", hasCancel ? "2" : "1");
     confirmModal.classList.add("is-open");
     confirmModal.setAttribute("aria-hidden", "false");
     confirmAcceptButton.focus();
@@ -720,7 +809,43 @@
     resolve(result);
   };
 
+  const showChapterChest = (chapterId) => new Promise((resolve) => {
+    const panel = document.createElement("div");
+    panel.className = "chapter-chest-panel is-visible";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.innerHTML = `
+      <div class="chapter-chest-card">
+        <div class="chapter-chest-icon" aria-hidden="true">★</div>
+        <h2>${t("chapterChestTitle")}</h2>
+        <p>${t("chapterChestMessage", { chapter: chapterId })}</p>
+        <button class="menu-button play-button compact-play" type="button">${t("ok")}</button>
+      </div>
+    `;
+
+    const close = () => {
+      panel.remove();
+      resolve();
+    };
+
+    panel.querySelector("button")?.addEventListener("click", close, { once: true });
+    root.append(panel);
+  });
+
   const isCompletedLevel = (level) => level < state.currentLevel || (state.starsByLevel[level] || 0) > 0;
+  const isChapterComplete = (chapterId) => state.currentLevel > getChapterLevelEnd(chapterId);
+  const isChapterFinalLevel = (level) => level === getChapterLevelEnd(getChapterForLevel(level));
+
+  const setCompletionActions = (isReplay) => {
+    levelState.replayingCompleted = isReplay;
+    if (!completeNextButton) {
+      return;
+    }
+
+    completeNextButton.dataset.destination = isReplay ? "chapters" : "next";
+    completeNextButton.textContent = isReplay ? t("exitBack") : t("nextLevel");
+    completeNextButton.setAttribute("aria-label", isReplay ? t("exitBack") : t("nextLevel"));
+  };
 
   const getEarnedStars = () => Object.values(state.starsByLevel).reduce((sum, stars) => sum + stars, 0);
 
@@ -832,10 +957,20 @@
   const updateChapterCtas = () => {
     chapters.forEach((chapter) => {
       const ctas = document.querySelectorAll(`[data-chapter-cta="${chapter.id}"]`);
-      const isChapterComplete = state.currentLevel > getChapterLevelEnd(chapter.id);
+      const statuses = document.querySelectorAll(`[data-chapter-status="${chapter.id}"]`);
+      const complete = isChapterComplete(chapter.id);
+      const nextChapterVisible = chapter.id < chapters.length && isChapterUnlocked(chapter.id + 1);
+      const showCta = complete && (chapter.id === chapters.length || !nextChapterVisible);
+      const statusText = state.chapterChests.has(chapter.id) ? t("chestClaimed") : t("chapterComplete");
+
       ctas.forEach((cta) => {
-        cta.classList.toggle("is-visible", isChapterComplete);
-        cta.setAttribute("aria-hidden", isChapterComplete ? "false" : "true");
+        cta.classList.toggle("is-visible", showCta);
+        cta.setAttribute("aria-hidden", showCta ? "false" : "true");
+      });
+      statuses.forEach((status) => {
+        status.textContent = statusText;
+        status.classList.toggle("is-visible", complete && !showCta);
+        status.setAttribute("aria-hidden", complete && !showCta ? "false" : "true");
       });
     });
   };
@@ -1467,6 +1602,7 @@
     const stars = getStarsForResult(percent, levelState.penalties);
     const previousStars = state.starsByLevel[state.selectedLevel] || 0;
     const reward = getRewardDelta(stars, previousStars);
+    const replayingCompleted = levelState.replayingCompleted || isCompletedLevel(state.selectedLevel);
     levelState.lastCompletion = {
       level: state.selectedLevel,
       percent,
@@ -1475,8 +1611,13 @@
       awardedStars: reward.stars,
       coins: reward.coins,
       restoreLife: reward.restoreLife,
+      lifeFull: reward.lifeFull,
+      perfectChapterId: reward.perfectChapterId,
+      chapterChestId: null,
+      replayingCompleted,
       applied: false
     };
+    setCompletionActions(replayingCompleted);
     if (levelCompleteScore) {
       levelCompleteScore.textContent = `${percent}%`;
     }
@@ -1490,13 +1631,13 @@
       rewardCoins.textContent = `+${reward.coins}`;
     }
     if (rewardLife) {
-      rewardLife.textContent = reward.restoreLife ? "+1" : "0";
+      rewardLife.textContent = reward.restoreLife ? "+1" : (reward.lifeFull ? t("livesFull") : "0");
     }
     if (rewardLifePrize) {
-      rewardLifePrize.hidden = !reward.restoreLife;
+      rewardLifePrize.hidden = !(reward.restoreLife || reward.lifeFull);
     }
     if (rewardPrizes) {
-      rewardPrizes.dataset.prizeCount = reward.restoreLife ? "2" : "1";
+      rewardPrizes.dataset.prizeCount = reward.restoreLife || reward.lifeFull ? "2" : "1";
     }
     if (rewardStars) {
       rewardStars.dataset.stars = String(stars);
@@ -1809,6 +1950,27 @@
     });
   };
 
+  const restartCurrentLevel = async () => {
+    if (!levelScreen.classList.contains("is-active") || levelState.completed) {
+      return;
+    }
+
+    const shouldRestart = await showConfirm({
+      title: t("restartTitle"),
+      message: t("restartMessage"),
+      acceptText: t("play"),
+      cancelText: t("cancel")
+    });
+
+    if (!shouldRestart) {
+      return;
+    }
+
+    setCompletionActions(isCompletedLevel(state.selectedLevel));
+    stopJezzLevel();
+    window.requestAnimationFrame(startJezzLevel);
+  };
+
   const openLevel = async (level, options = {}) => {
     if (level > state.currentLevel) {
       return;
@@ -1817,7 +1979,6 @@
     if (!options.skipReplayConfirm && isCompletedLevel(level)) {
       const shouldReplay = await showConfirm({
         title: t("replayTitle"),
-        message: t("replayMessage", { level }),
         acceptText: t("play"),
         cancelText: t("cancel")
       });
@@ -1832,7 +1993,7 @@
         title: t("noLivesTitle"),
         message: t("noLivesMessage"),
         acceptText: t("ok"),
-        cancelText: t("closeSettings")
+        cancelText: null
       });
       return;
     }
@@ -1840,6 +2001,7 @@
     const chapter = getChapter(getChapterForLevel(level));
     state.selectedLevel = level;
     state.currentChapter = chapter.id;
+    setCompletionActions(isCompletedLevel(level));
     levelScreen.className = `level-screen screen chapter-${chapter.id}`;
     levelChapterLabel.textContent = `${t("chapter")} ${chapter.id} - ${getChapterTitle(chapter.id)}`;
     levelTitle.textContent = `${t("level")} ${level}`;
@@ -1848,14 +2010,19 @@
     window.requestAnimationFrame(startJezzLevel);
   };
 
-  const completeSelectedLevel = (destination = "chapters") => {
+  const completeSelectedLevel = async (destination = "chapters") => {
     const completedChapterId = getChapterForLevel(state.selectedLevel);
+    const completedNextChapterId = Math.min(chapters.length, completedChapterId + 1);
     const completion = levelState.lastCompletion || {
       level: state.selectedLevel,
       stars: 1,
       awardedStars: 1,
       coins: getRewardDelta(1, state.starsByLevel[state.selectedLevel] || 0).coins,
       restoreLife: false,
+      lifeFull: false,
+      perfectChapterId: null,
+      chapterChestId: null,
+      replayingCompleted: levelState.replayingCompleted || isCompletedLevel(state.selectedLevel),
       applied: false
     };
 
@@ -1863,21 +2030,35 @@
       const previousStars = state.starsByLevel[state.selectedLevel] || 0;
       const improvedStars = completion.stars > previousStars;
       const reward = getRewardDelta(completion.stars, previousStars);
+      const completedChapterFinal = isChapterFinalLevel(completion.level);
 
       if (improvedStars) {
         state.starsByLevel[state.selectedLevel] = completion.stars;
       }
 
-      if (state.selectedLevel === state.currentLevel) {
+      if (!completion.replayingCompleted && state.selectedLevel === state.currentLevel) {
         state.coins += reward.coins;
         if (reward.restoreLife) {
           restoreLife();
         }
+        if (reward.perfectChapterId) {
+          state.perfectChapters.add(reward.perfectChapterId);
+        }
         state.currentLevel = Math.min(TOTAL_LEVELS + 1, state.currentLevel + 1);
+        if (completedChapterFinal && !state.chapterChests.has(completedChapterId)) {
+          state.chapterChests.add(completedChapterId);
+          completion.chapterChestId = completedChapterId;
+        }
+        if (completedChapterFinal && completion.level < TOTAL_LEVELS) {
+          state.expandedChapters.add(completedNextChapterId);
+          state.currentChapter = completedNextChapterId;
+        }
         completion.applied = true;
         completion.awardedStars = reward.stars;
         completion.coins = reward.coins;
         completion.restoreLife = reward.restoreLife;
+        completion.lifeFull = reward.lifeFull;
+        completion.perfectChapterId = reward.perfectChapterId;
         levelState.lastCompletion = completion;
         renderChapterScreens();
       } else if (improvedStars) {
@@ -1885,10 +2066,16 @@
         if (reward.restoreLife) {
           restoreLife();
         }
+        if (reward.perfectChapterId) {
+          state.perfectChapters.add(reward.perfectChapterId);
+        }
         completion.applied = true;
         completion.awardedStars = reward.stars;
         completion.coins = reward.coins;
         completion.restoreLife = reward.restoreLife;
+        completion.lifeFull = reward.lifeFull;
+        completion.perfectChapterId = reward.perfectChapterId;
+        completion.chapterChestId = null;
         levelState.lastCompletion = completion;
         renderChapterScreens();
       } else {
@@ -1896,8 +2083,33 @@
         completion.awardedStars = 0;
         completion.coins = 0;
         completion.restoreLife = false;
+        completion.lifeFull = false;
+        completion.perfectChapterId = null;
+        completion.chapterChestId = null;
         levelState.lastCompletion = completion;
       }
+    }
+
+    levelCompletePanel?.classList.remove("is-visible");
+    levelCompletePanel?.setAttribute("aria-hidden", "true");
+    stopJezzLevel();
+
+    if (completion.chapterChestId) {
+      await showChapterChest(completion.chapterChestId);
+    }
+
+    if (destination === "next" && completion.replayingCompleted) {
+      openChapter(completedChapterId);
+      return;
+    }
+
+    if (destination === "stay") {
+      return;
+    }
+
+    if (isChapterFinalLevel(completion.level) && !completion.replayingCompleted && completion.level < TOTAL_LEVELS) {
+      openChapter(completedNextChapterId);
+      return;
     }
 
     if (destination === "next" && state.currentLevel <= TOTAL_LEVELS) {
@@ -1910,15 +2122,11 @@
       return;
     }
 
-    if (destination === "stay") {
-      return;
-    }
-
     openChapter(completedChapterId);
   };
 
-  const replayCompletedLevel = () => {
-    completeSelectedLevel("stay");
+  const replayCompletedLevel = async () => {
+    await completeSelectedLevel("stay");
     openLevel(state.selectedLevel, { skipReplayConfirm: true });
   };
 
@@ -1948,7 +2156,7 @@
         return;
       }
       if (levelState.completed) {
-        completeSelectedLevel("stay");
+        await completeSelectedLevel("stay");
       }
       stopJezzLevel();
       showScreen("main-menu");
@@ -1998,9 +2206,14 @@
         return;
       }
       if (levelState.completed) {
-        completeSelectedLevel("stay");
+        await completeSelectedLevel("stay");
       }
       openChapter(state.currentChapter);
+      return;
+    }
+
+    if (action === "restart-level") {
+      await restartCurrentLevel();
       return;
     }
 
@@ -2054,7 +2267,7 @@
 
   completeCloseButton?.addEventListener("click", () => completeSelectedLevel("chapters"));
   completeReplayButton?.addEventListener("click", replayCompletedLevel);
-  completeNextButton?.addEventListener("click", () => completeSelectedLevel("next"));
+  completeNextButton?.addEventListener("click", () => completeSelectedLevel(completeNextButton.dataset.destination || "next"));
   musicToggle.addEventListener("change", () => {
     state.music = musicToggle.checked;
     saveProgress();
