@@ -12,6 +12,7 @@
   const penaltyCount = document.getElementById("penaltyCount");
   const targetPercent = document.getElementById("targetPercent");
   const helperTargetPercent = document.getElementById("helperTargetPercent");
+  const obstacleLegend = document.querySelector(".obstacle-legend");
   const levelToast = document.getElementById("levelToast");
   const levelCompletePanel = document.getElementById("levelCompletePanel");
   const levelCompleteScore = document.getElementById("levelCompleteScore");
@@ -31,7 +32,8 @@
   const SAVE_KEY = "jezzball-progress-v1";
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 3 * 60 * 1000;
-  const LEVEL_ONE_TARGET = 75;
+  const TOTAL_LEVELS = 100;
+  const LEVEL_ONE_TARGET = 70;
   const STAR_REWARDS = {
     1: { coins: 80, restoreLife: false },
     2: { coins: 120, restoreLife: false },
@@ -57,27 +59,60 @@
     medium: 190,
     fast: 235
   };
+
+  const createGeneratedLevelConfig = (level) => {
+    const chapterIndex = Math.floor((level - 1) / 10);
+    const chapterStep = (level - 1) % 10;
+    const speedCycle = ["slow", "medium", "fast"];
+    const obstacleCount = Math.min(3, 1 + Math.floor(chapterStep / 3) + (chapterIndex >= 5 ? 1 : 0));
+    const obstacles = [];
+
+    for (let index = 0; index < obstacleCount; index += 1) {
+      const vertical = (level + index) % 2 === 0;
+      const moving = (level + index + chapterIndex) % 3 === 0;
+      const safe = index === obstacleCount - 1 && (level + chapterIndex) % 4 === 0;
+      const center = 0.26 + ((chapterStep * 0.07 + index * 0.19 + chapterIndex * 0.03) % 0.48);
+      const start = 0.16 + ((chapterIndex * 0.04 + index * 0.09) % 0.18);
+      const end = 0.84 - ((chapterStep * 0.025 + index * 0.06) % 0.16);
+      const obstacle = vertical
+        ? { orientation: "vertical", x: center, y1: start, y2: Math.max(start + 0.28, end) }
+        : { orientation: "horizontal", y: center, x1: start, x2: Math.max(start + 0.28, end) };
+
+      obstacle.type = moving ? "moving" : "static";
+      obstacle.safe = safe;
+      obstacle.color = safe ? "rgba(173, 246, 255, 0.92)" : (index % 2 === 0 ? "#ff4e7a" : "#7c1d49");
+      obstacle.blocksBall = !safe;
+
+      if (moving) {
+        obstacle.axis = vertical ? "y" : "x";
+        obstacle.amplitude = Math.min(0.2, 0.08 + chapterIndex * 0.01 + index * 0.025);
+        obstacle.phase = ((chapterStep + index * 3) % 10) / 10;
+      }
+
+      obstacles.push(obstacle);
+    }
+
+    return {
+      target: Math.min(95, 76 + Math.floor((level - 1) / 5)),
+      balls: Math.min(4, 1 + Math.floor((level - 1) / 12)),
+      speed: speedCycle[(chapterIndex + chapterStep) % speedCycle.length],
+      obstacles
+    };
+  };
+
+  const generatedLevelConfigs = Object.fromEntries(
+    Array.from({ length: TOTAL_LEVELS - 10 }, (_, index) => {
+      const level = index + 11;
+      return [level, createGeneratedLevelConfig(level)];
+    })
+  );
+
   const LEVEL_CONFIGS = {
-    1: { target: 75, balls: 1, speed: "medium", obstacles: [] },
-    2: {
-      target: 75,
-      balls: 1,
-      speed: "slow",
-      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, type: "static", safe: false, color: "#ff4e7a" }]
-    },
-    3: { target: 80, balls: 2, speed: "slow", obstacles: [] },
-    4: {
-      target: 80,
-      balls: 2,
-      speed: "medium",
-      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.2, y2: 0.8, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.16, phase: 0 }]
-    },
-    5: {
-      target: 85,
-      balls: 2,
-      speed: "fast",
-      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.28, x2: 0.72, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: false }]
-    },
+    1: { target: 70, balls: 1, speed: "slow", obstacles: [], purpose: "tutorial-lines" },
+    2: { target: 71, balls: 1, speed: "slow", obstacles: [], purpose: "tutorial-lines" },
+    3: { target: 72, balls: 1, speed: "slow", obstacles: [], purpose: "tutorial-lines" },
+    4: { target: 74, balls: 1, speed: "medium", obstacles: [], purpose: "tutorial-lines" },
+    5: { target: 75, balls: 1, speed: "medium", obstacles: [], purpose: "tutorial-lines" },
     6: {
       target: 85,
       balls: 3,
@@ -114,7 +149,8 @@
         { orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "moving", safe: false, color: "#ff4e7a", axis: "x", amplitude: 0.17, phase: 0.6 },
         { orientation: "vertical", x: 0.28, y1: 0.25, y2: 0.75, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: false }
       ]
-    }
+    },
+    ...generatedLevelConfigs
   };
   const BALL_STARTS = [
     { x: 0.64, y: 0.42, vx: 0.78, vy: 0.62 },
@@ -136,12 +172,13 @@
     { id: 10, title: "Врата света", slug: "gates-of-light", icon: "◈" }
   ];
 
-  const SUPPORTED_LANGUAGES = ["ru", "en", "it"];
-  const FALLBACK_LANGUAGE = "en";
+  const SUPPORTED_LANGUAGES = ["ru"];
+  const FALLBACK_LANGUAGE = "ru";
   const yandexState = {
     sdk: null,
     lang: "ru",
-    readySent: false
+    readySent: false,
+    gameplayActive: false
   };
 
   const messages = {
@@ -208,155 +245,16 @@
       leaveMessage: "Прогресс текущей попытки не сохранится. Остаться в игре?",
       leaveAccept: "Выйти",
       replayTitle: "Пройти уровень заново?",
-      replayMessage: "",
+      replayMessage: "Уровень {level} уже пройден. Начать заново?",
       cancel: "Отмена",
       noLivesTitle: "Нет жизней",
       noLivesMessage: "Нужна жизнь для старта уровня. Подожди восстановления или получи жизнь за награду.",
-      ok: "Понятно"
-    },
-    en: {
-      pageTitle: "JezzBall - chapter map",
-      gameRoot: "JezzBall game screen",
-      subtitleStart: "Draw a line. ",
-      subtitleAccent: "Claim the space.",
-      mainMenu: "Main menu",
-      play: "Play",
-      levelScreen: "Level screen",
-      topPanel: "Top panel",
-      backToChapter: "Back to chapter",
-      resources: "Resources",
-      coins: "Coins",
-      lives: "Lives",
-      levelStars: "Level stars",
-      totalStars: "Total stars",
-      settings: "Settings",
-      levelGoal: "Level goal",
-      chapter: "Chapter",
-      level: "Level",
-      target: "Goal",
-      captured: "Captured",
-      penalties: "Penalties",
-      playfield: "JezzBall playfield",
-      toChapters: "To chapters",
-      levelComplete: "Level complete!",
-      earnedStars: "Earned stars",
-      capturedField: "You captured {percent}% of the field!",
-      rewards: "Rewards",
-      replay: "Play again",
-      nextLevel: "Next level",
-      levelHintPanel: "Level hint",
-      levelHint: "Draw lines and close areas to capture space.",
-      toGoal: "to goal",
-      final: "Final",
-      finalUnlocked: "Final unlocked",
-      finalTitle: "The Gates of Light are complete",
-      toMenu: "Menu",
-      closeSettings: "Close settings",
-      music: "Music",
-      sounds: "Sounds",
-      confirm: "Confirmation",
-      continue: "Continue?",
-      stay: "Stay",
-      yes: "Yes",
-      shop: "Shop",
-      achievements: "Achievements",
-      chapterSelect: "Chapter select",
-      chapterSelectHint: "Complete levels and unlock new chapters",
-      shopAndAchievements: "Shop and achievements",
-      stars: "Stars",
-      nextChapter: "Go to the next chapter",
-      toFinal: "Go to the final",
-      collapseChapter: "Collapse chapter",
-      expandChapter: "Expand chapter",
-      currentLevel: "Current level {level}",
-      completedLevel: "Completed level {level}, stars: {stars}",
-      lockedLevel: "Level {level} locked",
-      tooClose: "Too close to the edge",
-      penalty: "Penalty",
-      leaveTitle: "Leave the level?",
-      leaveMessage: "Progress in the current attempt will not be saved. Stay in the game?",
-      leaveAccept: "Leave",
-      replayTitle: "Replay this level?",
-      replayMessage: "Level {level} is already complete. Start it again?",
-      cancel: "Cancel",
-      noLivesTitle: "No lives",
-      noLivesMessage: "You need a life to start a level. Wait for recovery or earn one as a reward.",
-      ok: "OK"
-    },
-    it: {
-      pageTitle: "JezzBall - mappa dei capitoli",
-      gameRoot: "Schermata di gioco JezzBall",
-      subtitleStart: "Disegna una linea. ",
-      subtitleAccent: "Conquista lo spazio.",
-      mainMenu: "Menu principale",
-      play: "Gioca",
-      levelScreen: "Schermata livello",
-      topPanel: "Pannello superiore",
-      backToChapter: "Torna al capitolo",
-      resources: "Risorse",
-      coins: "Monete",
-      lives: "Vite",
-      levelStars: "Stelle del livello",
-      totalStars: "Stelle totali",
-      settings: "Impostazioni",
-      levelGoal: "Obiettivo del livello",
-      chapter: "Capitolo",
-      level: "Livello",
-      target: "Obiettivo",
-      captured: "Conquistato",
-      penalties: "Penalita",
-      playfield: "Campo di gioco JezzBall",
-      toChapters: "Ai capitoli",
-      levelComplete: "Livello completato!",
-      earnedStars: "Stelle ottenute",
-      capturedField: "Hai conquistato il {percent}% del campo!",
-      rewards: "Ricompense",
-      replay: "Gioca ancora",
-      nextLevel: "Livello successivo",
-      levelHintPanel: "Suggerimento livello",
-      levelHint: "Disegna linee e chiudi aree per conquistare spazio.",
-      toGoal: "all'obiettivo",
-      final: "Finale",
-      finalUnlocked: "Finale sbloccato",
-      finalTitle: "Le Porte della Luce sono completate",
-      toMenu: "Menu",
-      closeSettings: "Chiudi impostazioni",
-      music: "Musica",
-      sounds: "Suoni",
-      confirm: "Conferma",
-      continue: "Continuare?",
-      stay: "Resta",
-      yes: "Si",
-      shop: "Negozio",
-      achievements: "Traguardi",
-      chapterSelect: "Seleziona capitolo",
-      chapterSelectHint: "Completa i livelli e sblocca nuovi capitoli",
-      shopAndAchievements: "Negozio e traguardi",
-      stars: "Stelle",
-      nextChapter: "Vai al capitolo successivo",
-      toFinal: "Vai al finale",
-      collapseChapter: "Comprimi capitolo",
-      expandChapter: "Espandi capitolo",
-      currentLevel: "Livello attuale {level}",
-      completedLevel: "Livello {level} completato, stelle: {stars}",
-      lockedLevel: "Livello {level} bloccato",
-      tooClose: "Troppo vicino al bordo",
-      penalty: "Penalita",
-      leaveTitle: "Uscire dal livello?",
-      leaveMessage: "I progressi del tentativo attuale non saranno salvati. Restare in gioco?",
-      leaveAccept: "Esci",
-      replayTitle: "Rigiocare il livello?",
-      replayMessage: "Il livello {level} e gia completato. Iniziarlo di nuovo?",
-      cancel: "Annulla",
-      noLivesTitle: "Nessuna vita",
-      noLivesMessage: "Serve una vita per iniziare un livello. Attendi il recupero o ottienine una come ricompensa.",
-      ok: "OK"
+      ok: "Понятно",
+      shopSummary: "У вас {coins} монет и {lives} жизней. Магазин с бустами будет подключен к этой экономике.",
+      achievementSummary: "Звезд получено: {stars} из {total}. Проходите уровни без штрафов, чтобы собрать максимум.",
+      obstacleDanger: "Яркая или темная линия - штраф при касании",
+      obstacleSafe: "Пунктирная светлая линия - можно задевать"
     }
-  };
-
-  const chapterTitles = {
-    en: ["Sunny Glade", "Mysterious Forest", "Crystal Caves", "Forgotten Tower", "Fiery Peaks", "Sky Islands", "City Lights", "Neon Rhythm", "Star Path", "Gates of Light"],
-    it: ["Radura soleggiata", "Foresta misteriosa", "Grotte di cristallo", "Torre dimenticata", "Cime infuocate", "Isole del cielo", "Luci della citta", "Ritmo neon", "Sentiero stellare", "Porte della Luce"]
   };
 
   const state = {
@@ -412,8 +310,7 @@
 
   const getChapterTitle = (chapterId) => {
     const chapter = chapters[clampChapterId(chapterId) - 1];
-    const titles = chapterTitles[yandexState.lang];
-    return titles ? titles[chapter.id - 1] : chapter.title;
+    return chapter.title;
   };
 
   const setText = (selector, value) => {
@@ -457,11 +354,14 @@
     if (levelStats[1]) levelStats[1].textContent = t("captured");
     if (levelStats[2]) levelStats[2].textContent = t("penalties");
     setAttribute("#jezzCanvas", "aria-label", t("playfield"));
+    const obstacleItems = document.querySelectorAll(".obstacle-legend-item");
+    if (obstacleItems[0]) obstacleItems[0].lastChild.textContent = ` ${t("obstacleDanger")}`;
+    if (obstacleItems[1]) obstacleItems[1].lastChild.textContent = ` ${t("obstacleSafe")}`;
     setAttribute("#completeCloseButton", "aria-label", t("toChapters"));
     setText("#rewardTitle", t("levelComplete"));
     setAttribute("#rewardStars", "aria-label", t("earnedStars"));
     if (levelCompleteScore) {
-      const percent = levelCompleteScore.textContent.replace("%", "") || "75";
+      const percent = levelCompleteScore.textContent.replace("%", "") || String(LEVEL_ONE_TARGET);
       const [before, after] = t("capturedField", { percent }).split(`${percent}%`);
       document.querySelector(".reward-capture")?.replaceChildren(before || "", levelCompleteScore, after || "");
     }
@@ -512,12 +412,28 @@
 
     try {
       yandexState.sdk = await window.YaGames.init();
-      applyLanguage(yandexState.sdk?.environment?.i18n?.lang || navigator.language);
+      applyLanguage("ru");
       renderChapterScreens();
       yandexState.sdk?.features?.LoadingAPI?.ready?.();
       yandexState.readySent = true;
     } catch (_error) {
       applyLanguage("ru");
+    }
+  };
+
+  const updateGameplayMarker = (isActive) => {
+    if (yandexState.gameplayActive === isActive) {
+      return;
+    }
+
+    yandexState.gameplayActive = isActive;
+    const gameplayApi = yandexState.sdk?.features?.GameplayAPI;
+    const method = isActive ? "start" : "stop";
+
+    try {
+      gameplayApi?.[method]?.();
+    } catch (_error) {
+      // SDK marker failures should never interrupt the playable loop.
     }
   };
 
@@ -527,12 +443,22 @@
   const getChapterForLevel = (level) => Math.min(chapters.length, Math.max(1, Math.ceil(level / 10)));
   const getChapterLevelStart = (chapterId) => (chapterId - 1) * 10 + 1;
   const getChapterLevelEnd = (chapterId) => chapterId * 10;
+  const getGeneratedLevelRewards = (level) => {
+    const baseCoins = 45 + Math.floor(level * 5.5);
+
+    return {
+      1: { coins: baseCoins },
+      2: { coins: Math.round(baseCoins * 1.55) },
+      3: { coins: Math.round(baseCoins * 2.2), restoreLife: level % 3 === 0 }
+    };
+  };
+
   const getStarReward = (stars, level = state.selectedLevel) => {
     const safeStars = Math.max(1, Math.min(3, stars));
-    return LEVEL_REWARDS[level]?.[safeStars] || STAR_REWARDS[safeStars] || STAR_REWARDS[1];
+    return (LEVEL_REWARDS[level] || getGeneratedLevelRewards(level))[safeStars] || STAR_REWARDS[safeStars] || STAR_REWARDS[1];
   };
   const getLevelCoinReward = (level, stars = 1) => getStarReward(stars, level).coins;
-  const getRewardDelta = (stars, previousStars = 0) => {
+  const getRewardDelta = (stars, previousStars = 0, level = state.selectedLevel) => {
     const bestStars = Math.max(0, Math.min(3, previousStars));
     const nextStars = Math.max(0, Math.min(3, stars));
     if (nextStars <= bestStars) {
@@ -541,8 +467,8 @@
 
     return {
       stars: nextStars - bestStars,
-      coins: getStarReward(nextStars).coins - (bestStars > 0 ? getStarReward(bestStars).coins : 0),
-      restoreLife: Boolean(getStarReward(nextStars).restoreLife) && !Boolean(bestStars > 0 && getStarReward(bestStars).restoreLife)
+      coins: getStarReward(nextStars, level).coins - (bestStars > 0 ? getStarReward(bestStars, level).coins : 0),
+      restoreLife: Boolean(getStarReward(nextStars, level).restoreLife) && !Boolean(bestStars > 0 && getStarReward(bestStars, level).restoreLife)
     };
   };
 
@@ -745,8 +671,8 @@
 
       const saved = JSON.parse(raw);
       state.currentChapter = clampChapterId(Number(saved.currentChapter) || state.currentChapter);
-      state.currentLevel = Math.max(1, Math.min(101, Math.round(Number(saved.currentLevel) || state.currentLevel)));
-      state.selectedLevel = Math.max(1, Math.min(100, Math.round(Number(saved.selectedLevel) || state.selectedLevel)));
+      state.currentLevel = Math.max(1, Math.min(TOTAL_LEVELS + 1, Math.round(Number(saved.currentLevel) || state.currentLevel)));
+      state.selectedLevel = Math.max(1, Math.min(TOTAL_LEVELS, Math.round(Number(saved.selectedLevel) || state.selectedLevel)));
       state.coins = Math.max(0, Math.round(Number(saved.coins) || 0));
       state.lives = Math.max(0, Math.min(MAX_LIVES, Math.round(Number(saved.lives) || 0)));
       state.nextLifeAt = Number.isFinite(Number(saved.nextLifeAt)) ? Number(saved.nextLifeAt) : null;
@@ -1009,6 +935,9 @@
     }
     if (helperTargetPercent) {
       helperTargetPercent.textContent = `${levelState.target}%`;
+    }
+    if (obstacleLegend) {
+      obstacleLegend.hidden = !(levelState.obstacles && levelState.obstacles.length);
     }
   };
 
@@ -1532,6 +1461,7 @@
 
     levelState.completed = true;
     levelState.running = false;
+    updateGameplayMarker(false);
     levelState.activeLine = null;
     const percent = Math.floor(getCaptureRatio() * 100);
     const stars = getStarsForResult(percent, levelState.penalties);
@@ -1597,6 +1527,7 @@
 
   const stopJezzLevel = () => {
     levelState.running = false;
+    updateGameplayMarker(false);
     if (levelState.animationId) {
       window.cancelAnimationFrame(levelState.animationId);
       levelState.animationId = null;
@@ -1687,6 +1618,7 @@
     const config = getLevelConfig(state.selectedLevel);
     const speed = getSpeedValue(config.speed);
     levelState.running = true;
+    updateGameplayMarker(true);
     levelState.completed = false;
     levelState.config = config;
     levelState.target = config.target;
@@ -1884,10 +1816,10 @@
 
     if (!options.skipReplayConfirm && isCompletedLevel(level)) {
       const shouldReplay = await showConfirm({
-        title: "Пройти уровень заново?",
-        message: "",
-        acceptText: "Играть",
-        cancelText: "Отмена"
+        title: t("replayTitle"),
+        message: t("replayMessage", { level }),
+        acceptText: t("play"),
+        cancelText: t("cancel")
       });
 
       if (!shouldReplay) {
@@ -1909,7 +1841,7 @@
     state.selectedLevel = level;
     state.currentChapter = chapter.id;
     levelScreen.className = `level-screen screen chapter-${chapter.id}`;
-    levelChapterLabel.textContent = `${t("chapter")} ${chapter.id} · ${getChapterTitle(chapter.id)}`;
+    levelChapterLabel.textContent = `${t("chapter")} ${chapter.id} - ${getChapterTitle(chapter.id)}`;
     levelTitle.textContent = `${t("level")} ${level}`;
     showScreen("level-screen");
     saveProgress();
@@ -1941,7 +1873,7 @@
         if (reward.restoreLife) {
           restoreLife();
         }
-        state.currentLevel = Math.min(101, state.currentLevel + 1);
+        state.currentLevel = Math.min(TOTAL_LEVELS + 1, state.currentLevel + 1);
         completion.applied = true;
         completion.awardedStars = reward.stars;
         completion.coins = reward.coins;
@@ -1968,7 +1900,7 @@
       }
     }
 
-    if (destination === "next" && state.currentLevel <= 100) {
+    if (destination === "next" && state.currentLevel <= TOTAL_LEVELS) {
       openLevel(state.currentLevel, { skipReplayConfirm: true });
       return;
     }
@@ -2069,6 +2001,26 @@
         completeSelectedLevel("stay");
       }
       openChapter(state.currentChapter);
+      return;
+    }
+
+    if (action === "achievements") {
+      await showConfirm({
+        title: t("achievements"),
+        message: t("achievementSummary", { stars: getEarnedStars(), total: TOTAL_LEVELS * 3 }),
+        acceptText: t("ok"),
+        cancelText: t("cancel")
+      });
+      return;
+    }
+
+    if (action === "shop") {
+      await showConfirm({
+        title: t("shop"),
+        message: t("shopSummary", { coins: state.coins, lives: state.lives }),
+        acceptText: t("ok"),
+        cancelText: t("cancel")
+      });
       return;
     }
 
@@ -2180,7 +2132,7 @@
         return;
       }
 
-      state.currentLevel = Math.max(1, Math.min(101, Math.round(parsedLevel)));
+      state.currentLevel = Math.max(1, Math.min(TOTAL_LEVELS + 1, Math.round(parsedLevel)));
       renderChapterScreens();
       openChapter(getChapterForLevel(state.currentLevel));
     }
