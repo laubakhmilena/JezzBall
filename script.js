@@ -27,6 +27,9 @@
   const confirmMessage = document.getElementById("confirmMessage");
   const confirmCancelButton = document.getElementById("confirmCancelButton");
   const confirmAcceptButton = document.getElementById("confirmAcceptButton");
+  const inventoryModal = document.getElementById("inventoryModal");
+  const inventoryCloseButton = document.getElementById("inventoryCloseButton");
+  const inventoryContent = document.getElementById("inventoryContent");
   const musicToggle = document.getElementById("musicToggle");
   const soundToggle = document.getElementById("soundToggle");
   const SAVE_KEY = "jezzball-progress-v1";
@@ -43,6 +46,100 @@
     1: { coins: 80 },
     2: { coins: 120 },
     3: { coins: 176 }
+  };
+  const CHEST_TIERS = {
+    none: 0,
+    small: 1,
+    medium: 2,
+    large: 3
+  };
+  const CHAPTER_CHEST_REWARDS = {
+    0: {
+      type: "none",
+      title: "Нет сундука",
+      coins: 0,
+      lives: 0
+    },
+    1: {
+      type: "small",
+      title: "Малый сундук",
+      coins: 200,
+      lives: 0
+    },
+    2: {
+      type: "medium",
+      title: "Средний сундук",
+      coins: 400,
+      lives: 1
+    },
+    3: {
+      type: "large",
+      title: "Большой сундук",
+      coins: 700,
+      lives: 2
+    }
+  };
+  const BOOSTER_ITEMS = {
+    fastLine: {
+      icon: "⚡",
+      title: "Молниеносная линия",
+      description: "Следующая линия строится быстрее."
+    },
+    slowBalls: {
+      icon: "❄",
+      title: "Ледяная пауза",
+      description: "Шары замедляются на 6 секунд."
+    },
+    lineShield: {
+      icon: "🛡",
+      title: "Щит чертёжника",
+      description: "Один удар по строящейся линии не ломает её."
+    }
+  };
+  const DEFAULT_BOOSTERS = {
+    fastLine: 0,
+    slowBalls: 0,
+    lineShield: 0
+  };
+  const DEFAULT_SELECTED_BOOSTERS = ["fastLine", "slowBalls", "lineShield"];
+  const DEFAULT_COSMETICS = {
+    balls: ["default"],
+    lines: ["default"],
+    captureEffects: ["default"]
+  };
+  const DEFAULT_EQUIPPED_COSMETICS = {
+    ball: "default",
+    line: "default",
+    captureEffect: "default"
+  };
+  const COSMETIC_GROUPS = {
+    balls: {
+      title: "Мячи",
+      equippedKey: "ball",
+      items: {
+        default: { icon: "●", title: "Обычный" },
+        neon: { icon: "🟣", title: "Неоновый" },
+        fire: { icon: "🔥", title: "Огненный" }
+      }
+    },
+    lines: {
+      title: "Линии",
+      equippedKey: "line",
+      items: {
+        default: { icon: "─", title: "Обычная" },
+        lightning: { icon: "⚡", title: "Молния" },
+        crystal: { icon: "💎", title: "Кристалл" }
+      }
+    },
+    captureEffects: {
+      title: "Эффекты захвата",
+      equippedKey: "captureEffect",
+      items: {
+        default: { icon: "○", title: "Обычный" },
+        stars: { icon: "✨", title: "Звёзды" },
+        wave: { icon: "🌊", title: "Волна" }
+      }
+    }
   };
   const LEVEL_REWARDS = {
     1: { 1: { coins: 50 }, 2: { coins: 75 }, 3: { coins: 110 } },
@@ -186,7 +283,7 @@
 
   const messages = {
     ru: {
-      pageTitle: "JezzBall - карта глав",
+      pageTitle: "JezzBall",
       gameRoot: "Экран игры JezzBall",
       subtitleStart: "Проведи линию. ",
       subtitleAccent: "Захвати пространство.",
@@ -280,7 +377,17 @@
     sound: true,
     starsByLevel: {},
     perfectChapters: new Set(),
-    chapterChests: new Set(),
+    chapterChests: {},
+    boosters: { ...DEFAULT_BOOSTERS },
+    selectedBoosters: [...DEFAULT_SELECTED_BOOSTERS],
+    cosmetics: {
+      balls: [...DEFAULT_COSMETICS.balls],
+      lines: [...DEFAULT_COSMETICS.lines],
+      captureEffects: [...DEFAULT_COSMETICS.captureEffects]
+    },
+    equippedCosmetics: { ...DEFAULT_EQUIPPED_COSMETICS },
+    gifts: [],
+    inventoryTab: "chests",
     expandedChapters: new Set([1])
   };
 
@@ -459,6 +566,136 @@
   const getChapterForLevel = (level) => Math.min(chapters.length, Math.max(1, Math.ceil(level / 10)));
   const getChapterLevelStart = (chapterId) => (chapterId - 1) * 10 + 1;
   const getChapterLevelEnd = (chapterId) => chapterId * 10;
+  const getChapterStars = (chapterId) => {
+    const chapterStart = getChapterLevelStart(chapterId);
+    const chapterEnd = getChapterLevelEnd(chapterId);
+    let stars = 0;
+
+    for (let level = chapterStart; level <= chapterEnd; level += 1) {
+      stars += Number(state.starsByLevel[level]) || 0;
+    }
+
+    return stars;
+  };
+  const getChapterChestTier = (chapterStars) => {
+    if (chapterStars >= 27) {
+      return CHEST_TIERS.large;
+    }
+
+    if (chapterStars >= 20) {
+      return CHEST_TIERS.medium;
+    }
+
+    if (chapterStars >= 10) {
+      return CHEST_TIERS.small;
+    }
+
+    return CHEST_TIERS.none;
+  };
+  const normalizeChestTier = (tier) => Math.max(CHEST_TIERS.none, Math.min(CHEST_TIERS.large, Math.round(Number(tier) || 0)));
+  const ensureChapterChest = (chapterId) => {
+    const safeChapterId = clampChapterId(chapterId);
+    const chest = state.chapterChests[safeChapterId];
+
+    if (!chest || typeof chest !== "object") {
+      state.chapterChests[safeChapterId] = {
+        earnedTier: CHEST_TIERS.none,
+        claimedTier: CHEST_TIERS.none
+      };
+      return state.chapterChests[safeChapterId];
+    }
+
+    chest.earnedTier = normalizeChestTier(chest.earnedTier);
+    chest.claimedTier = normalizeChestTier(chest.claimedTier);
+    chest.claimedTier = Math.min(chest.claimedTier, chest.earnedTier);
+    return chest;
+  };
+  const syncChapterChestProgress = (chapterId) => {
+    const safeChapterId = clampChapterId(chapterId);
+    const chest = ensureChapterChest(safeChapterId);
+    const previousTier = chest.earnedTier;
+    const chapterStars = getChapterStars(safeChapterId);
+    const earnedTier = getChapterChestTier(chapterStars);
+    const changed = earnedTier > previousTier;
+
+    if (changed) {
+      chest.earnedTier = earnedTier;
+      saveProgress();
+    }
+
+    return {
+      changed,
+      chapterId: safeChapterId,
+      chapterStars,
+      previousTier,
+      earnedTier: chest.earnedTier,
+      claimedTier: chest.claimedTier,
+      isUpgrade: chest.claimedTier > CHEST_TIERS.none
+    };
+  };
+  const getPendingChestReward = (chapterId) => {
+    const safeChapterId = clampChapterId(chapterId);
+    const chest = ensureChapterChest(safeChapterId);
+
+    if (chest.earnedTier <= chest.claimedTier) {
+      return {
+        hasReward: false,
+        chapterId: safeChapterId,
+        earnedTier: chest.earnedTier,
+        claimedTier: chest.claimedTier,
+        coins: 0,
+        lives: 0
+      };
+    }
+
+    const previousReward = CHAPTER_CHEST_REWARDS[chest.claimedTier] || CHAPTER_CHEST_REWARDS[CHEST_TIERS.none];
+    const nextReward = CHAPTER_CHEST_REWARDS[chest.earnedTier] || CHAPTER_CHEST_REWARDS[CHEST_TIERS.none];
+
+    return {
+      hasReward: true,
+      chapterId: safeChapterId,
+      earnedTier: chest.earnedTier,
+      claimedTier: chest.claimedTier,
+      coins: nextReward.coins - previousReward.coins,
+      lives: nextReward.lives - previousReward.lives,
+      title: nextReward.title,
+      previousTitle: previousReward.title,
+      nextTitle: nextReward.title
+    };
+  };
+  const getPendingChests = () => chapters
+    .map((chapter) => getPendingChestReward(chapter.id))
+    .filter((reward) => reward.hasReward);
+  const getChapterChestStatusText = (chapterId) => {
+    const chest = ensureChapterChest(chapterId);
+    const stars = getChapterStars(chapterId);
+
+    if (chest.earnedTier > chest.claimedTier) {
+      return "Сундук готов";
+    }
+
+    if (chest.claimedTier >= CHEST_TIERS.large) {
+      return "Большой сундук открыт";
+    }
+
+    if (chest.claimedTier > CHEST_TIERS.none) {
+      return "Сундук открыт";
+    }
+
+    if (stars < 10) {
+      return `До малого сундука: ${10 - stars}★`;
+    }
+
+    if (stars < 20) {
+      return `До среднего сундука: ${20 - stars}★`;
+    }
+
+    if (stars < 27) {
+      return `До большого сундука: ${27 - stars}★`;
+    }
+
+    return "Сундук готов";
+  };
   const getGeneratedLevelRewards = (level) => {
     const baseCoins = 45 + Math.floor(level * 5.5);
 
@@ -635,7 +872,7 @@
     const isUnlocked = isChapterUnlocked(chapter.id);
     const isCurrentChapter = chapter.id === getChapterForLevel(state.currentLevel);
     const levelsMarkup = isExpanded ? createChapterExpansionMarkup(chapter) : "";
-    const statusText = state.chapterChests.has(chapter.id) ? t("chestClaimed") : t("chapterComplete");
+    const statusText = isUnlocked ? getChapterChestStatusText(chapter.id) : t("chapterComplete");
 
     return `
       <article class="chapter-card ${isExpanded ? "is-expanded" : ""} ${isUnlocked ? "is-unlocked" : "is-locked"} ${isCurrentChapter ? "is-current-chapter" : ""}" data-chapter-card="${chapter.id}">
@@ -644,7 +881,7 @@
           <span class="chapter-card-copy">
             <span class="chapter-kicker">${t("chapter")} ${chapter.id}</span>
             <span class="chapter-card-title">${getChapterTitle(chapter.id)}</span>
-            <span class="chapter-complete-status" data-chapter-status="${chapter.id}" aria-hidden="true">${statusText}</span>
+            <span class="chapter-complete-status ${isUnlocked ? "is-visible" : ""}" data-chapter-status="${chapter.id}" aria-hidden="${isUnlocked ? "false" : "true"}">${statusText}</span>
           </span>
           <button class="chapter-toggle" type="button" data-action="toggle-chapter" data-chapter-id="${chapter.id}" aria-expanded="${isExpanded ? "true" : "false"}" aria-label="${isExpanded ? t("collapseChapter") : t("expandChapter")}">
             <span class="chapter-chevron" aria-hidden="true">${isExpanded ? "⌃" : "⌄"}</span>
@@ -673,6 +910,7 @@
         </div>
         <nav class="chapter-action-bar" aria-label="${t("shopAndAchievements")}">
           <button type="button" data-action="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14.26c-.75 0-1.41-.41-1.75-1.03L2 6.2V5h3.21l.94 2h12.9c.75 0 1.24.78.92 1.45l-2.42 5.05A2 2 0 0 1 15.74 14H8.1l-1.1 2h12v2H7c-1.52 0-2.48-1.63-1.75-2.96l1.03-1.86-.12-.24ZM7.1 9l1.42 3h7.22l1.44-3H7.1Z"/></svg>${t("shop")}</button>
+          <button class="inventory-button" type="button" data-action="inventory"><span class="bottom-nav-icon" aria-hidden="true">🎒</span>Инвентарь<span class="inventory-badge" hidden>0</span></button>
           <button type="button" data-action="achievements"><span aria-hidden="true">★</span>${t("achievements")}</button>
         </nav>
       </div>
@@ -687,6 +925,7 @@
     chapters.forEach(createChapterScreen);
     renderAllChapters();
     document.querySelectorAll("button").forEach(setPressedFeedback);
+    updateInventoryBadge();
   };
 
   const setPressedFeedback = (button) => {
@@ -709,6 +948,113 @@
     });
   }
 
+  const serializeChapterChests = () => Object.fromEntries(
+    Object.entries(state.chapterChests || {}).map(([chapterId, chest]) => [
+      chapterId,
+      {
+        earnedTier: normalizeChestTier(chest?.earnedTier),
+        claimedTier: normalizeChestTier(chest?.claimedTier)
+      }
+    ])
+  );
+
+  const migrateChapterChests = (saved) => {
+    const nextChests = {};
+    const source = saved?.chapterChests;
+
+    if (source && !Array.isArray(source) && typeof source === "object") {
+      Object.entries(source).forEach(([chapterId, chest]) => {
+        const safeChapterId = Number(chapterId);
+        if (safeChapterId < 1 || safeChapterId > chapters.length) {
+          return;
+        }
+
+        nextChests[safeChapterId] = {
+          earnedTier: normalizeChestTier(chest?.earnedTier),
+          claimedTier: normalizeChestTier(chest?.claimedTier)
+        };
+        nextChests[safeChapterId].claimedTier = Math.min(
+          nextChests[safeChapterId].claimedTier,
+          nextChests[safeChapterId].earnedTier
+        );
+      });
+      return nextChests;
+    }
+
+    if (Array.isArray(source)) {
+      source.map(Number).forEach((chapterId) => {
+        if (chapterId >= 1 && chapterId <= chapters.length) {
+          nextChests[chapterId] = {
+            earnedTier: CHEST_TIERS.small,
+            claimedTier: CHEST_TIERS.small
+          };
+        }
+      });
+    }
+
+    if (Array.isArray(saved?.claimedChapterChests)) {
+      saved.claimedChapterChests.map(Number).forEach((chapterId) => {
+        if (chapterId >= 1 && chapterId <= chapters.length && !nextChests[chapterId]) {
+          nextChests[chapterId] = {
+            earnedTier: CHEST_TIERS.small,
+            claimedTier: CHEST_TIERS.small
+          };
+        }
+      });
+    }
+
+    return nextChests;
+  };
+
+  const normalizeBoosters = (savedBoosters = {}) => Object.fromEntries(
+    Object.keys(DEFAULT_BOOSTERS).map((key) => [
+      key,
+      Math.max(0, Math.round(Number(savedBoosters?.[key]) || 0))
+    ])
+  );
+
+  const normalizeSelectedBoosters = (selectedBoosters) => {
+    const source = Array.isArray(selectedBoosters) ? selectedBoosters : DEFAULT_SELECTED_BOOSTERS;
+    const valid = source.filter((key) => Object.prototype.hasOwnProperty.call(DEFAULT_BOOSTERS, key));
+    return valid.length ? Array.from(new Set(valid)) : [...DEFAULT_SELECTED_BOOSTERS];
+  };
+
+  const normalizeCosmetics = (savedCosmetics = {}) => {
+    const cosmetics = {};
+    Object.entries(DEFAULT_COSMETICS).forEach(([group, defaults]) => {
+      const savedGroup = Array.isArray(savedCosmetics?.[group]) ? savedCosmetics[group] : [];
+      cosmetics[group] = Array.from(new Set([...defaults, ...savedGroup].filter(Boolean)));
+    });
+    return cosmetics;
+  };
+
+  const normalizeEquippedCosmetics = (savedEquipped = {}, cosmetics = DEFAULT_COSMETICS) => {
+    const equipped = { ...DEFAULT_EQUIPPED_COSMETICS };
+    Object.entries(COSMETIC_GROUPS).forEach(([group, config]) => {
+      const savedItem = savedEquipped?.[config.equippedKey];
+      equipped[config.equippedKey] = cosmetics[group]?.includes(savedItem)
+        ? savedItem
+        : DEFAULT_EQUIPPED_COSMETICS[config.equippedKey];
+    });
+    return equipped;
+  };
+
+  const normalizeGifts = (savedGifts) => Array.isArray(savedGifts)
+    ? savedGifts
+      .filter((gift) => gift && typeof gift === "object" && gift.id)
+      .map((gift) => ({
+        id: String(gift.id),
+        title: String(gift.title || "Подарок"),
+        description: String(gift.description || ""),
+        icon: String(gift.icon || "🎁"),
+        coins: Math.max(0, Math.round(Number(gift.coins) || 0)),
+        lives: Math.max(0, Math.round(Number(gift.lives) || 0)),
+        boosters: normalizeBoosters(gift.boosters || {}),
+        cosmetics: gift.cosmetics && typeof gift.cosmetics === "object" ? gift.cosmetics : null,
+        claimed: gift.claimed === true
+      }))
+    : [];
+
   const saveProgress = () => {
     try {
       window.localStorage.setItem(SAVE_KEY, JSON.stringify({
@@ -722,7 +1068,12 @@
         sound: state.sound,
         starsByLevel: state.starsByLevel,
         perfectChapters: Array.from(state.perfectChapters),
-        chapterChests: Array.from(state.chapterChests),
+        chapterChests: serializeChapterChests(),
+        boosters: state.boosters,
+        selectedBoosters: state.selectedBoosters,
+        cosmetics: state.cosmetics,
+        equippedCosmetics: state.equippedCosmetics,
+        gifts: state.gifts,
         expandedChapters: Array.from(state.expandedChapters)
       }));
     } catch (_error) {
@@ -752,11 +1103,12 @@
           ? saved.perfectChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
           : []
       );
-      state.chapterChests = new Set(
-        Array.isArray(saved.chapterChests)
-          ? saved.chapterChests.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
-          : []
-      );
+      state.chapterChests = migrateChapterChests(saved);
+      state.boosters = normalizeBoosters(saved.boosters);
+      state.selectedBoosters = normalizeSelectedBoosters(saved.selectedBoosters);
+      state.cosmetics = normalizeCosmetics(saved.cosmetics);
+      state.equippedCosmetics = normalizeEquippedCosmetics(saved.equippedCosmetics, state.cosmetics);
+      state.gifts = normalizeGifts(saved.gifts);
       state.expandedChapters = new Set(
         Array.isArray(saved.expandedChapters)
           ? saved.expandedChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
@@ -765,7 +1117,12 @@
       state.expandedChapters.add(getChapterForLevel(state.currentLevel));
     } catch (_error) {
       state.perfectChapters = new Set();
-      state.chapterChests = new Set();
+      state.chapterChests = {};
+      state.boosters = { ...DEFAULT_BOOSTERS };
+      state.selectedBoosters = [...DEFAULT_SELECTED_BOOSTERS];
+      state.cosmetics = normalizeCosmetics();
+      state.equippedCosmetics = normalizeEquippedCosmetics({}, state.cosmetics);
+      state.gifts = [];
       state.expandedChapters = new Set([getChapterForLevel(state.currentLevel)]);
     }
   };
@@ -832,6 +1189,218 @@
     root.append(panel);
   });
 
+  const getRewardLineMarkup = (reward) => `
+    <div class="chapter-chest-reward-line"><span aria-hidden="true">●</span><strong>+${reward.coins}</strong> монет</div>
+    ${reward.lives > 0 ? `<div class="chapter-chest-reward-line"><span aria-hidden="true">♥</span><strong>+${reward.lives}</strong> жизней</div>` : ""}
+  `;
+
+  const showChapterChestResult = (summary) => showConfirm({
+    title: summary.title,
+    message: summary.message,
+    acceptText: t("ok"),
+    cancelText: null
+  });
+
+  const showChapterChestPrompt = (chapterId) => new Promise((resolve) => {
+    const reward = getPendingChestReward(chapterId);
+    if (!reward.hasReward) {
+      resolve(false);
+      return;
+    }
+
+    const panel = document.createElement("div");
+    panel.className = "chapter-chest-panel is-visible";
+    panel.id = "chapterChestPanel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.innerHTML = `
+      <div class="chapter-chest-card">
+        <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
+        <h2>${reward.claimedTier > CHEST_TIERS.none ? "Сундук главы улучшен!" : "Сундук главы готов!"}</h2>
+        <p>Глава ${chapterId}</p>
+        <div class="chapter-chest-type">
+          ${reward.claimedTier > CHEST_TIERS.none
+            ? `Было: ${reward.previousTitle}<br>Стало: ${reward.nextTitle}`
+            : `Получен: ${reward.nextTitle}`}
+        </div>
+        <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
+        <div class="chapter-chest-actions">
+          <button class="menu-button map-reward-button compact-play" type="button" data-choice="later">Позже</button>
+          <button class="menu-button play-button compact-play" type="button" data-choice="open">Открыть</button>
+        </div>
+      </div>
+    `;
+
+    const close = (shouldOpen) => {
+      panel.remove();
+      resolve(shouldOpen);
+    };
+
+    panel.querySelector('[data-choice="later"]')?.addEventListener("click", () => close(false), { once: true });
+    panel.querySelector('[data-choice="open"]')?.addEventListener("click", () => close(true), { once: true });
+    root.append(panel);
+  });
+
+  const showChapterChestClaimPanel = (chapterId) => new Promise((resolve) => {
+    const reward = getPendingChestReward(chapterId);
+    if (!reward.hasReward) {
+      resolve(null);
+      return;
+    }
+
+    const panel = document.createElement("div");
+    panel.className = "chapter-chest-panel is-visible";
+    panel.id = "chapterChestPanel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.innerHTML = `
+      <div class="chapter-chest-card">
+        <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
+        <h2>${reward.claimedTier > CHEST_TIERS.none ? "Сундук улучшен!" : "Сундук главы!"}</h2>
+        <p>Глава ${chapterId}</p>
+        <div class="chapter-chest-stars">Собрано звёзд: ${getChapterStars(chapterId)} / 30</div>
+        <div class="chapter-chest-type">
+          ${reward.claimedTier > CHEST_TIERS.none
+            ? `Было: ${reward.previousTitle}<br>Стало: ${reward.nextTitle}`
+            : `Получен: ${reward.nextTitle}`}
+        </div>
+        <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
+        <button class="menu-button play-button compact-play chapter-chest-claim" type="button">Забрать</button>
+      </div>
+    `;
+
+    panel.querySelector(".chapter-chest-claim")?.addEventListener("click", async () => {
+      const result = openChapterChest(chapterId, { silent: true });
+      panel.remove();
+      if (result) {
+        await showChapterChestResult({
+          title: result.claimedTier > CHEST_TIERS.none ? "Апгрейд получен" : "Сундук открыт",
+          message: `Получено: +${result.coins} монет${result.gainedLives > 0 ? `, +${result.gainedLives} жизней` : ""}`
+        });
+      }
+      resolve(result);
+    }, { once: true });
+    root.append(panel);
+  });
+
+  const openChapterChest = (chapterId, options = {}) => {
+    const reward = getPendingChestReward(chapterId);
+    if (!reward.hasReward) {
+      return null;
+    }
+
+    const previousLives = state.lives;
+    state.coins += reward.coins;
+    state.lives = Math.min(MAX_LIVES, state.lives + reward.lives);
+    ensureChapterChest(chapterId).claimedTier = ensureChapterChest(chapterId).earnedTier;
+    saveProgress();
+    syncResources();
+    renderChapterScreens();
+    renderInventory();
+    updateInventoryBadge();
+
+    const result = {
+      ...reward,
+      gainedLives: state.lives - previousLives
+    };
+
+    if (!options.silent) {
+      showChapterChestResult({
+        title: reward.claimedTier > CHEST_TIERS.none ? "Апгрейд получен" : "Сундук открыт",
+        message: `Получено: +${reward.coins} монет${result.gainedLives > 0 ? `, +${result.gainedLives} жизней` : ""}`
+      });
+    }
+
+    return result;
+  };
+
+  const openAllPendingChests = async () => {
+    const pending = getPendingChests();
+    if (!pending.length) {
+      await showChapterChestResult({
+        title: "Нет сундуков",
+        message: "Собирай звёзды в главах, чтобы получать сундуки."
+      });
+      return;
+    }
+
+    const previousLives = state.lives;
+    const totalCoins = pending.reduce((sum, reward) => sum + reward.coins, 0);
+    const totalLives = pending.reduce((sum, reward) => sum + reward.lives, 0);
+    state.coins += totalCoins;
+    state.lives = Math.min(MAX_LIVES, state.lives + totalLives);
+    pending.forEach((reward) => {
+      ensureChapterChest(reward.chapterId).claimedTier = ensureChapterChest(reward.chapterId).earnedTier;
+    });
+    saveProgress();
+    syncResources();
+    renderChapterScreens();
+    renderInventory();
+    updateInventoryBadge();
+
+    await showChapterChestResult({
+      title: `Открыто сундуков: ${pending.length}`,
+      message: `Получено: +${totalCoins} монет${state.lives - previousLives > 0 ? `, +${state.lives - previousLives} жизней` : ""}`
+    });
+  };
+
+  const showChestsPanel = () => new Promise((resolve) => {
+    const pending = getPendingChests();
+    const panel = document.createElement("div");
+    panel.className = "chapter-chest-panel chapter-chests-inventory is-visible";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.innerHTML = `
+      <div class="chapter-chest-card chapter-chests-card">
+        <button class="reward-close chapter-chests-close" type="button" aria-label="Закрыть">×</button>
+        <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
+        <h2>Сундуки</h2>
+        ${pending.length > 1 ? `<button class="menu-button play-button compact-play chapter-open-all" type="button">Открыть все</button>` : ""}
+        <div class="chapter-chests-list">
+          ${pending.length
+            ? pending.map((reward) => `
+              <article class="chapter-chest-item">
+                <h3>${reward.claimedTier > CHEST_TIERS.none ? `Апгрейд сундука главы ${reward.chapterId}` : `Глава ${reward.chapterId}`}</h3>
+                <p>${reward.claimedTier > CHEST_TIERS.none
+                  ? `Было: ${reward.previousTitle}<br>Стало: ${reward.nextTitle}`
+                  : `Тип сундука: ${reward.nextTitle}`}</p>
+                <p>Звёзды главы: ${getChapterStars(reward.chapterId)} / 30</p>
+                <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
+                <button class="menu-button play-button compact-play" type="button" data-open-chest="${reward.chapterId}">Открыть</button>
+              </article>
+            `).join("")
+            : `
+              <div class="chapter-empty-chests">
+                <h3>Нет сундуков</h3>
+                <p>Собирай звёзды в главах, чтобы получать сундуки.</p>
+              </div>
+            `}
+        </div>
+      </div>
+    `;
+
+    const close = () => {
+      panel.remove();
+      resolve();
+    };
+
+    panel.querySelector(".chapter-chests-close")?.addEventListener("click", close, { once: true });
+    panel.querySelector(".chapter-open-all")?.addEventListener("click", async () => {
+      panel.remove();
+      await openAllPendingChests();
+      resolve();
+    }, { once: true });
+    panel.querySelectorAll("[data-open-chest]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const chapterId = Number(button.dataset.openChest);
+        panel.remove();
+        await showChapterChestClaimPanel(chapterId);
+        resolve();
+      }, { once: true });
+    });
+    root.append(panel);
+  });
+
   const isCompletedLevel = (level) => level < state.currentLevel || (state.starsByLevel[level] || 0) > 0;
   const isChapterComplete = (chapterId) => state.currentLevel > getChapterLevelEnd(chapterId);
   const isChapterFinalLevel = (level) => level === getChapterLevelEnd(getChapterForLevel(level));
@@ -885,7 +1454,18 @@
         ? levelState.lastCompletion.stars
         : (state.starsByLevel[state.selectedLevel] || 0);
     });
+    Object.keys(DEFAULT_BOOSTERS).forEach((key) => {
+      const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
+      document.querySelectorAll(`[data-booster-count="${key}"]`).forEach((node) => {
+        node.textContent = `x${count}`;
+      });
+      document.querySelectorAll(`[data-level-boost="${key}"]`).forEach((button) => {
+        button.disabled = count <= 0;
+        button.classList.toggle("is-empty", count <= 0);
+      });
+    });
     syncLifeRestoreTimer();
+    updateInventoryBadge();
     saveProgress();
   };
 
@@ -961,7 +1541,7 @@
       const complete = isChapterComplete(chapter.id);
       const nextChapterVisible = chapter.id < chapters.length && isChapterUnlocked(chapter.id + 1);
       const showCta = complete && (chapter.id === chapters.length || !nextChapterVisible);
-      const statusText = state.chapterChests.has(chapter.id) ? t("chestClaimed") : t("chapterComplete");
+      const statusText = isChapterUnlocked(chapter.id) ? getChapterChestStatusText(chapter.id) : t("chapterComplete");
 
       ctas.forEach((cta) => {
         cta.classList.toggle("is-visible", showCta);
@@ -969,8 +1549,9 @@
       });
       statuses.forEach((status) => {
         status.textContent = statusText;
-        status.classList.toggle("is-visible", complete && !showCta);
-        status.setAttribute("aria-hidden", complete && !showCta ? "false" : "true");
+        const showStatus = isChapterUnlocked(chapter.id) && !showCta;
+        status.classList.toggle("is-visible", showStatus);
+        status.setAttribute("aria-hidden", showStatus ? "false" : "true");
       });
     });
   };
@@ -1055,6 +1636,241 @@
     levelState.toastTimer = window.setTimeout(() => {
       levelToast.classList.remove("is-visible");
     }, 1100);
+  };
+
+  const escapeHtml = (value) => String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+  const getChapterChestName = (chapterId, isUpgrade = false) => {
+    const title = getChapterTitle(chapterId);
+    return isUpgrade ? `Сундук ${title} улучшен!` : `Сундук ${title}`;
+  };
+
+  const formatRewardText = ({ coins = 0, lives = 0, boosters = {} }) => {
+    const parts = [];
+    if (coins > 0) {
+      parts.push(`+${coins} монет`);
+    }
+    if (lives > 0) {
+      parts.push(`+${lives} ${lives === 1 ? "жизнь" : "жизней"}`);
+    }
+    Object.entries(boosters || {}).forEach(([key, count]) => {
+      const amount = Math.max(0, Math.round(Number(count) || 0));
+      const booster = BOOSTER_ITEMS[key];
+      if (booster && amount > 0) {
+        parts.push(`${booster.icon} ${booster.title} x${amount}`);
+      }
+    });
+    return parts.length ? parts.join(", ") : "Бонус";
+  };
+
+  const getPendingGifts = () => state.gifts.filter((gift) => gift.claimed !== true);
+
+  const getInventoryBadgeCount = () => getPendingChests().length + getPendingGifts().length;
+
+  const updateInventoryBadge = () => {
+    const count = getInventoryBadgeCount();
+    document.querySelectorAll(".inventory-badge").forEach((badge) => {
+      badge.hidden = count <= 0;
+      badge.textContent = String(count);
+    });
+  };
+
+  const renderInventoryChests = () => {
+    const pending = getPendingChests();
+    if (!pending.length) {
+      return `
+        <div class="inventory-empty">
+          <h3>Сундуков пока нет</h3>
+          <p>Собирай звёзды в главах, чтобы получать сундуки.</p>
+        </div>
+      `;
+    }
+
+    return `
+      ${pending.length > 1 ? `<button class="menu-button play-button compact-play open-all-chests-button" type="button" data-inventory-action="open-all-chests">Открыть все</button>` : ""}
+      <div class="inventory-card-list">
+        ${pending.map((reward) => {
+          const isUpgrade = reward.claimedTier > CHEST_TIERS.none;
+          const actionText = isUpgrade ? "Забрать" : "Открыть";
+          return `
+            <article class="inventory-card chest-card">
+              <div class="inventory-card-icon" aria-hidden="true">🎁</div>
+              <div class="inventory-card-body">
+                <h3>${escapeHtml(getChapterChestName(reward.chapterId, isUpgrade))}</h3>
+                ${isUpgrade
+                  ? `<p>Было: ${escapeHtml(reward.previousTitle)}</p><p>Стало: ${escapeHtml(reward.nextTitle)}</p>`
+                  : `<p>${escapeHtml(reward.nextTitle)}</p>`}
+                <p>Звёзды: ${getChapterStars(reward.chapterId)} / 30</p>
+                <p>${isUpgrade ? "Доп. награда" : "Награда"}: ${escapeHtml(formatRewardText(reward))}</p>
+              </div>
+              <button class="menu-button play-button compact-play" type="button" data-inventory-action="open-chest" data-chapter-id="${reward.chapterId}">${actionText}</button>
+            </article>
+          `;
+        }).join("")}
+      </div>
+    `;
+  };
+
+  const renderInventoryBoosts = () => `
+    <div class="inventory-card-list">
+      ${Object.entries(BOOSTER_ITEMS).map(([key, booster]) => {
+        const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
+        return `
+          <article class="inventory-card boost-card">
+            <div class="inventory-card-icon" aria-hidden="true">${booster.icon}</div>
+            <div class="inventory-card-body">
+              <h3>${booster.title} x${count}</h3>
+              <p>${booster.description}</p>
+              ${count > 0 ? `<p class="inventory-status">Статус: в панели уровня</p>` : ""}
+            </div>
+            ${count <= 0 ? `<button class="menu-button map-reward-button compact-play" type="button" data-inventory-action="buy-boost">Купить</button>` : ""}
+          </article>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  const renderInventorySkins = () => Object.entries(COSMETIC_GROUPS).map(([group, config]) => `
+    <section class="inventory-skin-group">
+      <h3>${config.title}</h3>
+      <div class="inventory-card-list">
+        ${(state.cosmetics[group] || []).map((skinId) => {
+          const skin = config.items[skinId] || { icon: "◆", title: skinId };
+          const isEquipped = state.equippedCosmetics[config.equippedKey] === skinId;
+          return `
+            <article class="inventory-card skin-card">
+              <div class="inventory-card-icon" aria-hidden="true">${skin.icon}</div>
+              <div class="inventory-card-body">
+                <h3>${escapeHtml(skin.title)}</h3>
+                <p class="inventory-status">${isEquipped ? "Выбран" : "Куплен"}</p>
+              </div>
+              ${isEquipped ? "" : `<button class="menu-button play-button compact-play" type="button" data-inventory-action="equip-skin" data-cosmetic-group="${group}" data-skin-id="${escapeHtml(skinId)}">Выбрать</button>`}
+            </article>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `).join("");
+
+  const renderInventoryGifts = () => {
+    const gifts = getPendingGifts();
+    if (!gifts.length) {
+      return `
+        <div class="inventory-empty">
+          <h3>Подарков пока нет</h3>
+          <p>Заглядывай позже — здесь будут появляться бонусы.</p>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="inventory-card-list">
+        ${gifts.map((gift) => `
+          <article class="inventory-card gift-card">
+            <div class="inventory-card-icon" aria-hidden="true">${escapeHtml(gift.icon || "🎁")}</div>
+            <div class="inventory-card-body">
+              <h3>${escapeHtml(gift.title)}</h3>
+              ${gift.description ? `<p>${escapeHtml(gift.description)}</p>` : ""}
+              <p>Награда: ${escapeHtml(formatRewardText(gift))}</p>
+            </div>
+            <button class="menu-button play-button compact-play" type="button" data-inventory-action="claim-gift" data-gift-id="${escapeHtml(gift.id)}">Забрать</button>
+          </article>
+        `).join("")}
+      </div>
+    `;
+  };
+
+  const renderInventory = () => {
+    if (!inventoryContent) {
+      return;
+    }
+
+    inventoryModal?.querySelectorAll("[data-inventory-tab]").forEach((button) => {
+      const isActive = button.dataset.inventoryTab === state.inventoryTab;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+
+    const renderers = {
+      chests: renderInventoryChests,
+      boosts: renderInventoryBoosts,
+      skins: renderInventorySkins,
+      gifts: renderInventoryGifts
+    };
+    inventoryContent.innerHTML = (renderers[state.inventoryTab] || renderInventoryChests)();
+  };
+
+  const setInventoryTab = (tab) => {
+    if (!["chests", "boosts", "skins", "gifts"].includes(tab)) {
+      return;
+    }
+    state.inventoryTab = tab;
+    renderInventory();
+  };
+
+  const openInventoryModal = (tab = "chests") => {
+    if (!inventoryModal) {
+      return;
+    }
+    state.inventoryTab = tab;
+    renderInventory();
+    inventoryModal.classList.add("is-open");
+    inventoryModal.setAttribute("aria-hidden", "false");
+  };
+
+  const closeInventoryModal = () => {
+    inventoryModal?.classList.remove("is-open");
+    inventoryModal?.setAttribute("aria-hidden", "true");
+  };
+
+  const equipSkin = (group, skinId) => {
+    const config = COSMETIC_GROUPS[group];
+    if (!config || !state.cosmetics[group]?.includes(skinId)) {
+      return;
+    }
+    state.equippedCosmetics[config.equippedKey] = skinId;
+    saveProgress();
+    renderInventory();
+  };
+
+  const addGiftCosmetics = (cosmetics) => {
+    if (!cosmetics || typeof cosmetics !== "object") {
+      return;
+    }
+    Object.entries(COSMETIC_GROUPS).forEach(([group]) => {
+      const unlocked = Array.isArray(cosmetics[group]) ? cosmetics[group] : [];
+      unlocked.forEach((skinId) => {
+        if (skinId && !state.cosmetics[group].includes(skinId)) {
+          state.cosmetics[group].push(skinId);
+        }
+      });
+    });
+  };
+
+  const claimGift = (giftId) => {
+    const gift = state.gifts.find((item) => item.id === giftId && item.claimed !== true);
+    if (!gift) {
+      return;
+    }
+
+    state.coins += gift.coins || 0;
+    state.lives = Math.min(MAX_LIVES, state.lives + (gift.lives || 0));
+    Object.entries(gift.boosters || {}).forEach(([key, count]) => {
+      if (Object.prototype.hasOwnProperty.call(DEFAULT_BOOSTERS, key)) {
+        state.boosters[key] = Math.max(0, Math.round(Number(state.boosters[key]) || 0)) + Math.max(0, Math.round(Number(count) || 0));
+      }
+    });
+    addGiftCosmetics(gift.cosmetics);
+    gift.claimed = true;
+    saveProgress();
+    syncResources();
+    renderInventory();
+    updateInventoryBadge();
   };
 
   const syncLevelHud = () => {
@@ -2031,9 +2847,11 @@
       const improvedStars = completion.stars > previousStars;
       const reward = getRewardDelta(completion.stars, previousStars);
       const completedChapterFinal = isChapterFinalLevel(completion.level);
+      let chestProgress = null;
 
       if (improvedStars) {
         state.starsByLevel[state.selectedLevel] = completion.stars;
+        chestProgress = syncChapterChestProgress(completedChapterId);
       }
 
       if (!completion.replayingCompleted && state.selectedLevel === state.currentLevel) {
@@ -2045,8 +2863,7 @@
           state.perfectChapters.add(reward.perfectChapterId);
         }
         state.currentLevel = Math.min(TOTAL_LEVELS + 1, state.currentLevel + 1);
-        if (completedChapterFinal && !state.chapterChests.has(completedChapterId)) {
-          state.chapterChests.add(completedChapterId);
+        if (chestProgress?.changed && getPendingChestReward(completedChapterId).hasReward) {
           completion.chapterChestId = completedChapterId;
         }
         if (completedChapterFinal && completion.level < TOTAL_LEVELS) {
@@ -2075,7 +2892,9 @@
         completion.restoreLife = reward.restoreLife;
         completion.lifeFull = reward.lifeFull;
         completion.perfectChapterId = reward.perfectChapterId;
-        completion.chapterChestId = null;
+        completion.chapterChestId = chestProgress?.changed && getPendingChestReward(completedChapterId).hasReward
+          ? completedChapterId
+          : null;
         levelState.lastCompletion = completion;
         renderChapterScreens();
       } else {
@@ -2095,7 +2914,10 @@
     stopJezzLevel();
 
     if (completion.chapterChestId) {
-      await showChapterChest(completion.chapterChestId);
+      const shouldOpenChest = await showChapterChestPrompt(completion.chapterChestId);
+      if (shouldOpenChest) {
+        await showChapterChestClaimPanel(completion.chapterChestId);
+      }
     }
 
     if (destination === "next" && completion.replayingCompleted) {
@@ -2237,6 +3059,16 @@
       return;
     }
 
+    if (action === "inventory") {
+      openInventoryModal();
+      return;
+    }
+
+    if (action === "chests") {
+      await showChestsPanel();
+      return;
+    }
+
     if (action === "settings") {
       toggleSettings(true);
       return;
@@ -2248,7 +3080,7 @@
   };
 
   const blockBrowserGesture = (event) => {
-    if (event.type === "touchmove" && event.target.closest(".chapter-list")) {
+    if (event.type === "touchmove" && event.target.closest(".chapter-list, .inventory-content, .inventory-tabs")) {
       return;
     }
 
@@ -2279,6 +3111,54 @@
   settingsModal.addEventListener("click", (event) => {
     if (event.target === settingsModal) {
       toggleSettings(false);
+    }
+  });
+  inventoryCloseButton?.addEventListener("click", closeInventoryModal);
+  inventoryModal?.addEventListener("click", async (event) => {
+    if (event.target === inventoryModal) {
+      closeInventoryModal();
+      return;
+    }
+
+    const tabButton = event.target.closest("[data-inventory-tab]");
+    if (tabButton) {
+      setInventoryTab(tabButton.dataset.inventoryTab);
+      return;
+    }
+
+    const actionButton = event.target.closest("[data-inventory-action]");
+    if (!actionButton) {
+      return;
+    }
+
+    const action = actionButton.dataset.inventoryAction;
+    if (action === "open-chest") {
+      openChapterChest(Number(actionButton.dataset.chapterId));
+      return;
+    }
+
+    if (action === "open-all-chests") {
+      await openAllPendingChests();
+      return;
+    }
+
+    if (action === "claim-gift") {
+      claimGift(actionButton.dataset.giftId);
+      return;
+    }
+
+    if (action === "equip-skin") {
+      equipSkin(actionButton.dataset.cosmeticGroup, actionButton.dataset.skinId);
+      return;
+    }
+
+    if (action === "buy-boost") {
+      await showConfirm({
+        title: t("shop"),
+        message: "Купи бусты в магазине",
+        acceptText: t("ok"),
+        cancelText: null
+      });
     }
   });
   confirmCancelButton?.addEventListener("click", () => closeConfirm(false));
@@ -2338,6 +3218,12 @@
     restoreLife,
     loseSelectedLevel,
     getLevelCoinReward,
+    getChapterStars,
+    getChapterChestTier,
+    getPendingChestReward,
+    getPendingChests,
+    openChapterChest,
+    openAllPendingChests,
     renderAllChapters,
     setCurrentLevel(level) {
       const parsedLevel = Number(level);

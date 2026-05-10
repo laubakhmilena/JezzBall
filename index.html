@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#160b3a">
-  <title>JezzBall - карта глав</title>
+  <title>JezzBall</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -88,6 +89,17 @@
               Пунктирная светлая линия - можно задевать
             </span>
           </div>
+          <div class="level-boost-panel" id="levelBoostPanel" aria-label="Бусты уровня">
+            <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Молниеносная линия">
+              <span aria-hidden="true">⚡</span><strong data-booster-count="fastLine">x0</strong>
+            </button>
+            <button class="level-boost-button" type="button" data-level-boost="slowBalls" aria-label="Ледяная пауза">
+              <span aria-hidden="true">❄</span><strong data-booster-count="slowBalls">x0</strong>
+            </button>
+            <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит чертёжника">
+              <span aria-hidden="true">🛡</span><strong data-booster-count="lineShield">x0</strong>
+            </button>
+          </div>
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
             <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
@@ -164,6 +176,20 @@
         </label>
       </div>
     </div>
+
+    <section class="inventory-modal" id="inventoryModal" aria-hidden="true">
+      <div class="inventory-panel" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
+        <button class="inventory-close" type="button" id="inventoryCloseButton" aria-label="Закрыть инвентарь">×</button>
+        <h2 id="inventoryTitle">Инвентарь</h2>
+        <div class="inventory-tabs" role="tablist" aria-label="Разделы инвентаря">
+          <button type="button" data-inventory-tab="chests">Сундуки</button>
+          <button type="button" data-inventory-tab="boosts">Бусты</button>
+          <button type="button" data-inventory-tab="skins">Скины</button>
+          <button type="button" data-inventory-tab="gifts">Подарки</button>
+        </div>
+        <div class="inventory-content" id="inventoryContent"></div>
+      </div>
+    </section>
 
     <div class="confirm-modal" id="confirmModal" aria-hidden="true">
       <div class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
