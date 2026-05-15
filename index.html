@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#160b3a">
   <title>JezzBall</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
@@ -40,66 +40,75 @@
 
     <section class="level-screen screen" id="level-screen" aria-label="Экран уровня" aria-hidden="true">
       <div class="chapter-scene level-scene">
-        <header class="top-ui" aria-label="Верхняя панель">
-          <div class="level-nav-actions">
-            <button class="icon-button back-button" type="button" data-action="return-chapter" aria-label="Назад к главе">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/></svg>
-            </button>
-            <button class="icon-button restart-button" type="button" data-action="restart-level" aria-label="Играть уровень заново">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 1 1-7.06 4.24 1 1 0 1 1 1.76.94A6 6 0 1 0 12 6H9.41l1.3 1.29a1 1 0 1 1-1.42 1.42l-3-3a1 1 0 0 1 0-1.42l3-3a1 1 0 1 1 1.42 1.42L9.41 4H12Z"/></svg>
-            </button>
-          </div>
-          <div class="resource-strip" aria-label="Ресурсы">
-            <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
-            <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
-            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Звёзды за уровень"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="level-stars">0</span></button>
-          </div>
-          <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
-          </button>
-        </header>
-
         <div class="level-playfield" id="levelPlayfield">
-          <div class="level-hud" aria-label="Цель уровня">
-            <div>
-              <span id="levelChapterLabel">Глава 1</span>
-              <strong id="levelTitle">Уровень 1</strong>
+          <div class="level-side-panel">
+            <header class="top-ui" aria-label="Верхняя панель">
+              <div class="level-nav-actions">
+                <button class="icon-button back-button" type="button" data-action="return-chapter" aria-label="Назад к главе">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/></svg>
+                </button>
+                <button class="icon-button restart-button" type="button" data-action="restart-level" aria-label="Играть уровень заново">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 1 1-7.06 4.24 1 1 0 1 1 1.76.94A6 6 0 1 0 12 6H9.41l1.3 1.29a1 1 0 1 1-1.42 1.42l-3-3a1 1 0 0 1 0-1.42l3-3a1 1 0 1 1 1.42 1.42L9.41 4H12Z"/></svg>
+                </button>
+              </div>
+              <div class="resource-strip" aria-label="Ресурсы">
+                <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
+                <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
+                <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Звёзды за уровень"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="level-stars">0</span></button>
+              </div>
+              <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
+              </button>
+            </header>
+            <div class="level-hud" aria-label="Цель уровня">
+              <div>
+                <span id="levelChapterLabel">Глава 1</span>
+                <strong id="levelTitle">Уровень 1</strong>
+              </div>
+              <div class="level-stat">
+                <span>Цель</span>
+                <strong id="targetPercent">70%</strong>
+              </div>
+              <div class="level-stat">
+                <span>Захвачено</span>
+                <strong id="capturePercent">0%</strong>
+              </div>
+              <div class="level-stat">
+                <span>Штрафы</span>
+                <strong id="penaltyCount">0</strong>
+              </div>
             </div>
-            <div class="level-stat">
-              <span>Цель</span>
-              <strong id="targetPercent">70%</strong>
-            </div>
-            <div class="level-stat">
-              <span>Захвачено</span>
-              <strong id="capturePercent">0%</strong>
-            </div>
-            <div class="level-stat">
-              <span>Штрафы</span>
-              <strong id="penaltyCount">0</strong>
+            <aside class="level-helper-panel" aria-label="Подсказка уровня">
+              <span class="helper-icon" aria-hidden="true">✦</span>
+              <p>Рисуй линии и замыкай области, чтобы захватить пространство.</p>
+              <span class="helper-target"><strong id="helperTargetPercent">70%</strong> до цели</span>
+            </aside>
+            <div class="level-tools">
+              <div class="level-boost-panel" id="levelBoostPanel" aria-label="Бусты уровня">
+                <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Молниеносная линия">
+                  <span aria-hidden="true">⚡</span><strong data-booster-count="fastLine">x0</strong>
+                </button>
+                <button class="level-boost-button" type="button" data-level-boost="slowBalls" aria-label="Ледяная пауза">
+                  <span aria-hidden="true">❄</span><strong data-booster-count="slowBalls">x0</strong>
+                </button>
+                <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит чертёжника">
+                  <span aria-hidden="true">🛡</span><strong data-booster-count="lineShield">x0</strong>
+                </button>
+              </div>
+              <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
+                <button class="obstacle-legend-toggle" type="button" aria-label="Подсказка по препятствиям" aria-expanded="false">?</button>
+                <span class="obstacle-legend-item">
+                  <span class="obstacle-swatch obstacle-swatch-danger" aria-hidden="true"></span>
+                  Яркая или темная линия - штраф при касании
+                </span>
+                <span class="obstacle-legend-item">
+                  <span class="obstacle-swatch obstacle-swatch-safe" aria-hidden="true"></span>
+                  Пунктирная светлая линия - линия может закрепиться, мячи отскакивают
+                </span>
+              </div>
             </div>
           </div>
-          <canvas class="jezz-canvas" id="jezzCanvas" aria-label="Игровое поле JezzBall"></canvas>
-          <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
-            <span class="obstacle-legend-item">
-              <span class="obstacle-swatch obstacle-swatch-danger" aria-hidden="true"></span>
-              Яркая или темная линия - штраф при касании
-            </span>
-            <span class="obstacle-legend-item">
-              <span class="obstacle-swatch obstacle-swatch-safe" aria-hidden="true"></span>
-              Пунктирная светлая линия - можно задевать
-            </span>
-          </div>
-          <div class="level-boost-panel" id="levelBoostPanel" aria-label="Бусты уровня">
-            <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Молниеносная линия">
-              <span aria-hidden="true">⚡</span><strong data-booster-count="fastLine">x0</strong>
-            </button>
-            <button class="level-boost-button" type="button" data-level-boost="slowBalls" aria-label="Ледяная пауза">
-              <span aria-hidden="true">❄</span><strong data-booster-count="slowBalls">x0</strong>
-            </button>
-            <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит чертёжника">
-              <span aria-hidden="true">🛡</span><strong data-booster-count="lineShield">x0</strong>
-            </button>
-          </div>
+          <canvas class="jezz-canvas" id="jezzCanvas" tabindex="0" aria-label="Игровое поле JezzBall. Проведи пальцем или мышью вверх или вниз для вертикальной линии, влево или вправо для горизонтальной. Стрелки перемещают прицел, Space или Enter ставят линию."></canvas>
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
             <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
@@ -129,11 +138,6 @@
             </div>
           </div>
         </div>
-        <aside class="level-helper-panel" aria-label="Подсказка уровня">
-          <span class="helper-icon" aria-hidden="true">✦</span>
-          <p>Рисуй линии и замыкай области, чтобы захватить пространство.</p>
-          <span class="helper-target"><strong id="helperTargetPercent">70%</strong> до цели</span>
-        </aside>
       </div>
     </section>
 
