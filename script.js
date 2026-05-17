@@ -57,6 +57,26 @@
     2: { coins: 120 },
     3: { coins: 176 }
   };
+  const UI_ASSETS = {
+    balls: {
+      default: "objects/Game%20objects/The%20balloon%20is%20ordinary.png",
+      neon: "objects/Game%20objects/Neon%20ball.png",
+      fire: "objects/Game%20objects/The%20Fireball.png"
+    }
+  };
+  const loadedImages = new Map();
+  const loadGameImage = (src) => {
+    if (!src) {
+      return null;
+    }
+    if (loadedImages.has(src)) {
+      return loadedImages.get(src);
+    }
+    const image = new Image();
+    image.src = src;
+    loadedImages.set(src, image);
+    return image;
+  };
   const CHEST_TIERS = {
     none: 0,
     small: 1,
@@ -127,9 +147,9 @@
       title: "Мячи",
       equippedKey: "ball",
       items: {
-        default: { icon: "●", title: "Обычный" },
-        neon: { icon: "🟣", title: "Неоновый" },
-        fire: { icon: "🔥", title: "Огненный" }
+        default: { icon: "●", asset: UI_ASSETS.balls.default, title: "Обычный" },
+        neon: { icon: "🟣", asset: UI_ASSETS.balls.neon, title: "Неоновый" },
+        fire: { icon: "🔥", asset: UI_ASSETS.balls.fire, title: "Огненный" }
       }
     },
     lines: {
@@ -530,11 +550,11 @@
       continue: "Продолжить?",
       stay: "Остаться",
       yes: "Да",
-      shop: "Магазин",
+      shop: "",
       achievements: "Достижения",
       chapterSelect: "Выбор главы",
       chapterSelectHint: "Проходите уровни и открывайте новые главы",
-      shopAndAchievements: "Магазин и достижения",
+      shopAndAchievements: "Инвентарь и достижения",
       stars: "Звезды",
       nextChapter: "Перейти в следующую главу",
       toFinal: "Перейти в финал",
@@ -561,7 +581,7 @@
       noLivesMessage: "Нужна жизнь для старта уровня. Подожди восстановления или получи жизнь за награду.",
       livesFull: "Жизни полные",
       ok: "Понятно",
-      shopSummary: "У вас {coins} монет и {lives} жизней. Магазин с бустами будет подключен к этой экономике.",
+      shopSummary: "",
       achievementSummary: "Звезд получено: {stars} из {total}. Проходите уровни без штрафов, чтобы собрать максимум.",
       obstacleDanger: "Яркая или темная линия - штраф при касании",
       obstacleSafe: "Пунктирная светлая линия - линия может закрепиться, мячи отскакивают"
@@ -1297,12 +1317,11 @@
             ${chapters.map((item) => createChapterItem(item)).join("")}
           </div>
         </div>
-        <button class="chapter-play-button" type="button" data-action="continue-play">
-          <span aria-hidden="true">▶</span>${t("play")}
-        </button>
         <nav class="chapter-action-bar" aria-label="${t("shopAndAchievements")}">
-          <button type="button" data-action="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14.26c-.75 0-1.41-.41-1.75-1.03L2 6.2V5h3.21l.94 2h12.9c.75 0 1.24.78.92 1.45l-2.42 5.05A2 2 0 0 1 15.74 14H8.1l-1.1 2h12v2H7c-1.52 0-2.48-1.63-1.75-2.96l1.03-1.86-.12-.24ZM7.1 9l1.42 3h7.22l1.44-3H7.1Z"/></svg>${t("shop")}</button>
           <button class="inventory-button" type="button" data-action="inventory"><svg class="inventory-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8.7 6.2V5.4C8.7 3.5 10.15 2 12 2s3.3 1.5 3.3 3.4v.8h1.1c1.25 0 2.3.94 2.45 2.18l1.08 9.02A3.08 3.08 0 0 1 16.87 20.8H7.13a3.08 3.08 0 0 1-3.06-3.4l1.08-9.02A2.47 2.47 0 0 1 7.6 6.2h1.1Zm1.85 0h2.9v-.8c0-.88-.62-1.55-1.45-1.55s-1.45.67-1.45 1.55v.8Zm-2.88 2.05a.62.62 0 0 0-.61.55l-1.08 9.03c-.08.62.41 1.17 1.15 1.17h9.74c.74 0 1.23-.55 1.15-1.17L16.94 8.8a.62.62 0 0 0-.61-.55h-1.03v1.4a.93.93 0 0 1-1.85 0v-1.4h-2.9v1.4a.93.93 0 0 1-1.85 0v-1.4H7.67Z"/><path fill="currentColor" opacity=".66" d="M8.2 14.1c.8 1.2 2.18 1.96 3.8 1.96s3-.76 3.8-1.96c.28-.42.16-.98-.26-1.25a.9.9 0 0 0-1.25.25c-.45.67-1.28 1.1-2.29 1.1s-1.84-.43-2.29-1.1a.9.9 0 0 0-1.25-.25.9.9 0 0 0-.26 1.25Z"/></svg>Инвентарь<span class="inventory-badge" hidden>0</span></button>
+          <button class="chapter-play-button" type="button" data-action="continue-play">
+            <span aria-hidden="true">▶</span>${t("play")}
+          </button>
           <button type="button" data-action="achievements"><span aria-hidden="true">★</span>${t("achievements")}</button>
         </nav>
       </div>
@@ -1721,7 +1740,16 @@
     <div class="chapter-chest-reward-line"><span aria-hidden="true">●</span><strong>+${reward.coins}</strong> монет</div>
     ${reward.lives > 0 ? `<div class="chapter-chest-reward-line"><span aria-hidden="true">♥</span><strong>+${reward.lives}</strong> жизней</div>` : ""}
   `;
+  const getChestRewardLabel = (chapterId) => {
+    const reward = getPendingChestReward(chapterId);
+    if (!reward.hasReward) {
+      return "";
+    }
 
+    return reward.claimedTier > CHEST_TIERS.none
+      ? `Сундук улучшен: ${reward.nextTitle}`
+      : `${reward.nextTitle} добавлен в инвентарь`;
+  };
   const showChapterChestResult = (summary) => showConfirm({
     title: summary.title,
     message: summary.message,
@@ -1828,16 +1856,10 @@
       </div>
     `;
 
-    panel.querySelector(".chapter-chest-claim")?.addEventListener("click", async () => {
+    panel.querySelector(".chapter-chest-claim")?.addEventListener("click", () => {
       const result = openChapterChest(chapterId, { silent: true });
       deactivateModalFocus(panel);
       panel.remove();
-      if (result) {
-        await showChapterChestResult({
-          title: result.claimedTier > CHEST_TIERS.none ? "Апгрейд получен" : "Глава завершена",
-          message: `Получено: +${result.coins} монет${result.gainedLives > 0 ? `, +${result.gainedLives} жизней` : ""}`
-        });
-      }
       resolve(result);
     }, { once: true });
     root.append(panel);
@@ -1923,7 +1945,6 @@
         <button class="reward-close chapter-chests-close" type="button" aria-label="Закрыть">×</button>
         <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
         <h2>Сундуки</h2>
-        ${pending.length > 1 ? `<button class="menu-button play-button compact-play chapter-open-all" type="button">Открыть все</button>` : ""}
         <div class="chapter-chests-list">
           ${pending.length
             ? pending.map((reward) => `
@@ -1934,7 +1955,7 @@
                   : `Тип сундука: ${reward.nextTitle}`}</p>
                 <p>Звёзды главы: ${getChapterStars(reward.chapterId)} / 30</p>
                 <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
-                <button class="menu-button play-button compact-play" type="button" data-open-chest="${reward.chapterId}">Открыть</button>
+                <button class="menu-button play-button compact-play" type="button" data-open-chest="${reward.chapterId}">Получить</button>
               </article>
             `).join("")
             : `
@@ -1954,12 +1975,6 @@
     };
 
     panel.querySelector(".chapter-chests-close")?.addEventListener("click", close, { once: true });
-    panel.querySelector(".chapter-open-all")?.addEventListener("click", async () => {
-      deactivateModalFocus(panel);
-      panel.remove();
-      await openAllPendingChests();
-      resolve();
-    }, { once: true });
     panel.querySelectorAll("[data-open-chest]").forEach((button) => {
       button.addEventListener("click", async () => {
         const chapterId = Number(button.dataset.openChest);
@@ -2364,11 +2379,10 @@
     }
 
     return `
-      ${pending.length > 1 ? `<button class="menu-button play-button compact-play open-all-chests-button" type="button" data-inventory-action="open-all-chests">Открыть все</button>` : ""}
       <div class="inventory-card-list">
         ${pending.map((reward) => {
           const isUpgrade = reward.claimedTier > CHEST_TIERS.none;
-          const actionText = isUpgrade ? "Забрать" : "Открыть";
+          const actionText = "Получить";
           return `
             <article class="inventory-card chest-card">
               <div class="inventory-card-icon" aria-hidden="true">🎁</div>
@@ -2400,7 +2414,7 @@
               <p>${booster.description}</p>
               ${count > 0 ? `<p class="inventory-status">Статус: в панели уровня</p>` : ""}
             </div>
-            ${count <= 0 ? `<button class="menu-button map-reward-button compact-play" type="button" data-inventory-action="buy-boost">Купить</button>` : ""}
+            ${count <= 0 ? `<p class="inventory-status">Пока нет в инвентаре</p>` : ""}
           </article>
         `;
       }).join("")}
@@ -4267,6 +4281,11 @@
     ctx.restore();
   };
 
+  const getEquippedBallAsset = () => {
+    const skin = state.equippedCosmetics.ball || DEFAULT_EQUIPPED_COSMETICS.ball;
+    return COSMETIC_GROUPS.balls.items[skin]?.asset || UI_ASSETS.balls.default;
+  };
+
   const requestDrawJezzLevel = () => {
     if (levelState.drawRequestId) {
       return;
@@ -4399,6 +4418,12 @@
     drawGestureDirectionHint(ctx);
 
     levelState.balls.forEach((ball) => {
+      const ballImage = loadGameImage(getEquippedBallAsset());
+      if (ballImage?.complete && ballImage.naturalWidth > 0) {
+        ctx.drawImage(ballImage, ball.x - ball.r, ball.y - ball.r, ball.r * 2, ball.r * 2);
+        return;
+      }
+
       if (lowPerformanceMode) {
         ctx.fillStyle = "#78eaff";
       } else {
@@ -4465,8 +4490,25 @@
     if (rewardLifePrize) {
       rewardLifePrize.hidden = !(completion.restoreLife || completion.lifeFull);
     }
+    const chestLabel = completion.chapterChestId ? getChestRewardLabel(completion.chapterChestId) : "";
+    let rewardChestPrize = document.getElementById("rewardChestPrize");
+    if (!rewardChestPrize && rewardPrizes) {
+      rewardChestPrize = document.createElement("div");
+      rewardChestPrize.className = "reward-prize reward-chest-prize";
+      rewardChestPrize.id = "rewardChestPrize";
+      rewardChestPrize.innerHTML = `
+        <span class="reward-prize-icon chest-icon" aria-hidden="true">🎁</span>
+        <strong id="rewardChestText"></strong>
+      `;
+      rewardPrizes.append(rewardChestPrize);
+    }
+    if (rewardChestPrize) {
+      rewardChestPrize.hidden = !chestLabel;
+      rewardChestPrize.querySelector("#rewardChestText").textContent = chestLabel;
+    }
     if (rewardPrizes) {
-      rewardPrizes.dataset.prizeCount = completion.restoreLife || completion.lifeFull ? "2" : "1";
+      const prizeCount = 1 + (completion.restoreLife || completion.lifeFull ? 1 : 0) + (chestLabel ? 1 : 0);
+      rewardPrizes.dataset.prizeCount = String(prizeCount);
     }
     if (rewardStars) {
       rewardStars.dataset.stars = String(stars);
@@ -5180,48 +5222,30 @@
       await maybeShowInterstitialAd();
     }
 
-    const showCompletionChestNotice = async () => {
-      if (!completion.chapterChestId) {
-        return;
-      }
-
-      openChapter(completion.chapterChestId);
-      const shouldOpenChest = await showChapterChestPrompt(completion.chapterChestId);
-      if (shouldOpenChest) {
-        await showChapterChestClaimPanel(completion.chapterChestId);
-      }
-    };
-
     if (destination === "next" && completion.replayingCompleted) {
-      await showCompletionChestNotice();
       openChapter(completedChapterId);
       return;
     }
 
     if (destination === "stay") {
-      await showCompletionChestNotice();
       return;
     }
 
     if (isChapterFinalLevel(completion.level) && !completion.replayingCompleted && completion.level < TOTAL_LEVELS) {
-      await showCompletionChestNotice();
       openChapter(completedNextChapterId);
       return;
     }
 
     if (destination === "next" && state.currentLevel <= TOTAL_LEVELS) {
-      await showCompletionChestNotice();
       openLevel(state.currentLevel, { skipReplayConfirm: true });
       return;
     }
 
     if (destination === "next") {
-      await showCompletionChestNotice();
       showScreen("final-screen");
       return;
     }
 
-    await showCompletionChestNotice();
     openChapter(completedChapterId);
   };
 
@@ -5347,16 +5371,6 @@
       return;
     }
 
-    if (action === "shop") {
-      await showConfirm({
-        title: t("shop"),
-        message: t("shopSummary", { coins: state.coins, lives: state.lives }),
-        acceptText: t("ok"),
-        cancelText: t("cancel")
-      });
-      return;
-    }
-
     if (action === "inventory") {
       openInventoryModal();
       return;
@@ -5434,7 +5448,7 @@
       const chapterId = Number(actionButton.dataset.chapterId);
       closeInventoryModal();
       await waitNextFrame();
-      await openChapterChest(chapterId);
+      await showChapterChestClaimPanel(chapterId);
       return;
     }
 
@@ -5455,14 +5469,6 @@
       return;
     }
 
-    if (action === "buy-boost") {
-      await showConfirm({
-        title: t("shop"),
-        message: "Купи бусты в магазине",
-        acceptText: t("ok"),
-        cancelText: null
-      });
-    }
   });
   confirmCancelButton?.addEventListener("click", () => closeConfirm(false));
   confirmAcceptButton?.addEventListener("click", () => closeConfirm(true));
