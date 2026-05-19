@@ -97,11 +97,15 @@
               </div>
               <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
                 <button class="obstacle-legend-toggle" type="button" aria-label="Подсказка по препятствиям" aria-expanded="false">?</button>
-                <span class="obstacle-legend-item">
+                <span class="obstacle-legend-item obstacle-legend-rule">
+                  <span class="helper-icon" aria-hidden="true">?</span>
+                  <span class="obstacle-legend-rule-text">Рисуй линии и замыкай области, чтобы захватить пространство.</span>
+                </span>
+                <span class="obstacle-legend-item obstacle-legend-danger">
                   <span class="obstacle-swatch obstacle-swatch-danger" aria-hidden="true"></span>
                   Яркая или темная линия - штраф при касании
                 </span>
-                <span class="obstacle-legend-item">
+                <span class="obstacle-legend-item obstacle-legend-safe">
                   <span class="obstacle-swatch obstacle-swatch-safe" aria-hidden="true"></span>
                   Пунктирная светлая линия - линия может закрепиться, мячи отскакивают
                 </span>
@@ -189,6 +193,7 @@
           <button type="button" data-inventory-tab="chests">Сундуки</button>
           <button type="button" data-inventory-tab="boosts">Бусты</button>
           <button type="button" data-inventory-tab="skins">Скины</button>
+          <button type="button" data-inventory-tab="themes">Темы/Эффекты</button>
           <button type="button" data-inventory-tab="gifts">Подарки</button>
         </div>
         <div class="inventory-content" id="inventoryContent"></div>

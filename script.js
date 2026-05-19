@@ -59,9 +59,18 @@
   };
   const UI_ASSETS = {
     balls: {
-      default: "objects/Game%20objects/The%20balloon%20is%20ordinary.png",
-      neon: "objects/Game%20objects/Neon%20ball.png",
-      fire: "objects/Game%20objects/The%20Fireball.png"
+      default: "objects/game-objects/ordinary-ball.png",
+      neon: "objects/game-objects/neon-ball.png",
+      fire: "objects/game-objects/fireball.png",
+      ice: "objects/game-objects/ice-ball.png"
+    },
+    themes: {
+      default: null,
+      sunny: "objects/fone/sunny-glade-2.png.png",
+      village: "objects/fone/quiet-village-2.png.png",
+      neon: "objects/fone/neon-rhythm-2.png.png",
+      river: "objects/fone/river-whisper-2.png.png",
+      city: "objects/fone/city-lights-2.png.png"
     }
   };
   const loadedImages = new Map();
@@ -135,42 +144,71 @@
   const DEFAULT_COSMETICS = {
     balls: ["default"],
     lines: ["default"],
-    captureEffects: ["default"]
+    captureEffects: ["default"],
+    themes: ["default"]
   };
   const DEFAULT_EQUIPPED_COSMETICS = {
     ball: "default",
     line: "default",
-    captureEffect: "default"
+    captureEffect: "default",
+    theme: "default"
   };
   const COSMETIC_GROUPS = {
     balls: {
       title: "Мячи",
       equippedKey: "ball",
+      hint: "Меняет внешний вид шаров на поле.",
       items: {
-        default: { icon: "●", asset: UI_ASSETS.balls.default, title: "Обычный" },
-        neon: { icon: "🟣", asset: UI_ASSETS.balls.neon, title: "Неоновый" },
-        fire: { icon: "🔥", asset: UI_ASSETS.balls.fire, title: "Огненный" }
+        default: { icon: "●", asset: UI_ASSETS.balls.default, title: "Обычный", rarity: "common", unlockHint: "Доступен сразу" },
+        neon: { icon: "🟣", asset: UI_ASSETS.balls.neon, title: "Неоновый", rarity: "rare", unlockHint: "Выпадает из среднего сундука" },
+        fire: { icon: "🔥", asset: UI_ASSETS.balls.fire, title: "Огненный", rarity: "epic", unlockHint: "Выпадает из большого сундука" },
+        ice: { icon: "❄", asset: UI_ASSETS.balls.ice, title: "Ледяной", rarity: "rare", unlockHint: "Выпадает из сундуков и подарков" }
       }
     },
     lines: {
       title: "Линии",
       equippedKey: "line",
+      hint: "Меняет цвет и свечение строящихся и готовых линий.",
       items: {
-        default: { icon: "─", title: "Обычная" },
-        lightning: { icon: "⚡", title: "Молния" },
-        crystal: { icon: "💎", title: "Кристалл" }
+        default: { icon: "─", title: "Обычная", rarity: "common", unlockHint: "Доступна сразу" },
+        lightning: { icon: "⚡", title: "Молния", rarity: "rare", unlockHint: "Выпадает из сундуков" },
+        crystal: { icon: "💎", title: "Кристалл", rarity: "rare", unlockHint: "Выпадает из сундуков" },
+        fireTrail: { icon: "🔥", title: "Огненный след", rarity: "epic", unlockHint: "Редко выпадает из большого сундука" }
       }
     },
     captureEffects: {
       title: "Эффекты захвата",
       equippedKey: "captureEffect",
+      hint: "Меняет эффект заливки захваченной области.",
       items: {
-        default: { icon: "○", title: "Обычный" },
-        stars: { icon: "✨", title: "Звёзды" },
-        wave: { icon: "🌊", title: "Волна" }
+        default: { icon: "○", title: "Обычный", rarity: "common", unlockHint: "Доступен сразу" },
+        stars: { icon: "✨", title: "Звёздная пыль", rarity: "rare", unlockHint: "Выпадает из сундуков" },
+        wave: { icon: "🌊", title: "Волна", rarity: "rare", unlockHint: "Выпадает из сундуков" },
+        frost: { icon: "❄", title: "Иней", rarity: "rare", unlockHint: "Выпадает из подарков" },
+        sparks: { icon: "✦", title: "Искры", rarity: "epic", unlockHint: "Редко выпадает из большого сундука" }
+      }
+    },
+    themes: {
+      title: "Темы экрана",
+      equippedKey: "theme",
+      hint: "Меняет настроение игрового поля без влияния на сложность.",
+      items: {
+        default: { icon: "🌌", title: "Звёздная ночь", rarity: "common", unlockHint: "Доступна сразу" },
+        sunny: { icon: "☀", title: "Солнечная поляна", rarity: "rare", unlockHint: "Выпадает из сундуков" },
+        village: { icon: "🌳", title: "Тихая деревня", rarity: "rare", unlockHint: "Выпадает из сундуков" },
+        neon: { icon: "💜", title: "Неоновый ритм", rarity: "epic", unlockHint: "Выпадает из большого сундука" },
+        river: { icon: "🌊", title: "Шёпот реки", rarity: "rare", unlockHint: "Выпадает из подарков" },
+        city: { icon: "🌃", title: "Огни города", rarity: "epic", unlockHint: "Витрина покупок или большой сундук" }
       }
     }
   };
+  const PURCHASE_OFFERS = [
+    { id: "starter-box", icon: "🎁", title: "Стартовый бокс", description: "Сундук, монеты и несколько бустов.", badge: "Скоро" },
+    { id: "boost-pack", icon: "⚡", title: "Набор бустов", description: "Запас ускорений, льда и щитов для сложных уровней.", badge: "Скоро" },
+    { id: "infinite-lives", icon: "♥", title: "Бесконечные жизни", description: "Таймер на ограниченное время без траты жизней.", badge: "Заглушка" },
+    { id: "cosmetic-box", icon: "💎", title: "Косметический бокс", description: "Шанс на редкую тему, линию или эффект захвата.", badge: "Скоро" }
+  ];
+  const getCosmeticItem = (group, id) => COSMETIC_GROUPS[group]?.items?.[id] || null;
   const LEVEL_REWARDS = {
     1: { 1: { coins: 50 }, 2: { coins: 75 }, 3: { coins: 110 } },
     2: { 1: { coins: 50 }, 2: { coins: 80 }, 3: { coins: 120 } },
@@ -250,8 +288,8 @@
   };
 
   const generatedLevelConfigs = Object.fromEntries(
-    Array.from({ length: TOTAL_LEVELS - 30 }, (_, index) => {
-      const level = index + 31;
+    Array.from({ length: TOTAL_LEVELS - 50 }, (_, index) => {
+      const level = index + 51;
       return [level, createGeneratedLevelConfig(level)];
     })
   );
@@ -406,46 +444,42 @@
       purpose: "moving-safe-low-punishment"
     },
     25: {
-      target: 78,
+      target: 76,
       balls: 3,
       speed: "slow",
       obstacles: [],
-      purpose: "first-three-balls-chapter"
+      purpose: "first-three-balls-no-obstacles"
     },
     26: {
+      target: 76,
+      balls: 3,
+      speed: "slow",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.2, y2: 0.8, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }],
+      purpose: "three-balls-safe-static"
+    },
+    27: {
+      target: 77,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.56, x1: 0.34, x2: 0.66, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "three-balls-short-danger"
+    },
+    28: {
+      target: 77,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.24, y2: 0.76, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "x", amplitude: 0.08, phase: 0.2 }],
+      purpose: "three-balls-safe-moving"
+    },
+    29: {
       target: 78,
       balls: 3,
       speed: "medium",
-      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#ff4e7a" }],
-      purpose: "three-balls-first-danger-wall"
-    },
-    27: {
-      target: 79,
-      balls: 3,
-      speed: "medium",
       obstacles: [
-        { orientation: "vertical", x: 0.35, y1: 0.18, y2: 0.82, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
-        { orientation: "horizontal", y: 0.62, x1: 0.2, x2: 0.8, type: "static", safe: false, color: "#8d2454" }
+        { orientation: "vertical", x: 0.34, y1: 0.2, y2: 0.8, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "horizontal", y: 0.64, x1: 0.28, x2: 0.72, type: "static", safe: false, color: "#8d2454" }
       ],
-      purpose: "safe-danger-combination"
-    },
-    28: {
-      target: 79,
-      balls: 3,
-      speed: "fast",
-      obstacles: [{ orientation: "vertical", x: 0.58, y1: 0.2, y2: 0.8, type: "moving", safe: false, color: "#8d2454", axis: "x", amplitude: 0.13, phase: 0.4 }],
-      purpose: "moving-danger-reaction"
-    },
-    29: {
-      target: 80,
-      balls: 3,
-      speed: "fast",
-      obstacles: [
-        { orientation: "vertical", x: 0.34, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" },
-        { orientation: "horizontal", y: 0.42, x1: 0.2, x2: 0.8, type: "static", safe: false, color: "#8d2454" },
-        { orientation: "horizontal", y: 0.72, x1: 0.24, x2: 0.76, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }
-      ],
-      purpose: "mini-boss-preparation"
+      purpose: "three-balls-pre-boss-safe-danger"
     },
     30: {
       target: 78,
@@ -455,7 +489,170 @@
         { orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "x", amplitude: 0.08, phase: 0.1 },
         { orientation: "horizontal", y: 0.66, x1: 0.24, x2: 0.76, type: "static", safe: false, color: "#ff4e7a" }
       ],
-      purpose: "chapter-three-mini-boss"
+      purpose: "chapter-three-boss-three-balls"
+    },
+    31: {
+      target: 76,
+      balls: 2,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.22, x2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }],
+      purpose: "chapter-four-soft-safe-static"
+    },
+    32: {
+      target: 76,
+      balls: 2,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.68, y1: 0.22, y2: 0.78, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "side-danger-static"
+    },
+    33: {
+      target: 77,
+      balls: 3,
+      speed: "slow",
+      obstacles: [],
+      purpose: "return-three-balls-no-obstacles"
+    },
+    34: {
+      target: 77,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.2, y2: 0.8, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }],
+      purpose: "three-balls-safe-center"
+    },
+    35: {
+      target: 78,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.58, x1: 0.34, x2: 0.66, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "three-balls-short-danger-static"
+    },
+    36: {
+      target: 78,
+      balls: 3,
+      speed: "medium",
+      obstacles: [
+        { orientation: "vertical", x: 0.36, y1: 0.2, y2: 0.8, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "horizontal", y: 0.64, x1: 0.3, x2: 0.7, type: "static", safe: false, color: "#8d2454" }
+      ],
+      purpose: "first-clean-safe-danger-combo"
+    },
+    37: {
+      target: 79,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.48, x1: 0.24, x2: 0.76, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "y", amplitude: 0.07, phase: 0.25 }],
+      purpose: "moving-safe-benefit"
+    },
+    38: {
+      target: 79,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.6, y1: 0.34, y2: 0.66, type: "moving", safe: false, color: "#8d2454", axis: "x", amplitude: 0.05, phase: 0.35 }],
+      purpose: "short-slow-moving-danger"
+    },
+    39: {
+      target: 80,
+      balls: 3,
+      speed: "medium",
+      obstacles: [
+        { orientation: "horizontal", y: 0.38, x1: 0.24, x2: 0.76, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "vertical", x: 0.64, y1: 0.28, y2: 0.72, type: "static", safe: false, color: "#ff4e7a" }
+      ],
+      purpose: "chapter-four-pre-boss-planning"
+    },
+    40: {
+      target: 80,
+      balls: 3,
+      speed: "medium",
+      obstacles: [
+        { orientation: "horizontal", y: 0.36, x1: 0.22, x2: 0.78, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "y", amplitude: 0.07, phase: 0.3 },
+        { orientation: "vertical", x: 0.34, y1: 0.24, y2: 0.76, type: "static", safe: false, color: "#ff4e7a" },
+        { orientation: "horizontal", y: 0.68, x1: 0.28, x2: 0.72, type: "static", safe: false, color: "#8d2454" }
+      ],
+      purpose: "chapter-four-boss-planning-not-speed"
+    },
+    41: {
+      target: 77,
+      balls: 3,
+      speed: "medium",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }],
+      purpose: "chapter-five-soft-three-balls-safe"
+    },
+    42: {
+      target: 78,
+      balls: 3,
+      speed: "medium",
+      obstacles: [
+        { orientation: "vertical", x: 0.36, y1: 0.22, y2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "horizontal", y: 0.64, x1: 0.3, x2: 0.7, type: "static", safe: false, color: "#8d2454" }
+      ],
+      purpose: "three-balls-safe-danger-two-lines"
+    },
+    43: {
+      target: 78,
+      balls: 3,
+      speed: "fast",
+      obstacles: [{ orientation: "horizontal", y: 0.58, x1: 0.3, x2: 0.7, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "three-balls-fast-single-danger"
+    },
+    44: {
+      target: 79,
+      balls: 3,
+      speed: "medium",
+      obstacles: [
+        { orientation: "horizontal", y: 0.42, x1: 0.24, x2: 0.76, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "y", amplitude: 0.07, phase: 0.25 },
+        { orientation: "vertical", x: 0.64, y1: 0.28, y2: 0.72, type: "static", safe: false, color: "#8d2454" }
+      ],
+      purpose: "three-balls-safe-moving-danger-static"
+    },
+    45: {
+      target: 78,
+      balls: 4,
+      speed: "slow",
+      obstacles: [],
+      purpose: "first-four-balls-soft"
+    },
+    46: {
+      target: 78,
+      balls: 4,
+      speed: "slow",
+      obstacles: [{ orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }],
+      purpose: "four-balls-safe-static"
+    },
+    47: {
+      target: 79,
+      balls: 4,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.58, x1: 0.34, x2: 0.66, type: "static", safe: false, color: "#ff4e7a" }],
+      purpose: "four-balls-short-danger-static"
+    },
+    48: {
+      target: 79,
+      balls: 4,
+      speed: "medium",
+      obstacles: [{ orientation: "horizontal", y: 0.48, x1: 0.24, x2: 0.76, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "y", amplitude: 0.06, phase: 0.35 }],
+      purpose: "four-balls-safe-moving"
+    },
+    49: {
+      target: 80,
+      balls: 4,
+      speed: "medium",
+      obstacles: [
+        { orientation: "vertical", x: 0.36, y1: 0.22, y2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "horizontal", y: 0.64, x1: 0.3, x2: 0.7, type: "static", safe: false, color: "#8d2454" }
+      ],
+      purpose: "four-balls-pre-boss-safe-danger"
+    },
+    50: {
+      target: 81,
+      balls: 4,
+      speed: "medium",
+      obstacles: [
+        { orientation: "horizontal", y: 0.36, x1: 0.22, x2: 0.78, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "y", amplitude: 0.07, phase: 0.3 },
+        { orientation: "vertical", x: 0.62, y1: 0.26, y2: 0.74, type: "static", safe: false, color: "#8d2454" },
+        { orientation: "horizontal", y: 0.68, x1: 0.36, x2: 0.64, type: "moving", safe: false, color: "#ff4e7a", axis: "x", amplitude: 0.05, phase: 0.55 }
+      ],
+      purpose: "chapter-five-boss-four-balls-fair"
     },
     ...generatedLevelConfigs
   };
@@ -492,7 +689,8 @@
     lastInterstitialAt: 0,
     lang: "ru",
     readySent: false,
-    gameplayActive: false
+    gameplayActive: false,
+    adInProgress: false
   };
 
   const messages = {
@@ -605,10 +803,12 @@
     cosmetics: {
       balls: [...DEFAULT_COSMETICS.balls],
       lines: [...DEFAULT_COSMETICS.lines],
-      captureEffects: [...DEFAULT_COSMETICS.captureEffects]
+      captureEffects: [...DEFAULT_COSMETICS.captureEffects],
+      themes: [...DEFAULT_COSMETICS.themes]
     },
     equippedCosmetics: { ...DEFAULT_EQUIPPED_COSMETICS },
     gifts: [],
+    dailyGift: { lastClaimedDay: "", adRewardClaimedDay: "" },
     inventoryTab: "chests",
     expandedChapters: new Set([1])
   };
@@ -648,7 +848,12 @@
     helperHintTimer: null,
     obstacleLegendTimer: null,
     lastCompletion: null,
-    replayingCompleted: false
+    replayingCompleted: false,
+    activeBoosts: {
+      fastLineCharges: 0,
+      slowBallsUntil: 0,
+      lineShieldCharges: 0
+    }
   };
 
   let confirmResolve = null;
@@ -817,7 +1022,9 @@
   };
 
   const syncLevelHint = (level = state.selectedLevel) => {
-    setText(".level-helper-panel p", getLevelHint(level));
+    const hint = getLevelHint(level);
+    setText(".level-helper-panel p", hint);
+    setText(".obstacle-legend-rule-text", hint);
   };
 
   const localizeStaticDom = () => {
@@ -848,9 +1055,10 @@
     if (levelStats[1]) levelStats[1].textContent = t("captured");
     if (levelStats[2]) levelStats[2].textContent = t("penalties");
     setAttribute("#jezzCanvas", "aria-label", `${t("playfield")}. Проведи пальцем или мышью вверх или вниз для вертикальной линии, влево или вправо для горизонтальной. Стрелки перемещают прицел, Space или Enter ставят линию.`);
-    const obstacleItems = document.querySelectorAll(".obstacle-legend-item");
-    if (obstacleItems[0]) obstacleItems[0].lastChild.textContent = ` ${t("obstacleDanger")}`;
-    if (obstacleItems[1]) obstacleItems[1].lastChild.textContent = ` ${t("obstacleSafe")}`;
+    const obstacleDanger = document.querySelector(".obstacle-legend-danger");
+    const obstacleSafe = document.querySelector(".obstacle-legend-safe");
+    if (obstacleDanger) obstacleDanger.lastChild.textContent = ` ${t("obstacleDanger")}`;
+    if (obstacleSafe) obstacleSafe.lastChild.textContent = ` ${t("obstacleSafe")}`;
     setAttribute("#completeCloseButton", "aria-label", t("toChapters"));
     setText("#rewardTitle", t("levelComplete"));
     setAttribute("#rewardStars", "aria-label", t("earnedStars"));
@@ -933,6 +1141,19 @@
     }
   };
 
+  const notifyYandexGameReady = () => {
+    if (yandexState.readySent) {
+      return;
+    }
+
+    try {
+      yandexState.sdk?.features?.LoadingAPI?.ready?.();
+      yandexState.readySent = true;
+    } catch (_error) {
+      // Game Ready is a platform signal only; the game must stay playable offline.
+    }
+  };
+
   const initYandexSdk = async () => {
     if (!window.YaGames || typeof window.YaGames.init !== "function") {
       applyLanguage("ru");
@@ -946,8 +1167,7 @@
       await initYandexPlayer();
       await loadCloudProgress();
       renderChapterScreens();
-      yandexState.sdk?.features?.LoadingAPI?.ready?.();
-      yandexState.readySent = true;
+      notifyYandexGameReady();
     } catch (_error) {
       applyLanguage("ru");
     }
@@ -1075,6 +1295,148 @@
   const getPendingChests = () => chapters
     .map((chapter) => getPendingChestReward(chapter.id))
     .filter((reward) => reward.hasReward);
+  const rollWeighted = (items) => {
+    const total = items.reduce((sum, item) => sum + Math.max(0, Number(item.weight) || 0), 0);
+    if (total <= 0) {
+      return items[0] || null;
+    }
+    let cursor = Math.random() * total;
+    for (const item of items) {
+      cursor -= Math.max(0, Number(item.weight) || 0);
+      if (cursor <= 0) {
+        return item;
+      }
+    }
+    return items[items.length - 1] || null;
+  };
+
+  const createEmptyRewardBundle = () => ({
+    coins: 0,
+    lives: 0,
+    boosters: {},
+    cosmetics: {},
+    timed: []
+  });
+
+  const addRewardDropToBundle = (bundle, drop) => {
+    if (!drop) {
+      return bundle;
+    }
+    if (drop.coins) {
+      bundle.coins += Math.max(0, Math.round(Number(drop.coins) || 0));
+    }
+    if (drop.lives) {
+      bundle.lives += Math.max(0, Math.round(Number(drop.lives) || 0));
+    }
+    if (drop.booster && Object.prototype.hasOwnProperty.call(DEFAULT_BOOSTERS, drop.booster)) {
+      bundle.boosters[drop.booster] = (bundle.boosters[drop.booster] || 0) + Math.max(1, Math.round(Number(drop.count) || 1));
+    }
+    if (drop.cosmetic?.group && drop.cosmetic?.id && getCosmeticItem(drop.cosmetic.group, drop.cosmetic.id)) {
+      if (!bundle.cosmetics[drop.cosmetic.group]) {
+        bundle.cosmetics[drop.cosmetic.group] = [];
+      }
+      bundle.cosmetics[drop.cosmetic.group].push(drop.cosmetic.id);
+    }
+    if (drop.timed) {
+      bundle.timed.push(drop.timed);
+    }
+    return bundle;
+  };
+
+  const getChestLootTable = (tier) => {
+    if (tier >= CHEST_TIERS.large) {
+      return [
+        { weight: 22, coins: 260 },
+        { weight: 14, lives: 2 },
+        { weight: 22, booster: "fastLine", count: 3 },
+        { weight: 18, booster: "slowBalls", count: 3 },
+        { weight: 16, booster: "lineShield", count: 2 },
+        { weight: 10, cosmetic: { group: "balls", id: "fire" } },
+        { weight: 12, cosmetic: { group: "lines", id: "fireTrail" } },
+        { weight: 10, cosmetic: { group: "captureEffects", id: "sparks" } },
+        { weight: 8, cosmetic: { group: "themes", id: "neon" } },
+        { weight: 8, cosmetic: { group: "themes", id: "city" } }
+      ];
+    }
+    if (tier >= CHEST_TIERS.medium) {
+      return [
+        { weight: 28, coins: 180 },
+        { weight: 14, lives: 1 },
+        { weight: 26, booster: "fastLine", count: 2 },
+        { weight: 24, booster: "slowBalls", count: 2 },
+        { weight: 20, booster: "lineShield", count: 1 },
+        { weight: 12, cosmetic: { group: "balls", id: "neon" } },
+        { weight: 12, cosmetic: { group: "balls", id: "ice" } },
+        { weight: 14, cosmetic: { group: "lines", id: "lightning" } },
+        { weight: 12, cosmetic: { group: "captureEffects", id: "stars" } },
+        { weight: 10, cosmetic: { group: "themes", id: "sunny" } }
+      ];
+    }
+    return [
+      { weight: 38, coins: 90 },
+      { weight: 28, booster: "fastLine", count: 1 },
+      { weight: 28, booster: "slowBalls", count: 1 },
+      { weight: 22, booster: "lineShield", count: 1 },
+      { weight: 8, cosmetic: { group: "lines", id: "crystal" } },
+      { weight: 8, cosmetic: { group: "captureEffects", id: "wave" } },
+      { weight: 6, cosmetic: { group: "themes", id: "village" } }
+    ];
+  };
+
+  const createChestLootBundle = (reward) => {
+    const bundle = createEmptyRewardBundle();
+    bundle.coins += Math.max(0, Math.round(Number(reward.coins) || 0));
+    bundle.lives += Math.max(0, Math.round(Number(reward.lives) || 0));
+    const rolls = reward.earnedTier >= CHEST_TIERS.large ? 4 : reward.earnedTier >= CHEST_TIERS.medium ? 3 : 2;
+    const table = getChestLootTable(reward.earnedTier);
+    for (let index = 0; index < rolls; index += 1) {
+      addRewardDropToBundle(bundle, rollWeighted(table));
+    }
+    return bundle;
+  };
+
+  const todayKey = () => new Date().toISOString().slice(0, 10);
+
+  const createDailyGiftReward = (kind = "daily") => {
+    const bundle = createEmptyRewardBundle();
+    const table = kind === "ad"
+      ? [
+        { weight: 24, coins: 75 },
+        { weight: 26, booster: "fastLine", count: 1 },
+        { weight: 26, booster: "slowBalls", count: 1 },
+        { weight: 22, booster: "lineShield", count: 1 },
+        { weight: 5, cosmetic: { group: "captureEffects", id: "frost" } }
+      ]
+      : [
+        { weight: 30, coins: 120 },
+        { weight: 16, lives: 1 },
+        { weight: 22, booster: "fastLine", count: 1 },
+        { weight: 22, booster: "slowBalls", count: 1 },
+        { weight: 18, booster: "lineShield", count: 1 },
+        { weight: 8, cosmetic: { group: "balls", id: "ice" } },
+        { weight: 8, cosmetic: { group: "captureEffects", id: "frost" } },
+        { weight: 6, cosmetic: { group: "themes", id: "river" } }
+      ];
+    addRewardDropToBundle(bundle, rollWeighted(table));
+    return bundle;
+  };
+
+  const grantRewardBundle = (bundle) => {
+    const previousLives = state.lives;
+    state.coins += Math.max(0, Math.round(Number(bundle.coins) || 0));
+    state.lives = Math.min(MAX_LIVES, state.lives + Math.max(0, Math.round(Number(bundle.lives) || 0)));
+    Object.entries(bundle.boosters || {}).forEach(([key, count]) => {
+      if (Object.prototype.hasOwnProperty.call(DEFAULT_BOOSTERS, key)) {
+        state.boosters[key] = Math.max(0, Math.round(Number(state.boosters[key]) || 0)) + Math.max(0, Math.round(Number(count) || 0));
+      }
+    });
+    addGiftCosmetics(bundle.cosmetics);
+    return {
+      ...bundle,
+      gainedLives: state.lives - previousLives
+    };
+  };
+
   const getChapterChestStatusText = (chapterId) => {
     const chest = ensureChapterChest(chapterId);
     const stars = getChapterStars(chapterId);
@@ -1478,6 +1840,19 @@
     return equipped;
   };
 
+  const normalizeDailyGift = (savedDailyGift = {}) => ({
+
+
+    lastClaimedDay: typeof savedDailyGift?.lastClaimedDay === "string" ? savedDailyGift.lastClaimedDay : "",
+
+
+    adRewardClaimedDay: typeof savedDailyGift?.adRewardClaimedDay === "string" ? savedDailyGift.adRewardClaimedDay : ""
+
+
+  });
+
+
+
   const normalizeGifts = (savedGifts) => Array.isArray(savedGifts)
     ? savedGifts
       .filter((gift) => gift && typeof gift === "object" && gift.id)
@@ -1511,6 +1886,7 @@
     cosmetics: state.cosmetics,
     equippedCosmetics: state.equippedCosmetics,
     gifts: state.gifts,
+    dailyGift: state.dailyGift,
     expandedChapters: Array.from(state.expandedChapters)
   });
 
@@ -1520,9 +1896,180 @@
     return currentLevel * 1000 + stars;
   };
 
-  const shouldUseIncomingProgress = (incoming) => (
-    incoming && typeof incoming === "object" && getProgressScore(incoming) >= getProgressScore(serializeProgress())
+  const mergeNumberMax = (...values) => Math.max(
+    0,
+    ...values.map((value) => Math.round(Number(value) || 0))
   );
+
+  const mergeStarsByLevel = (first = {}, second = {}) => {
+    const firstStars = normalizeStarsByLevel(first);
+    const secondStars = normalizeStarsByLevel(second);
+    const merged = { ...firstStars };
+
+    Object.entries(secondStars).forEach(([level, stars]) => {
+      merged[level] = Math.max(Number(merged[level]) || 0, Number(stars) || 0);
+    });
+
+    return merged;
+  };
+
+  const mergePerfectChapters = (first = [], second = []) => Array.from(new Set([
+    ...(Array.isArray(first) ? first : []).map(Number),
+    ...(Array.isArray(second) ? second : []).map(Number)
+  ].filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)));
+
+  const mergeChapterChests = (first = {}, second = {}) => {
+    const firstChests = migrateChapterChests(first);
+    const secondChests = migrateChapterChests(second);
+    const merged = {};
+
+    chapters.forEach((chapter) => {
+      const localChest = firstChests[chapter.id] || {};
+      const cloudChest = secondChests[chapter.id] || {};
+      const earnedTier = Math.max(
+        normalizeChestTier(localChest.earnedTier),
+        normalizeChestTier(cloudChest.earnedTier)
+      );
+      const claimedTier = Math.min(
+        earnedTier,
+        Math.max(
+          normalizeChestTier(localChest.claimedTier),
+          normalizeChestTier(cloudChest.claimedTier)
+        )
+      );
+
+      if (earnedTier > CHEST_TIERS.none || claimedTier > CHEST_TIERS.none) {
+        merged[chapter.id] = { earnedTier, claimedTier };
+      }
+    });
+
+    return merged;
+  };
+
+  const mergeBoosters = (first = {}, second = {}) => {
+    const firstBoosters = normalizeBoosters(first);
+    const secondBoosters = normalizeBoosters(second);
+
+    return Object.fromEntries(
+      Object.keys(DEFAULT_BOOSTERS).map((key) => [
+        key,
+        Math.max(firstBoosters[key] || 0, secondBoosters[key] || 0)
+      ])
+    );
+  };
+
+  const mergeCosmetics = (first = {}, second = {}) => {
+    const firstCosmetics = normalizeCosmetics(first);
+    const secondCosmetics = normalizeCosmetics(second);
+    const merged = {};
+
+    Object.entries(DEFAULT_COSMETICS).forEach(([group]) => {
+      merged[group] = Array.from(new Set([
+        ...(firstCosmetics[group] || []),
+        ...(secondCosmetics[group] || [])
+      ].filter(Boolean)));
+    });
+
+    return merged;
+  };
+
+  const mergeCosmeticDrops = (first = {}, second = {}) => {
+    const merged = {};
+
+    Object.entries(COSMETIC_GROUPS).forEach(([group]) => {
+      const firstDrops = Array.isArray(first?.[group]) ? first[group] : [];
+      const secondDrops = Array.isArray(second?.[group]) ? second[group] : [];
+      const drops = Array.from(new Set([...firstDrops, ...secondDrops].filter(Boolean)));
+      if (drops.length) {
+        merged[group] = drops;
+      }
+    });
+
+    return merged;
+  };
+
+  const mergeGifts = (first = [], second = []) => {
+    const byId = new Map();
+
+    [...normalizeGifts(first), ...normalizeGifts(second)].forEach((gift) => {
+      const existing = byId.get(gift.id);
+      if (!existing) {
+        byId.set(gift.id, gift);
+        return;
+      }
+
+      byId.set(gift.id, {
+        ...existing,
+        ...gift,
+        coins: Math.max(existing.coins || 0, gift.coins || 0),
+        lives: Math.max(existing.lives || 0, gift.lives || 0),
+        boosters: mergeBoosters(existing.boosters, gift.boosters),
+        cosmetics: mergeCosmeticDrops(existing.cosmetics || {}, gift.cosmetics || {}),
+        claimed: existing.claimed === true || gift.claimed === true
+      });
+    });
+
+    return Array.from(byId.values());
+  };
+
+  const mergeDailyGift = (first = {}, second = {}) => {
+    const localGift = normalizeDailyGift(first);
+    const cloudGift = normalizeDailyGift(second);
+
+    return {
+      lastClaimedDay: [localGift.lastClaimedDay, cloudGift.lastClaimedDay].sort().pop() || "",
+      adRewardClaimedDay: [localGift.adRewardClaimedDay, cloudGift.adRewardClaimedDay].sort().pop() || ""
+    };
+  };
+
+  const mergeProgress = (localProgress = {}, cloudProgress = {}) => {
+    const localScore = getProgressScore(localProgress);
+    const cloudScore = getProgressScore(cloudProgress);
+    const preferred = cloudScore > localScore ? cloudProgress : localProgress;
+    const mergedCosmetics = mergeCosmetics(localProgress.cosmetics, cloudProgress.cosmetics);
+    const mergedCurrentLevel = Math.max(
+      1,
+      Math.min(
+        TOTAL_LEVELS + 1,
+        mergeNumberMax(localProgress.currentLevel || 1, cloudProgress.currentLevel || 1)
+      )
+    );
+    const lifeRestoreTimes = [localProgress.nextLifeAt, cloudProgress.nextLifeAt]
+      .map(Number)
+      .filter(Number.isFinite);
+
+    return {
+      ...preferred,
+      currentChapter: getChapterForLevel(Math.min(mergedCurrentLevel, TOTAL_LEVELS)),
+      currentLevel: mergedCurrentLevel,
+      selectedLevel: Math.max(
+        1,
+        Math.min(
+          TOTAL_LEVELS,
+          mergeNumberMax(localProgress.selectedLevel || 1, cloudProgress.selectedLevel || 1)
+        )
+      ),
+      coins: mergeNumberMax(localProgress.coins, cloudProgress.coins),
+      lives: Math.min(MAX_LIVES, mergeNumberMax(localProgress.lives, cloudProgress.lives)),
+      nextLifeAt: lifeRestoreTimes.length ? Math.min(...lifeRestoreTimes) : null,
+      music: localProgress.music !== false,
+      sound: localProgress.sound !== false,
+      starsByLevel: mergeStarsByLevel(localProgress.starsByLevel, cloudProgress.starsByLevel),
+      perfectChapters: mergePerfectChapters(localProgress.perfectChapters, cloudProgress.perfectChapters),
+      chapterChests: mergeChapterChests(localProgress, cloudProgress),
+      boosters: mergeBoosters(localProgress.boosters, cloudProgress.boosters),
+      selectedBoosters: normalizeSelectedBoosters(preferred.selectedBoosters),
+      cosmetics: mergedCosmetics,
+      equippedCosmetics: normalizeEquippedCosmetics(preferred.equippedCosmetics, mergedCosmetics),
+      gifts: mergeGifts(localProgress.gifts, cloudProgress.gifts),
+      dailyGift: mergeDailyGift(localProgress.dailyGift, cloudProgress.dailyGift),
+      expandedChapters: Array.from(new Set([
+        ...(Array.isArray(localProgress.expandedChapters) ? localProgress.expandedChapters : []),
+        ...(Array.isArray(cloudProgress.expandedChapters) ? cloudProgress.expandedChapters : []),
+        getChapterForLevel(Math.min(mergedCurrentLevel, TOTAL_LEVELS))
+      ].map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)))
+    };
+  };
 
   const applySavedProgress = (saved) => {
     state.currentChapter = clampChapterId(Number(saved.currentChapter) || state.currentChapter);
@@ -1545,6 +2092,7 @@
     state.cosmetics = normalizeCosmetics(saved.cosmetics);
     state.equippedCosmetics = normalizeEquippedCosmetics(saved.equippedCosmetics, state.cosmetics);
     state.gifts = normalizeGifts(saved.gifts);
+    state.dailyGift = normalizeDailyGift(saved.dailyGift);
     state.expandedChapters = new Set(
       Array.isArray(saved.expandedChapters)
         ? saved.expandedChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
@@ -1585,13 +2133,13 @@
     try {
       const cloudData = await yandexState.player.getData([CLOUD_SAVE_KEY]);
       const cloudProgress = cloudData?.[CLOUD_SAVE_KEY];
-      if (shouldUseIncomingProgress(cloudProgress)) {
-        applySavedProgress(cloudProgress);
+      if (cloudProgress && !Array.isArray(cloudProgress) && typeof cloudProgress === "object") {
+        const mergedProgress = mergeProgress(serializeProgress(), cloudProgress);
+        applySavedProgress(mergedProgress);
         saveProgress({ skipCloud: true });
         refreshProgressUi();
-      } else {
-        scheduleCloudSave(true);
       }
+      scheduleCloudSave(true);
     } catch (_error) {
       // If player data is unavailable, keep the already loaded local progress.
     }
@@ -1645,8 +2193,6 @@
         scheduleCloudSave(false);
       }
     }
-
-    scheduleLeaderboardScore();
   };
 
   const saveProgressDebounced = (options = {}) => saveProgress({ ...options, immediate: false });
@@ -1669,6 +2215,7 @@
       state.cosmetics = normalizeCosmetics();
       state.equippedCosmetics = normalizeEquippedCosmetics({}, state.cosmetics);
       state.gifts = [];
+      state.dailyGift = normalizeDailyGift();
       state.expandedChapters = new Set([getChapterForLevel(state.currentLevel)]);
     }
   };
@@ -1691,15 +2238,7 @@
     confirmCancelButton.hidden = !hasCancel;
     confirmCancelButton.textContent = hasCancel ? cancelText : "";
     confirmCancelButton.parentElement?.setAttribute("data-count", hasCancel ? "2" : "1");
-    if (levelState.running && levelScreen.classList.contains("is-active")) {
-      levelState.running = false;
-      levelState.pausedByModal = true;
-      updateGameplayMarker(false);
-      if (levelState.animationId) {
-        window.cancelAnimationFrame(levelState.animationId);
-        levelState.animationId = null;
-      }
-    }
+    pauseActiveLevelForModal();
     confirmModal.classList.add("is-open");
     confirmModal.setAttribute("aria-hidden", "false");
     activateModalFocus(confirmModal, {
@@ -1720,26 +2259,75 @@
     confirmModal.classList.remove("is-open");
     confirmModal.setAttribute("aria-hidden", "true");
     deactivateModalFocus(confirmModal);
-    if (levelState.pausedByModal && !levelState.completed && !levelState.failed && levelScreen.classList.contains("is-active")) {
-      levelState.pausedByModal = false;
-      levelState.running = true;
-      levelState.lastFrameAt = performance.now();
-      updateGameplayMarker(true);
-      if (!levelState.animationId) {
-        levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
-      }
-    } else {
-      levelState.pausedByModal = false;
-    }
+    resumeActiveLevelAfterModal();
     const resolve = confirmResolve;
     confirmResolve = null;
     resolve(result);
   };
 
-  const getRewardLineMarkup = (reward) => `
-    <div class="chapter-chest-reward-line"><span aria-hidden="true">●</span><strong>+${reward.coins}</strong> монет</div>
-    ${reward.lives > 0 ? `<div class="chapter-chest-reward-line"><span aria-hidden="true">♥</span><strong>+${reward.lives}</strong> жизней</div>` : ""}
-  `;
+  const pauseActiveLevelForModal = () => {
+    if (!levelState.running || !levelScreen.classList.contains("is-active")) {
+      return;
+    }
+
+    levelState.running = false;
+    levelState.pausedByModal = true;
+    updateGameplayMarker(false);
+    if (levelState.animationId) {
+      window.cancelAnimationFrame(levelState.animationId);
+      levelState.animationId = null;
+    }
+  };
+
+  const resumeActiveLevelAfterModal = () => {
+    if (
+      !levelState.pausedByModal
+      || levelState.completed
+      || levelState.failed
+      || !levelScreen.classList.contains("is-active")
+      || modalFocusStack.length
+    ) {
+      if (!modalFocusStack.length) {
+        levelState.pausedByModal = false;
+      }
+      return;
+    }
+
+    levelState.pausedByModal = false;
+    levelState.running = true;
+    levelState.lastFrameAt = performance.now();
+    updateGameplayMarker(true);
+    if (!levelState.animationId) {
+      levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
+    }
+  };
+
+  const getRewardLineMarkup = (reward) => {
+    const bundle = reward.bundle || reward;
+    const lines = [];
+    if (bundle.coins > 0) {
+      lines.push(`<div class="chapter-chest-reward-line"><span aria-hidden="true">●</span><strong>+${bundle.coins}</strong> монет</div>`);
+    }
+    if (bundle.lives > 0) {
+      lines.push(`<div class="chapter-chest-reward-line"><span aria-hidden="true">♥</span><strong>+${bundle.lives}</strong> жизней</div>`);
+    }
+    Object.entries(bundle.boosters || {}).forEach(([key, count]) => {
+      const booster = BOOSTER_ITEMS[key];
+      const amount = Math.max(0, Math.round(Number(count) || 0));
+      if (booster && amount > 0) {
+        lines.push(`<div class="chapter-chest-reward-line"><span aria-hidden="true">${booster.icon}</span><strong>x${amount}</strong> ${escapeHtml(booster.title)}</div>`);
+      }
+    });
+    Object.entries(bundle.cosmetics || {}).forEach(([group, ids]) => {
+      Array.from(new Set(Array.isArray(ids) ? ids : [])).forEach((id) => {
+        const item = getCosmeticItem(group, id);
+        if (item) {
+          lines.push(`<div class="chapter-chest-reward-line"><span aria-hidden="true">${item.icon}</span><strong>${escapeHtml(item.title)}</strong></div>`);
+        }
+      });
+    });
+    return lines.join("") || `<div class="chapter-chest-reward-line"><span aria-hidden="true">✦</span><strong>Бонус</strong></div>`;
+  };
   const getChestRewardLabel = (chapterId) => {
     const reward = getPendingChestReward(chapterId);
     if (!reward.hasReward) {
@@ -1769,7 +2357,7 @@
     });
 
     if (canUseRewardedAd && shouldWatchAd) {
-      const rewarded = await showRewardedLifeAd();
+      const rewarded = await showRewardedLifeAd({ userInitiated: true });
       if (rewarded) {
         restoreLife();
         saveProgressImmediate({ flushCloud: true });
@@ -1858,9 +2446,28 @@
 
     panel.querySelector(".chapter-chest-claim")?.addEventListener("click", () => {
       const result = openChapterChest(chapterId, { silent: true });
-      deactivateModalFocus(panel);
-      panel.remove();
-      resolve(result);
+      const bundle = result?.bundle || result || createEmptyRewardBundle();
+      panel.querySelector(".chapter-chest-card").innerHTML = `
+        <div class="chapter-chest-icon is-opened" aria-hidden="true">✨</div>
+        <h2>Награда выпала!</h2>
+        <p>Глава ${chapterId}</p>
+        <div class="chapter-chest-rewards">${getRewardLineMarkup({ bundle })}</div>
+        <button class="menu-button play-button compact-play chapter-chest-take" type="button">Забрать</button>
+      `;
+      const takeButton = panel.querySelector(".chapter-chest-take");
+      activateModalFocus(panel, {
+        initialFocus: takeButton,
+        onEscape: () => {
+          deactivateModalFocus(panel);
+          panel.remove();
+          resolve(result);
+        }
+      });
+      takeButton?.addEventListener("click", () => {
+        deactivateModalFocus(panel);
+        panel.remove();
+        resolve(result);
+      }, { once: true });
     }, { once: true });
     root.append(panel);
     activateModalFocus(panel, {
@@ -2066,7 +2673,9 @@
     completion.perfectChapterId = reward.perfectChapterId;
     levelState.lastCompletion = completion;
     syncResources();
-    scheduleLeaderboardScore();
+    if (improvedStars) {
+      scheduleLeaderboardScore();
+    }
 
     return completion;
   };
@@ -2141,17 +2750,21 @@
       document.querySelectorAll(`[data-level-boost="${key}"]`).forEach((button) => {
         button.disabled = count <= 0;
         button.classList.toggle("is-empty", count <= 0);
+        button.classList.toggle("is-active", (key === "slowBalls" && isSlowBallsActive()) || (key === "fastLine" && levelState.activeBoosts.fastLineCharges > 0) || (key === "lineShield" && levelState.activeBoosts.lineShieldCharges > 0));
       });
     });
     syncLifeRestoreTimer();
     updateInventoryBadge();
-    saveProgress();
   };
 
   const restoreLife = () => {
     if (state.lives >= MAX_LIVES) {
+      const hadRestoreTimer = state.nextLifeAt !== null;
       state.nextLifeAt = null;
       syncResources();
+      if (hadRestoreTimer) {
+        saveProgress();
+      }
       return;
     }
 
@@ -2162,12 +2775,18 @@
       state.nextLifeAt = Date.now() + LIFE_RESTORE_MS;
     }
     syncResources();
+    saveProgress();
   };
 
   const updateLifeRestore = () => {
     if (!state.nextLifeAt || state.lives >= MAX_LIVES) {
+      const hadRestoreTimer = state.nextLifeAt !== null;
       state.nextLifeAt = null;
       syncLifeRestoreTimer();
+      if (hadRestoreTimer) {
+        syncResources();
+        saveProgress();
+      }
       return;
     }
 
@@ -2179,6 +2798,7 @@
         ? state.nextLifeAt + restoredLives * LIFE_RESTORE_MS
         : null;
       syncResources();
+      saveProgress();
       return;
     }
 
@@ -2196,6 +2816,7 @@
       state.nextLifeAt = Date.now() + LIFE_RESTORE_MS;
     }
     syncResources();
+    saveProgress();
     return true;
   };
 
@@ -2329,7 +2950,7 @@
     return isUpgrade ? `Сундук ${title} улучшен!` : `Сундук ${title}`;
   };
 
-  const formatRewardText = ({ coins = 0, lives = 0, boosters = {} }) => {
+  const formatRewardText = ({ coins = 0, lives = 0, boosters = {}, cosmetics = {}, timed = [] }) => {
     const parts = [];
     if (coins > 0) {
       parts.push(`+${coins} монет`);
@@ -2344,11 +2965,65 @@
         parts.push(`${booster.icon} ${booster.title} x${amount}`);
       }
     });
+    Object.entries(cosmetics || {}).forEach(([group, ids]) => {
+      Array.from(new Set(Array.isArray(ids) ? ids : [])).forEach((id) => {
+        const item = getCosmeticItem(group, id);
+        if (item) {
+          parts.push(`${item.icon} ${item.title}`);
+        }
+      });
+    });
+    (timed || []).forEach((item) => parts.push(item));
     return parts.length ? parts.join(", ") : "Бонус";
   };
-
   const getPendingGifts = () => state.gifts.filter((gift) => gift.claimed !== true);
 
+  const isDailyGiftReady = () => state.dailyGift.lastClaimedDay !== todayKey();
+  const isAdRewardReady = () => state.dailyGift.adRewardClaimedDay !== todayKey();
+
+  const showGrantedReward = (title, bundle) => showConfirm({
+    title,
+    message: "Получено: " + formatRewardText(bundle),
+    acceptText: "Забрать",
+    cancelText: null
+  });
+
+  const claimDailyGift = async () => {
+    if (!isDailyGiftReady()) {
+      await showConfirm({ title: "Подарок уже получен", message: "Завтра появится новый бесплатный подарок.", acceptText: t("ok"), cancelText: null });
+      return;
+    }
+    const bundle = createDailyGiftReward("daily");
+    grantRewardBundle(bundle);
+    state.dailyGift.lastClaimedDay = todayKey();
+    saveProgressImmediate();
+    syncResources();
+    renderInventory();
+    await showGrantedReward("Ежедневный подарок", bundle);
+  };
+
+  const claimAdReward = async () => {
+    if (!isAdRewardReady()) {
+      await showConfirm({ title: "Реклама просмотрена", message: "Следующая рекламная награда будет доступна завтра.", acceptText: t("ok"), cancelText: null });
+      return;
+    }
+    const canUseRewardedAd = Boolean(yandexState.sdk?.adv && typeof yandexState.sdk.adv.showRewardedVideo === "function");
+    if (!canUseRewardedAd) {
+      await showConfirm({ title: "Реклама недоступна", message: "SDK рекламы сейчас не подключён. Кнопка останется как безопасная заглушка.", acceptText: t("ok"), cancelText: null });
+      return;
+    }
+    const rewarded = await showRewardedLifeAd({ userInitiated: true });
+    if (!rewarded) {
+      return;
+    }
+    const bundle = createDailyGiftReward("ad");
+    grantRewardBundle(bundle);
+    state.dailyGift.adRewardClaimedDay = todayKey();
+    saveProgressImmediate();
+    syncResources();
+    renderInventory();
+    await showGrantedReward("Награда за рекламу", bundle);
+  };
   const getInventoryBadgeCount = () => getPendingChests().length + getPendingGifts().length;
 
   const updateInventoryBadge = () => {
@@ -2369,36 +3044,42 @@
 
   const renderInventoryChests = () => {
     const pending = getPendingChests();
-    if (!pending.length) {
-      return `
+    const shopCards = PURCHASE_OFFERS.filter((offer) => offer.id.includes("box")).map((offer) => `
+      <article class="inventory-card shop-card is-placeholder">
+        <div class="inventory-card-icon" aria-hidden="true">${offer.icon}</div>
+        <div class="inventory-card-body">
+          <h3>${escapeHtml(offer.title)}</h3>
+          <p>${escapeHtml(offer.description)}</p>
+          <p class="inventory-status">${escapeHtml(offer.badge)} · покупки будут подключены позже</p>
+        </div>
+        <button class="menu-button compact-play inventory-disabled-action" type="button" data-inventory-action="offer-placeholder">Скоро</button>
+      </article>
+    `).join("");
+    return `
+      ${pending.length ? `<div class="inventory-card-list">${pending.map((reward) => {
+        const isUpgrade = reward.claimedTier > CHEST_TIERS.none;
+        return `
+          <article class="inventory-card chest-card">
+            <div class="inventory-card-icon" aria-hidden="true">🎁</div>
+            <div class="inventory-card-body">
+              <h3>${escapeHtml(getChapterChestName(reward.chapterId, isUpgrade))}</h3>
+              ${isUpgrade ? `<p>Было: ${escapeHtml(reward.previousTitle)}</p><p>Стало: ${escapeHtml(reward.nextTitle)}</p>` : `<p>${escapeHtml(reward.nextTitle)}</p>`}
+              <p>Звёзды: ${getChapterStars(reward.chapterId)} / 30</p>
+              <p>Открой сундук, чтобы увидеть случайную награду.</p>
+            </div>
+            <button class="menu-button play-button compact-play" type="button" data-inventory-action="open-chest" data-chapter-id="${reward.chapterId}">Открыть</button>
+          </article>
+        `;
+      }).join("")}</div>` : `
         <div class="inventory-empty">
           <h3>Сундуков пока нет</h3>
           <p>Собирай звёзды в главах, чтобы получать сундуки.</p>
         </div>
-      `;
-    }
-
-    return `
-      <div class="inventory-card-list">
-        ${pending.map((reward) => {
-          const isUpgrade = reward.claimedTier > CHEST_TIERS.none;
-          const actionText = "Получить";
-          return `
-            <article class="inventory-card chest-card">
-              <div class="inventory-card-icon" aria-hidden="true">🎁</div>
-              <div class="inventory-card-body">
-                <h3>${escapeHtml(getChapterChestName(reward.chapterId, isUpgrade))}</h3>
-                ${isUpgrade
-                  ? `<p>Было: ${escapeHtml(reward.previousTitle)}</p><p>Стало: ${escapeHtml(reward.nextTitle)}</p>`
-                  : `<p>${escapeHtml(reward.nextTitle)}</p>`}
-                <p>Звёзды: ${getChapterStars(reward.chapterId)} / 30</p>
-                <p>${isUpgrade ? "Доп. награда" : "Награда"}: ${escapeHtml(formatRewardText(reward))}</p>
-              </div>
-              <button class="menu-button play-button compact-play" type="button" data-inventory-action="open-chest" data-chapter-id="${reward.chapterId}">${actionText}</button>
-            </article>
-          `;
-        }).join("")}
-      </div>
+      `}
+      <section class="inventory-shop-preview">
+        <h3>Боксы и наборы</h3>
+        <div class="inventory-card-list">${shopCards}</div>
+      </section>
     `;
   };
 
@@ -2407,70 +3088,84 @@
       ${Object.entries(BOOSTER_ITEMS).map(([key, booster]) => {
         const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
         return `
-          <article class="inventory-card boost-card">
+          <article class="inventory-card boost-card ${count <= 0 ? "is-locked" : ""}">
             <div class="inventory-card-icon" aria-hidden="true">${booster.icon}</div>
             <div class="inventory-card-body">
-              <h3>${booster.title} x${count}</h3>
-              <p>${booster.description}</p>
-              ${count > 0 ? `<p class="inventory-status">Статус: в панели уровня</p>` : ""}
+              <h3>${escapeHtml(booster.title)} x${count}</h3>
+              <p>${escapeHtml(booster.description)}</p>
+              <p class="inventory-status">${count > 0 ? "Можно использовать на уровне" : "Получить можно из сундуков, подарка или рекламы"}</p>
             </div>
-            ${count <= 0 ? `<p class="inventory-status">Пока нет в инвентаре</p>` : ""}
           </article>
         `;
       }).join("")}
+      ${PURCHASE_OFFERS.filter((offer) => offer.id.includes("boost") || offer.id.includes("infinite")).map((offer) => `
+        <article class="inventory-card shop-card is-placeholder">
+          <div class="inventory-card-icon" aria-hidden="true">${offer.icon}</div>
+          <div class="inventory-card-body"><h3>${escapeHtml(offer.title)}</h3><p>${escapeHtml(offer.description)}</p><p class="inventory-status">${escapeHtml(offer.badge)}</p></div>
+          <button class="menu-button compact-play inventory-disabled-action" type="button" data-inventory-action="offer-placeholder">Скоро</button>
+        </article>
+      `).join("")}
     </div>
   `;
 
-  const renderInventorySkins = () => Object.entries(COSMETIC_GROUPS).map(([group, config]) => `
-    <section class="inventory-skin-group">
-      <h3>${config.title}</h3>
-      <div class="inventory-card-list">
-        ${(state.cosmetics[group] || []).map((skinId) => {
-          const skin = config.items[skinId] || { icon: "◆", title: skinId };
-          const isEquipped = state.equippedCosmetics[config.equippedKey] === skinId;
-          return `
-            <article class="inventory-card skin-card">
-              <div class="inventory-card-icon" aria-hidden="true">${skin.icon}</div>
-              <div class="inventory-card-body">
-                <h3>${escapeHtml(skin.title)}</h3>
-                <p class="inventory-status">${isEquipped ? "Выбран" : "Куплен"}</p>
-              </div>
-              ${isEquipped ? "" : `<button class="menu-button play-button compact-play" type="button" data-inventory-action="equip-skin" data-cosmetic-group="${group}" data-skin-id="${escapeHtml(skinId)}">Выбрать</button>`}
-            </article>
-          `;
-        }).join("")}
-      </div>
-    </section>
-  `).join("");
+  const renderCosmeticGroup = (group) => {
+    const config = COSMETIC_GROUPS[group];
+    return `
+      <section class="inventory-skin-group">
+        <h3>${escapeHtml(config.title)}</h3>
+        <p class="inventory-group-hint">${escapeHtml(config.hint || "")}</p>
+        <div class="inventory-card-list cosmetic-grid">
+          ${Object.entries(config.items).map(([skinId, skin]) => {
+            const unlocked = state.cosmetics[group]?.includes(skinId);
+            const isEquipped = state.equippedCosmetics[config.equippedKey] === skinId;
+            return `
+              <article class="inventory-card skin-card ${unlocked ? "" : "is-locked"} rarity-${escapeHtml(skin.rarity || "common")}">
+                <div class="inventory-card-icon" aria-hidden="true">${skin.icon}</div>
+                <div class="inventory-card-body">
+                  <h3>${escapeHtml(skin.title)}</h3>
+                  <p class="inventory-status">${unlocked ? (isEquipped ? "Выбран" : "Открыт") : escapeHtml(skin.unlockHint || "Закрыто")}</p>
+                </div>
+                ${unlocked && !isEquipped ? `<button class="menu-button play-button compact-play" type="button" data-inventory-action="equip-skin" data-cosmetic-group="${group}" data-skin-id="${escapeHtml(skinId)}">Выбрать</button>` : ""}
+              </article>
+            `;
+          }).join("")}
+        </div>
+      </section>
+    `;
+  };
+
+  const renderInventorySkins = () => ["balls", "lines"].map(renderCosmeticGroup).join("");
+  const renderInventoryThemes = () => ["captureEffects", "themes"].map(renderCosmeticGroup).join("");
 
   const renderInventoryGifts = () => {
     const gifts = getPendingGifts();
-    if (!gifts.length) {
-      return `
-        <div class="inventory-empty">
-          <h3>Подарков пока нет</h3>
-          <p>Заглядывай позже — здесь будут появляться бонусы.</p>
-        </div>
-      `;
-    }
-
+    const dailyReady = isDailyGiftReady();
+    const adReady = isAdRewardReady();
     return `
       <div class="inventory-card-list">
+        <article class="inventory-card gift-card ${dailyReady ? "is-ready" : "is-locked"}">
+          <div class="inventory-card-icon" aria-hidden="true">🎁</div>
+          <div class="inventory-card-body"><h3>Ежедневный подарок</h3><p>${dailyReady ? "Сегодня можно забрать бесплатную награду." : "Сегодня подарок уже получен."}</p></div>
+          <button class="menu-button play-button compact-play" type="button" data-inventory-action="claim-daily-gift" ${dailyReady ? "" : "disabled"}>${dailyReady ? "Получить" : "Завтра"}</button>
+        </article>
+        <article class="inventory-card gift-card ${adReady ? "" : "is-locked"}">
+          <div class="inventory-card-icon" aria-hidden="true">▶</div>
+          <div class="inventory-card-body"><h3>Награда за рекламу</h3><p>Посмотри рекламу и получи случайный буст или подарок.</p></div>
+          <button class="menu-button compact-play" type="button" data-inventory-action="claim-ad-reward" ${adReady ? "" : "disabled"}>${adReady ? "Смотреть" : "Получено"}</button>
+        </article>
         ${gifts.map((gift) => `
           <article class="inventory-card gift-card">
             <div class="inventory-card-icon" aria-hidden="true">${escapeHtml(gift.icon || "🎁")}</div>
-            <div class="inventory-card-body">
-              <h3>${escapeHtml(gift.title)}</h3>
-              ${gift.description ? `<p>${escapeHtml(gift.description)}</p>` : ""}
-              <p>Награда: ${escapeHtml(formatRewardText(gift))}</p>
-            </div>
+            <div class="inventory-card-body"><h3>${escapeHtml(gift.title)}</h3>${gift.description ? `<p>${escapeHtml(gift.description)}</p>` : ""}<p>Награда: ${escapeHtml(formatRewardText(gift))}</p></div>
             <button class="menu-button play-button compact-play" type="button" data-inventory-action="claim-gift" data-gift-id="${escapeHtml(gift.id)}">Забрать</button>
           </article>
+        `).join("")}
+        ${PURCHASE_OFFERS.filter((offer) => offer.id.includes("cosmetic")).map((offer) => `
+          <article class="inventory-card shop-card is-placeholder"><div class="inventory-card-icon" aria-hidden="true">${offer.icon}</div><div class="inventory-card-body"><h3>${escapeHtml(offer.title)}</h3><p>${escapeHtml(offer.description)}</p><p class="inventory-status">${escapeHtml(offer.badge)}</p></div><button class="menu-button compact-play inventory-disabled-action" type="button" data-inventory-action="offer-placeholder">Скоро</button></article>
         `).join("")}
       </div>
     `;
   };
-
   const renderInventory = () => {
     if (!inventoryContent) {
       return;
@@ -2486,14 +3181,14 @@
       chests: renderInventoryChests,
       boosts: renderInventoryBoosts,
       skins: renderInventorySkins,
+      themes: renderInventoryThemes,
       gifts: renderInventoryGifts
-    };
-    inventoryContent.innerHTML = (renderers[state.inventoryTab] || renderInventoryChests)();
+    };    inventoryContent.innerHTML = (renderers[state.inventoryTab] || renderInventoryChests)();
     updateInventoryBadge();
   };
 
   const setInventoryTab = (tab) => {
-    if (!["chests", "boosts", "skins", "gifts"].includes(tab)) {
+    if (!["chests", "boosts", "skins", "themes", "gifts"].includes(tab)) {
       return;
     }
     state.inventoryTab = tab;
@@ -2504,6 +3199,7 @@
     if (!inventoryModal) {
       return;
     }
+    pauseActiveLevelForModal();
     state.inventoryTab = tab;
     renderInventory();
     inventoryModal.classList.add("is-open");
@@ -2518,6 +3214,7 @@
     inventoryModal?.classList.remove("is-open");
     inventoryModal?.setAttribute("aria-hidden", "true");
     deactivateModalFocus(inventoryModal);
+    resumeActiveLevelAfterModal();
   };
 
   const waitNextFrame = () => new Promise((resolve) => {
@@ -2576,6 +3273,55 @@
     }
   };
 
+  const isSlowBallsActive = () => levelState.activeBoosts.slowBallsUntil > levelState.elapsed;
+  const consumeFastLineCharge = () => {
+    if (levelState.activeBoosts.fastLineCharges <= 0) {
+      return false;
+    }
+    levelState.activeBoosts.fastLineCharges -= 1;
+    return true;
+  };
+  const consumeLineShieldCharge = () => {
+    if (levelState.activeBoosts.lineShieldCharges <= 0) {
+      return false;
+    }
+    levelState.activeBoosts.lineShieldCharges -= 1;
+    levelState.activeLine = null;
+    showLevelToast("Щит спас линию от штрафа");
+    syncResources();
+    requestDrawJezzLevel();
+    return true;
+  };
+  const resetActiveBoosts = () => {
+    levelState.activeBoosts.fastLineCharges = 0;
+    levelState.activeBoosts.slowBallsUntil = 0;
+    levelState.activeBoosts.lineShieldCharges = 0;
+  };
+  const useLevelBooster = (key) => {
+    if (!levelState.running || levelState.completed || levelState.failed) {
+      openInventoryModal("boosts");
+      return;
+    }
+    const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
+    if (count <= 0) {
+      showLevelToast("Получи буст в сундуке или подарке");
+      openInventoryModal("boosts");
+      return;
+    }
+    state.boosters[key] = count - 1;
+    if (key === "fastLine") {
+      levelState.activeBoosts.fastLineCharges += 1;
+      showLevelToast("Следующая линия ускорена");
+    } else if (key === "slowBalls") {
+      levelState.activeBoosts.slowBallsUntil = Math.max(levelState.activeBoosts.slowBallsUntil, levelState.elapsed) + 6;
+      showLevelToast("Шары замедлены");
+    } else if (key === "lineShield") {
+      levelState.activeBoosts.lineShieldCharges += 1;
+      showLevelToast("Щит активирован");
+    }
+    saveProgress();
+    syncResources();
+  };
   const syncLevelHud = () => {
     const percent = Math.floor(getCaptureRatio() * 100);
     if (capturePercent) {
@@ -2592,15 +3338,13 @@
     }
     if (obstacleLegend) {
       const hasObstacles = Boolean(levelState.obstacles && levelState.obstacles.length);
-      obstacleLegend.hidden = !hasObstacles;
-      if (!hasObstacles) {
-        closeObstacleLegend();
-      }
+      obstacleLegend.hidden = false;
+      obstacleLegend.classList.toggle("has-obstacles", hasObstacles);
     }
   };
 
   const showObstacleLegendHint = () => {
-    if (!obstacleLegend || !(levelState.obstacles && levelState.obstacles.length)) {
+    if (!obstacleLegend) {
       return;
     }
 
@@ -2629,11 +3373,9 @@
     }
 
     window.clearTimeout(levelState.obstacleLegendTimer);
+    levelState.obstacleLegendTimer = null;
     obstacleLegend.classList.add("is-visible");
     setObstacleLegendExpanded(true);
-    levelState.obstacleLegendTimer = window.setTimeout(() => {
-      closeObstacleLegend();
-    }, 4000);
   };
 
   const showLevelHelperHint = () => {
@@ -3957,7 +4699,7 @@
       return;
     }
 
-    const grow = LINE_GROW_SPEED * dt;
+    const grow = LINE_GROW_SPEED * (line.boostFast ? 1.85 : 1) * dt;
     if (line.orientation === "vertical") {
       const boundA = line.boundA ?? rect.y;
       const boundB = line.boundB ?? rect.y + rect.h;
@@ -3974,10 +4716,16 @@
 
     const collision = getActiveLineCollision();
     if (collision === "ball") {
+      if (consumeLineShieldCharge()) {
+        return;
+      }
       handleLinePenalty();
       return;
     }
     if (collision) {
+      if (consumeLineShieldCharge()) {
+        return;
+      }
       cancelActiveLine(true);
       return;
     }
@@ -4082,8 +4830,9 @@
       }
 
       const previous = { x: ball.x, y: ball.y };
-      ball.x += ball.vx * dt;
-      ball.y += ball.vy * dt;
+      const effectiveDt = dt * (isSlowBallsActive() ? 0.45 : 1);
+      ball.x += ball.vx * effectiveDt;
+      ball.y += ball.vy * effectiveDt;
 
       if (ball.x - ball.r <= rect.x || ball.x + ball.r >= rect.x + rect.w) {
         ball.vx *= -1;
@@ -4095,6 +4844,9 @@
       }
 
       if (levelState.activeLine && activeLineHitBall(levelState.activeLine, ball, previous)) {
+        if (consumeLineShieldCharge()) {
+          return;
+        }
         handleLinePenalty();
         return;
       }
@@ -4286,6 +5038,28 @@
     return COSMETIC_GROUPS.balls.items[skin]?.asset || UI_ASSETS.balls.default;
   };
 
+  const getEquippedLinePalette = () => {
+    const line = state.equippedCosmetics.line || DEFAULT_EQUIPPED_COSMETICS.line;
+    const palettes = {
+      default: { a: "rgba(126, 247, 255, 0.96)", b: "rgba(255, 246, 145, 0.98)", c: "rgba(255, 91, 218, 0.96)", wall: "rgba(255, 240, 160, 0.96)", glow: "rgba(255, 237, 132, 0.45)" },
+      lightning: { a: "rgba(116, 236, 255, 0.98)", b: "rgba(255, 255, 255, 0.98)", c: "rgba(98, 136, 255, 0.96)", wall: "rgba(128, 232, 255, 0.96)", glow: "rgba(126, 247, 255, 0.55)" },
+      crystal: { a: "rgba(190, 128, 255, 0.98)", b: "rgba(255, 255, 255, 0.96)", c: "rgba(99, 238, 255, 0.96)", wall: "rgba(202, 162, 255, 0.96)", glow: "rgba(177, 116, 255, 0.52)" },
+      fireTrail: { a: "rgba(255, 229, 112, 0.98)", b: "rgba(255, 118, 60, 0.98)", c: "rgba(255, 70, 190, 0.96)", wall: "rgba(255, 149, 83, 0.96)", glow: "rgba(255, 110, 64, 0.58)" }
+    };
+    return palettes[line] || palettes.default;
+  };
+  const getCapturePalette = () => {
+    const effect = state.equippedCosmetics.captureEffect || DEFAULT_EQUIPPED_COSMETICS.captureEffect;
+    const palettes = {
+      default: ["rgba(255, 211, 91, 0.7)", "rgba(255, 78, 211, 0.48)"],
+      stars: ["rgba(255, 247, 153, 0.74)", "rgba(166, 109, 255, 0.5)"],
+      wave: ["rgba(87, 229, 255, 0.68)", "rgba(76, 115, 255, 0.48)"],
+      frost: ["rgba(214, 251, 255, 0.72)", "rgba(111, 181, 255, 0.48)"],
+      sparks: ["rgba(255, 179, 72, 0.74)", "rgba(255, 72, 175, 0.52)"]
+    };
+    return palettes[effect] || palettes.default;
+  };
+  const getEquippedThemeAsset = () => UI_ASSETS.themes[state.equippedCosmetics.theme] || null;
   const requestDrawJezzLevel = () => {
     if (levelState.drawRequestId) {
       return;
@@ -4340,7 +5114,7 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(captured.x, captured.y, captured.w, captured.h);
     });
-    ctx.strokeStyle = "rgba(255, 240, 160, 0.96)";
+    ctx.strokeStyle = getEquippedLinePalette().wall;
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
     levelState.walls.forEach((wall) => {
@@ -4594,29 +5368,48 @@
     }
   };
 
+  const canShowBlockingAd = () => (
+    !yandexState.adInProgress
+    && !levelState.running
+    && !levelState.activeLine
+  );
+
   const showFullscreenAd = () => new Promise((resolve) => {
-    if (!yandexState.sdk?.adv || typeof yandexState.sdk.adv.showFullscreenAdv !== "function") {
+    if (
+      !canShowBlockingAd()
+      || !yandexState.sdk?.adv
+      || typeof yandexState.sdk.adv.showFullscreenAdv !== "function"
+    ) {
       resolve(false);
       return;
     }
+
+    yandexState.adInProgress = true;
+    let settled = false;
+    const finishAd = (result) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      yandexState.adInProgress = false;
+      resumeJezzLevelFromPlatform();
+      resolve(Boolean(result));
+    };
 
     try {
       yandexState.sdk.adv.showFullscreenAdv({
         callbacks: {
           onOpen: pauseJezzLevelForPlatform,
           onClose: (wasShown) => {
-            resumeJezzLevelFromPlatform();
-            resolve(Boolean(wasShown));
+            finishAd(wasShown);
           },
           onError: () => {
-            resumeJezzLevelFromPlatform();
-            resolve(false);
+            finishAd(false);
           }
         }
       });
     } catch (_error) {
-      resumeJezzLevelFromPlatform();
-      resolve(false);
+      finishAd(false);
     }
   });
 
@@ -4639,13 +5432,31 @@
     return wasShown;
   };
 
-  const showRewardedLifeAd = () => new Promise((resolve) => {
-    if (!yandexState.sdk?.adv || typeof yandexState.sdk.adv.showRewardedVideo !== "function") {
+  const showRewardedLifeAd = ({ userInitiated = false } = {}) => new Promise((resolve) => {
+    if (
+      !userInitiated
+      || yandexState.adInProgress
+      || levelState.running
+      || levelState.activeLine
+      || !yandexState.sdk?.adv
+      || typeof yandexState.sdk.adv.showRewardedVideo !== "function"
+    ) {
       resolve(false);
       return;
     }
 
+    yandexState.adInProgress = true;
     let rewarded = false;
+    let settled = false;
+    const finishAd = (result) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      yandexState.adInProgress = false;
+      resumeJezzLevelFromPlatform();
+      resolve(Boolean(result));
+    };
 
     try {
       yandexState.sdk.adv.showRewardedVideo({
@@ -4655,18 +5466,15 @@
             rewarded = true;
           },
           onClose: () => {
-            resumeJezzLevelFromPlatform();
-            resolve(rewarded);
+            finishAd(rewarded);
           },
           onError: () => {
-            resumeJezzLevelFromPlatform();
-            resolve(false);
+            finishAd(false);
           }
         }
       });
     } catch (_error) {
-      resumeJezzLevelFromPlatform();
-      resolve(false);
+      finishAd(false);
     }
   });
 
@@ -4765,6 +5573,7 @@
     levelState.walls = [];
     levelState.obstacles = (config.obstacles || []).map((obstacle, index) => createObstacle(obstacle, rect, index));
     levelState.elapsed = 0;
+    resetActiveBoosts();
     levelState.activeLine = null;
     levelState.lineOrientation = "vertical";
     syncLineOrientationButtons();
@@ -4967,6 +5776,7 @@
         negativeHit: castResult.negativeHit,
         positiveHit: castResult.positiveHit,
         done: false,
+        boostFast: consumeFastLineCharge(),
         rect,
         sourceArea: rect,
         sourceRect: rect
@@ -4986,6 +5796,7 @@
         negativeHit: castResult.negativeHit,
         positiveHit: castResult.positiveHit,
         done: false,
+        boostFast: consumeFastLineCharge(),
         rect,
         sourceArea: rect,
         sourceRect: rect
@@ -5259,6 +6070,9 @@
   };
 
   const toggleSettings = (isOpen) => {
+    if (isOpen) {
+      pauseActiveLevelForModal();
+    }
     settingsModal.classList.toggle("is-open", isOpen);
     settingsModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
     if (isOpen) {
@@ -5268,10 +6082,17 @@
       });
     } else {
       deactivateModalFocus(settingsModal);
+      resumeActiveLevelAfterModal();
     }
   };
 
   const handleAction = async (event) => {
+    const boostButton = event.target.closest("[data-level-boost]");
+    if (boostButton) {
+      useLevelBooster(boostButton.dataset.levelBoost);
+      return;
+    }
+
     const orientationButton = event.target.closest("[data-line-orientation]");
     if (orientationButton) {
       setLineOrientation(orientationButton.dataset.lineOrientation);
@@ -5464,6 +6285,25 @@
       return;
     }
 
+    if (action === "claim-daily-gift") {
+      await claimDailyGift();
+      return;
+    }
+
+    if (action === "claim-ad-reward") {
+      await claimAdReward();
+      return;
+    }
+
+    if (action === "offer-placeholder") {
+      await showConfirm({
+        title: "Покупки скоро",
+        message: "Это витрина будущих наборов. Реальное списание денег пока не подключено.",
+        acceptText: t("ok"),
+        cancelText: null
+      });
+      return;
+    }
     if (action === "equip-skin") {
       equipSkin(actionButton.dataset.cosmeticGroup, actionButton.dataset.skinId);
       return;
@@ -5507,8 +6347,11 @@
         return;
       }
       resizeRaf = window.requestAnimationFrame(() => {
-        resizeRaf = null;
-        resizeActiveJezzLevel();
+        window.requestAnimationFrame(() => {
+          resizeRaf = null;
+          closeObstacleLegend();
+          resizeActiveJezzLevel();
+        });
       });
     }, 80);
   };
@@ -5518,6 +6361,10 @@
     scheduleResizeActiveLevel();
   });
   window.addEventListener("orientationchange", () => {
+    syncViewportHeight();
+    scheduleResizeActiveLevel();
+  });
+  window.visualViewport?.addEventListener("resize", () => {
     syncViewportHeight();
     scheduleResizeActiveLevel();
   });
