@@ -78,34 +78,25 @@
                 <strong id="penaltyCount">0</strong>
               </div>
             </div>
-            <aside class="level-helper-panel" aria-label="Подсказка уровня">
-              <span class="helper-icon" aria-hidden="true">✦</span>
-              <p>Рисуй линии и замыкай области, чтобы захватить пространство.</p>
-              <span class="helper-target"><strong id="helperTargetPercent">70%</strong> до цели</span>
-            </aside>
             <div class="level-tools">
               <div class="level-boost-panel" id="levelBoostPanel" aria-label="Бусты уровня">
                 <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Молниеносная линия">
-                  <span aria-hidden="true">⚡</span><strong data-booster-count="fastLine">x0</strong>
+                  <span class="boost-icon" aria-hidden="true">⚡</span><span class="boost-label">Линия</span><strong data-booster-count="fastLine">x0</strong>
                 </button>
                 <button class="level-boost-button" type="button" data-level-boost="slowBalls" aria-label="Ледяная пауза">
-                  <span aria-hidden="true">❄</span><strong data-booster-count="slowBalls">x0</strong>
+                  <span class="boost-icon" aria-hidden="true">❄</span><span class="boost-label">Пауза</span><strong data-booster-count="slowBalls">x0</strong>
                 </button>
                 <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит чертёжника">
-                  <span aria-hidden="true">🛡</span><strong data-booster-count="lineShield">x0</strong>
+                  <span class="boost-icon" aria-hidden="true">🛡</span><span class="boost-label">Щит</span><strong data-booster-count="lineShield">x0</strong>
                 </button>
               </div>
               <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
                 <button class="obstacle-legend-toggle" type="button" aria-label="Подсказка по препятствиям" aria-expanded="false">?</button>
-                <span class="obstacle-legend-item obstacle-legend-rule">
-                  <span class="helper-icon" aria-hidden="true">?</span>
-                  <span class="obstacle-legend-rule-text">Рисуй линии и замыкай области, чтобы захватить пространство.</span>
-                </span>
-                <span class="obstacle-legend-item obstacle-legend-danger">
+                <span class="obstacle-legend-item">
                   <span class="obstacle-swatch obstacle-swatch-danger" aria-hidden="true"></span>
                   Яркая или темная линия - штраф при касании
                 </span>
-                <span class="obstacle-legend-item obstacle-legend-safe">
+                <span class="obstacle-legend-item">
                   <span class="obstacle-swatch obstacle-swatch-safe" aria-hidden="true"></span>
                   Пунктирная светлая линия - линия может закрепиться, мячи отскакивают
                 </span>
@@ -193,7 +184,6 @@
           <button type="button" data-inventory-tab="chests">Сундуки</button>
           <button type="button" data-inventory-tab="boosts">Бусты</button>
           <button type="button" data-inventory-tab="skins">Скины</button>
-          <button type="button" data-inventory-tab="themes">Темы/Эффекты</button>
           <button type="button" data-inventory-tab="gifts">Подарки</button>
         </div>
         <div class="inventory-content" id="inventoryContent"></div>
