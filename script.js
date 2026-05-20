@@ -43,6 +43,8 @@
   const LEADERBOARD_NAME = "stars";
   const INTERSTITIAL_LEVEL_INTERVAL = 3;
   const INTERSTITIAL_MIN_INTERVAL_MS = 180 * 1000;
+  const DANGER_OBSTACLE_TOAST = "Красные блоки нельзя задевать";
+  const DANGER_OBSTACLE_TOAST_COOLDOWN_MS = 800;
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 3 * 60 * 1000;
   const TOTAL_LEVELS = 100;
@@ -432,8 +434,8 @@
       balls: 3,
       speed: "medium",
       obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.22, y2: 0.78, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "x", amplitude: 0.08, phase: 0.1 },
-        { orientation: "horizontal", y: 0.66, x1: 0.24, x2: 0.76, type: "static", safe: false, color: "#ff4e7a" }
+        { orientation: "vertical", x: 0.5, y1: 0.32, y2: 0.68, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "x", amplitude: 0.08, phase: 0.1 },
+        { orientation: "horizontal", y: 0.66, x1: 0.34, x2: 0.66, type: "static", safe: false, color: "#ff4e7a" }
       ],
       purpose: "chapter-three-mini-boss"
     },
@@ -643,6 +645,7 @@
   let staticLayerDirty = true;
   let resizeRaf = null;
   let resizeTimer = null;
+  let lastDangerObstacleToastAt = 0;
   const perfState = {
     overlay: null,
     frameTimes: [],
@@ -1310,7 +1313,13 @@
   };
 
   const syncViewportHeight = () => {
-    root.style.setProperty("--viewport-height", `${window.innerHeight}px`);
+    const viewport = window.visualViewport;
+    const width = Math.max(1, Math.round(viewport?.width || window.innerWidth || document.documentElement.clientWidth || 1));
+    const height = Math.max(1, Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight || 1));
+    document.documentElement.style.setProperty("--viewport-width", `${width}px`);
+    document.documentElement.style.setProperty("--viewport-height", `${height}px`);
+    root.style.setProperty("--viewport-width", `${width}px`);
+    root.style.setProperty("--viewport-height", `${height}px`);
   };
 
   const pressedFeedbackButtons = new WeakSet();
@@ -2300,6 +2309,15 @@
     levelState.toastTimer = window.setTimeout(() => {
       levelToast.classList.remove("is-visible");
     }, 1100);
+  };
+
+  const showDangerObstacleToast = ({ force = false } = {}) => {
+    const now = performance.now();
+    if (!force && now - lastDangerObstacleToastAt < DANGER_OBSTACLE_TOAST_COOLDOWN_MS) {
+      return;
+    }
+    lastDangerObstacleToastAt = now;
+    showLevelToast(DANGER_OBSTACLE_TOAST);
   };
 
   const escapeHtml = (value) => String(value)
@@ -3842,7 +3860,7 @@
     openChapter(state.currentChapter);
   };
 
-  const handleLinePenalty = () => {
+  const handleLinePenalty = (message = null) => {
     if (levelState.failed || levelState.completed) {
       return false;
     }
@@ -3850,7 +3868,7 @@
     levelState.activeLine = null;
     levelState.penalties = Math.min(MAX_PENALTIES, levelState.penalties + 1);
     syncLevelHud();
-    showLevelToast(t("penaltyProgress", { count: levelState.penalties, max: MAX_PENALTIES }));
+    showLevelToast(message || t("penaltyProgress", { count: levelState.penalties, max: MAX_PENALTIES }));
 
     if (levelState.penalties >= MAX_PENALTIES) {
       void failCurrentAttempt();
@@ -3860,10 +3878,10 @@
     return false;
   };
 
-  const cancelActiveLine = (penalize = false) => {
+  const cancelActiveLine = (penalize = false, message = null) => {
     levelState.activeLine = null;
     if (penalize) {
-      handleLinePenalty();
+      handleLinePenalty(message);
     }
   };
 
@@ -3929,7 +3947,8 @@
 
   const completeActiveLine = (line) => {
     if (!line?.negativeHit?.isValidAnchor || !line?.positiveHit?.isValidAnchor) {
-      cancelActiveLine(Boolean(line?.negativeHit?.isDanger || line?.positiveHit?.isDanger));
+      const hitDanger = Boolean(line?.negativeHit?.isDanger || line?.positiveHit?.isDanger);
+      cancelActiveLine(hitDanger, hitDanger ? DANGER_OBSTACLE_TOAST : null);
       return;
     }
     levelState.activeLine = null;
@@ -3964,7 +3983,7 @@
       return;
     }
     if (collision) {
-      cancelActiveLine(true);
+      cancelActiveLine(true, collision === "danger" ? DANGER_OBSTACLE_TOAST : null);
       return;
     }
 
@@ -4817,6 +4836,9 @@
       orientation: levelState.lineOrientation || "vertical",
       rect
     };
+    if (getLineCastResult(nextPoint, levelState.aimPointer.orientation, rect).failReason === "danger") {
+      showDangerObstacleToast();
+    }
     requestDrawJezzLevel();
     return levelState.aimPointer;
   };
@@ -4885,7 +4907,7 @@
     }
     const castResult = getLineCastResult(point, orientation, rect);
     if (castResult.failReason === "danger") {
-      cancelActiveLine(true);
+      cancelActiveLine(true, DANGER_OBSTACLE_TOAST);
       return;
     }
     if (castResult.failReason === "temporary-blocker") {
@@ -5025,6 +5047,10 @@
 
     event.preventDefault();
     const orientation = levelState.lineOrientation || "vertical";
+    const castResult = getLineCastResult(point, orientation, rect);
+    if (castResult.failReason === "danger") {
+      showDangerObstacleToast();
+    }
 
     levelState.aimPointer = {
       x: point.x,
@@ -5056,6 +5082,11 @@
       if (orientation) {
         setLineOrientation(orientation);
         startActiveLine(point, orientation, rect);
+      } else if (
+        getLineCastResult(point, "vertical", rect).failReason === "danger"
+        || getLineCastResult(point, "horizontal", rect).failReason === "danger"
+      ) {
+        showDangerObstacleToast({ force: true });
       }
     }
 
@@ -5512,6 +5543,22 @@
     scheduleResizeActiveLevel();
   });
   window.addEventListener("orientationchange", () => {
+    syncViewportHeight();
+    scheduleResizeActiveLevel();
+  });
+  window.visualViewport?.addEventListener("resize", () => {
+    syncViewportHeight();
+    scheduleResizeActiveLevel();
+  });
+  window.visualViewport?.addEventListener("scroll", () => {
+    syncViewportHeight();
+    scheduleResizeActiveLevel();
+  });
+  document.addEventListener("fullscreenchange", () => {
+    syncViewportHeight();
+    scheduleResizeActiveLevel();
+  });
+  document.addEventListener("webkitfullscreenchange", () => {
     syncViewportHeight();
     scheduleResizeActiveLevel();
   });

@@ -3,7 +3,8 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
-  --viewport-height: 100vh;
+  --viewport-width: 100dvw;
+  --viewport-height: 100dvh;
   --panel: rgba(34, 15, 76, 0.58);
   --panel-border: rgba(255, 102, 225, 0.5);
   --scene-ink: #fff7ff;
@@ -17,8 +18,8 @@
   --level-glow: rgba(255, 80, 220, 0.58);
   --cta-a: #ff57dc;
   --cta-b: #744dff;
-  --chapter-bg: url("objects/Fone/Sunny_glade_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Sunny_glade_1.png.png");
+  --chapter-bg: url("objects/fone/sunny-glade-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/sunny-glade-1.png.png");
 }
 
 * {
@@ -31,7 +32,7 @@ body {
   position: fixed;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   margin: 0;
   overflow: hidden;
   background: #13072f;
@@ -61,7 +62,7 @@ button {
   isolation: isolate;
   background:
     linear-gradient(180deg, rgba(28, 17, 98, 0.05), rgba(28, 17, 98, 0.18)),
-    url("objects/Fone/fone_menu.png") center / cover no-repeat #21136d;
+    url("objects/fone/fone_menu.png") center / cover no-repeat #21136d;
 }
 
 .screen {
@@ -90,7 +91,7 @@ button {
   background:
     radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.25), transparent 28%),
     linear-gradient(180deg, rgba(40, 12, 91, 0.04), rgba(20, 5, 52, 0.24)),
-    url("objects/Fone/fone_menu.png") center / cover no-repeat;
+    url("objects/fone/fone_menu.png") center / cover no-repeat;
 }
 
 @media (max-width: 680px) and (orientation: portrait) {
@@ -98,7 +99,7 @@ button {
     background:
       radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.18), transparent 28%),
       linear-gradient(180deg, rgba(40, 12, 91, 0.04), rgba(20, 5, 52, 0.24)),
-      url("objects/Fone/fone_menu_two.png") center / cover no-repeat;
+      url("objects/fone/fone_menu_two.png") center / cover no-repeat;
   }
 }
 
@@ -2294,7 +2295,7 @@ button {
 
 @media (max-width: 560px) {
   .inventory-panel {
-    max-height: calc(var(--viewport-height, 100vh) - var(--safe-top) - var(--safe-bottom) - 18px);
+    max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--safe-bottom) - 18px);
     padding: 16px;
   }
 
@@ -2920,8 +2921,8 @@ button {
 }
 
 .chapter-1 {
-  --chapter-bg: url("objects/Fone/Sunny_glade_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Sunny_glade_1.png.png");
+  --chapter-bg: url("objects/fone/sunny-glade-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/sunny-glade-1.png.png");
   --road-main: rgba(255, 93, 224, 0.9);
   --road-rim: rgba(255, 209, 92, 0.5);
   --level-a: #ffd166;
@@ -2931,8 +2932,8 @@ button {
 }
 
 .chapter-2 {
-  --chapter-bg: url("objects/Fone/quiet village_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/quiet village_1.png.png");
+  --chapter-bg: url("objects/fone/quiet-village-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/quiet-village-1.png.png");
   --road-main: rgba(255, 168, 98, 0.86);
   --road-rim: rgba(149, 77, 116, 0.52);
   --level-a: #ffb06e;
@@ -2942,8 +2943,8 @@ button {
 }
 
 .chapter-3 {
-  --chapter-bg: url("objects/Fone/Golden meadows_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Golden meadows_1.png.png");
+  --chapter-bg: url("objects/fone/golden-meadows-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/golden-meadows-1.png.png");
   --road-main: rgba(255, 224, 91, 0.9);
   --road-rim: rgba(224, 126, 42, 0.5);
   --level-a: #ffe265;
@@ -2953,8 +2954,8 @@ button {
 }
 
 .chapter-4 {
-  --chapter-bg: url("objects/Fone/River whisper_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/River whisper_1.png.png");
+  --chapter-bg: url("objects/fone/river-whisper-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/river-whisper-1.png.png");
   --road-main: rgba(111, 234, 255, 0.88);
   --road-rim: rgba(47, 132, 175, 0.54);
   --level-a: #80edff;
@@ -2964,8 +2965,8 @@ button {
 }
 
 .chapter-5 {
-  --chapter-bg: url("objects/Fone/Cote d'Azur_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Cote d'Azur_1.png.png");
+  --chapter-bg: url("objects/fone/cote-dazur-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/cote-dazur-1.png.png");
   --road-main: rgba(124, 238, 255, 0.86);
   --road-rim: rgba(228, 183, 97, 0.5);
   --level-a: #7cecff;
@@ -2975,8 +2976,8 @@ button {
 }
 
 .chapter-6 {
-  --chapter-bg: url("objects/Fone/Secret of the Depths_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Secret of the Depths_1.png.png");
+  --chapter-bg: url("objects/fone/secret-of-the-depths-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/secret-of-the-depths-1.png.png");
   --road-main: rgba(79, 217, 250, 0.86);
   --road-rim: rgba(33, 70, 181, 0.55);
   --level-a: #56dcf5;
@@ -2986,8 +2987,8 @@ button {
 }
 
 .chapter-7 {
-  --chapter-bg: url("objects/Fone/City lights_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/City lights_1.png.png");
+  --chapter-bg: url("objects/fone/city-lights-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/city-lights-1.png.png");
   --road-main: rgba(206, 113, 255, 0.86);
   --road-rim: rgba(82, 49, 178, 0.58);
   --level-a: #cf78ff;
@@ -2997,8 +2998,8 @@ button {
 }
 
 .chapter-8 {
-  --chapter-bg: url("objects/Fone/Neon rhythm_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Neon rhythm_1.png.png");
+  --chapter-bg: url("objects/fone/neon-rhythm-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/neon-rhythm-1.png.png");
   --road-main: rgba(77, 241, 255, 0.88);
   --road-rim: rgba(255, 78, 218, 0.55);
   --level-a: #52f2ff;
@@ -3008,8 +3009,8 @@ button {
 }
 
 .chapter-9 {
-  --chapter-bg: url("objects/Fone/Star Trek_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Star Trek_1.png.png");
+  --chapter-bg: url("objects/fone/star-trek-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/star-trek-1.png.png");
   --road-main: rgba(156, 158, 255, 0.9);
   --road-rim: rgba(255, 92, 221, 0.42);
   --level-a: #a6a8ff;
@@ -3020,8 +3021,8 @@ button {
 
 .chapter-10,
 .final-screen {
-  --chapter-bg: url("objects/Fone/Gates of Light_2.png.png");
-  --chapter-bg-portrait: url("objects/Fone/Gates of Light_1.png.png");
+  --chapter-bg: url("objects/fone/gates-of-light-2.png.png");
+  --chapter-bg-portrait: url("objects/fone/gates-of-light-1.png.png");
   --road-main: rgba(255, 237, 157, 0.92);
   --road-rim: rgba(239, 142, 91, 0.52);
   --level-a: #fff19a;
@@ -6424,4 +6425,423 @@ button {
     height: 34px;
     min-height: 34px;
   }
+}
+
+/* Canonical adaptive level layout.
+   Keep this block last: earlier level rules describe special cases, this one
+   makes the playable screen fill every viewport without fixed centering. */
+#level-screen,
+#level-screen .level-scene {
+  width: 100%;
+  height: var(--viewport-height);
+  min-height: 0;
+  overflow: hidden;
+}
+
+#level-screen .level-playfield {
+  --level-inset: clamp(4px, 1.2vmin, 12px);
+  position: absolute;
+  inset: calc(var(--safe-top) + var(--level-inset)) calc(var(--safe-right) + var(--level-inset)) calc(var(--safe-bottom) + var(--level-inset)) calc(var(--safe-left) + var(--level-inset));
+  z-index: 6;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  transform: none;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#level-screen .level-side-panel,
+#level-screen .top-ui,
+#level-screen .level-hud,
+#level-screen .level-tools,
+#level-screen .level-boost-panel,
+#level-screen .jezz-canvas {
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#level-screen .top-ui,
+#level-screen .level-hud,
+#level-screen .level-tools {
+  position: static;
+  inset: auto;
+  width: 100%;
+  transform: none;
+}
+
+#level-screen .jezz-canvas {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  align-self: stretch;
+  justify-self: stretch;
+  object-fit: contain;
+}
+
+@media (orientation: portrait), (max-width: 700px) and (min-height: 520px) {
+  #level-screen .level-playfield {
+    display: grid;
+    grid-template-areas:
+      "top"
+      "hud"
+      "canvas"
+      "tools";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: clamp(4px, 1.2vmin, 8px);
+    align-items: stretch;
+  }
+
+  #level-screen .level-side-panel {
+    display: contents;
+  }
+
+  #level-screen .top-ui {
+    grid-area: top;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: clamp(3px, 1.2vmin, 6px);
+    align-items: center;
+    overflow: hidden;
+  }
+
+  #level-screen .level-nav-actions {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    gap: 3px;
+  }
+
+  #level-screen .settings-button {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  #level-screen .resource-strip {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  #level-screen .icon-button {
+    width: clamp(30px, 8.8vw, 38px);
+    height: clamp(30px, 8.8vw, 38px);
+  }
+
+  #level-screen .resource-pill {
+    min-width: 0;
+    width: 100%;
+    height: clamp(26px, 7.2vw, 34px);
+    padding-inline: 3px;
+    gap: 2px;
+    font-size: clamp(0.56rem, 2.25vw, 0.72rem);
+  }
+
+  #level-screen .life-restore-timer {
+    display: none !important;
+  }
+
+  #level-screen .level-hud {
+    grid-area: hud;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(4px, 1.2vmin, 7px);
+  }
+
+  #level-screen .level-hud > div:first-child {
+    grid-column: 1 / -1;
+    min-height: clamp(30px, 7.8vw, 42px);
+    padding: 4px 8px;
+  }
+
+  #level-screen .level-hud > div,
+  #level-screen .level-stat {
+    min-height: clamp(30px, 7.8vw, 38px);
+    padding: 4px 6px;
+    gap: 1px;
+  }
+
+  #level-screen .level-hud span {
+    font-size: clamp(0.5rem, 1.95vw, 0.62rem);
+    line-height: 1;
+  }
+
+  #level-screen .level-hud strong {
+    font-size: clamp(0.72rem, 2.75vw, 0.96rem);
+  }
+
+  #level-screen .level-hud > div:first-child strong {
+    font-size: clamp(0.82rem, 3.3vw, 1.12rem);
+  }
+
+  #level-screen .jezz-canvas {
+    grid-area: canvas;
+  }
+
+  #level-screen .level-tools {
+    grid-area: tools;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(38px, 10vw, 48px);
+    gap: clamp(4px, 1.2vmin, 7px);
+  }
+
+  #level-screen .level-boost-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(4px, 1.2vmin, 7px);
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #level-screen .level-boost-button,
+  #level-screen .obstacle-legend,
+  #level-screen .obstacle-legend-toggle {
+    height: clamp(38px, 10vw, 48px);
+    min-height: clamp(38px, 10vw, 48px);
+  }
+
+  #level-screen .level-boost-button {
+    grid-template-columns: auto auto;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  #level-screen .level-boost-button .boost-label {
+    display: none;
+  }
+
+  #level-screen .obstacle-legend {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 701px) {
+  #level-screen .level-playfield {
+    display: grid;
+    grid-template-areas: "panel canvas";
+    grid-template-columns: clamp(188px, 25vw, 280px) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: clamp(6px, 1.2vmin, 12px);
+    align-items: stretch;
+  }
+
+  #level-screen .level-side-panel {
+    grid-area: panel;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-content: stretch;
+    gap: clamp(5px, 1vmin, 9px);
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #level-screen .top-ui {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    gap: 4px;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  #level-screen .level-nav-actions {
+    grid-column: 1;
+    display: flex;
+    gap: 4px;
+  }
+
+  #level-screen .resource-strip {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  #level-screen .settings-button {
+    grid-column: 3;
+  }
+
+  #level-screen .icon-button {
+    width: clamp(30px, 6.8vh, 38px);
+    height: clamp(30px, 6.8vh, 38px);
+  }
+
+  #level-screen .resource-pill {
+    min-width: 0;
+    width: 100%;
+    height: clamp(28px, 6.2vh, 34px);
+    padding-inline: 3px;
+    gap: 2px;
+    font-size: clamp(0.56rem, 1.9vh, 0.7rem);
+  }
+
+  #level-screen .life-restore-timer {
+    display: none !important;
+  }
+
+  #level-screen .level-hud {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(4px, 1vmin, 6px);
+    align-content: start;
+  }
+
+  #level-screen .level-hud > div:first-child {
+    grid-column: 1 / -1;
+    min-height: clamp(30px, 7vh, 46px);
+    padding: 5px 7px;
+  }
+
+  #level-screen .level-hud > div,
+  #level-screen .level-stat {
+    min-height: clamp(30px, 6.2vh, 40px);
+    padding: 5px 6px;
+    gap: 1px;
+  }
+
+  #level-screen .level-hud span {
+    font-size: clamp(0.5rem, 1.8vh, 0.62rem);
+  }
+
+  #level-screen .level-hud strong {
+    font-size: clamp(0.72rem, 2.4vh, 0.94rem);
+  }
+
+  #level-screen .level-hud > div:first-child strong {
+    font-size: clamp(0.82rem, 2.8vh, 1.08rem);
+  }
+
+  #level-screen .level-tools {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) clamp(34px, 7.2vh, 42px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(5px, 1.1vmin, 8px);
+    height: 100%;
+    min-height: 0;
+  }
+
+  #level-screen .level-boost-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: clamp(5px, 1.1vmin, 8px);
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #level-screen .level-boost-button {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    justify-items: start;
+    height: 100%;
+    min-height: 0;
+    padding: 0 7px;
+  }
+
+  #level-screen .level-boost-button .boost-label {
+    display: block;
+    font-size: clamp(0.52rem, 1.7vh, 0.66rem);
+  }
+
+  #level-screen .obstacle-legend {
+    align-self: end;
+    justify-self: start;
+    width: clamp(34px, 7.2vh, 42px);
+    height: clamp(34px, 7.2vh, 42px);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #level-screen .obstacle-legend-toggle {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+
+  #level-screen .jezz-canvas {
+    grid-area: canvas;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 420px) and (min-width: 701px) {
+  #level-screen .level-playfield {
+    grid-template-columns: clamp(168px, 28vw, 236px) minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  #level-screen .level-side-panel {
+    gap: 4px;
+  }
+
+  #level-screen .restart-button {
+    display: none;
+  }
+
+  #level-screen .level-hud > div:first-child {
+    min-height: 26px;
+  }
+
+  #level-screen .level-hud > div,
+  #level-screen .level-stat {
+    min-height: 27px;
+  }
+
+  #level-screen .level-tools {
+    grid-template-rows: minmax(0, 1fr) 32px;
+    gap: 4px;
+  }
+}
+
+#level-screen .obstacle-legend-toggle {
+  overflow: visible;
+  line-height: 1;
+  text-indent: 2px;
+}
+
+#level-screen .level-boost-panel {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#level-screen .obstacle-legend {
+  display: none !important;
+}
+
+#level-screen .level-tools {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
 }
