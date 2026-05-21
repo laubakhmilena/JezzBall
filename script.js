@@ -184,60 +184,135 @@
     fast: 235
   };
 
-  const createGeneratedLevelConfig = (level) => {
-    const chapterIndex = Math.floor((level - 1) / 10);
-    const chapterStep = (level - 1) % 10;
-    const speedCycle = ["slow", "medium", "fast"];
-    const maxGeneratedObstacles = level < 51 ? 2 : 3;
-    const obstacleCount = Math.min(maxGeneratedObstacles, 1 + Math.floor(chapterStep / 4) + (chapterIndex >= 6 ? 1 : 0));
-    const obstacles = [];
-    let movingDangerCount = 0;
+  const SAFE_OBSTACLE_COLOR = "rgba(173, 246, 255, 0.92)";
+  const DANGER_OBSTACLE_COLORS = ["#ff4e7a", "#8d2454", "#7c1d49"];
 
-    for (let index = 0; index < obstacleCount; index += 1) {
-      const vertical = (level + index) % 2 === 0;
-      let moving = (level + index + chapterIndex) % 4 === 0;
-      const safe = index === obstacleCount - 1 && (level + chapterIndex) % 4 === 0;
-      if (moving && !safe && movingDangerCount >= (level < 61 ? 0 : 1)) {
-        moving = false;
-      }
-      const center = 0.26 + ((chapterStep * 0.07 + index * 0.19 + chapterIndex * 0.03) % 0.48);
-      const start = 0.16 + ((chapterIndex * 0.04 + index * 0.09) % 0.18);
-      const end = 0.84 - ((chapterStep * 0.025 + index * 0.06) % 0.16);
-      const obstacle = vertical
-        ? { orientation: "vertical", x: center, y1: start, y2: Math.max(start + 0.28, end) }
-        : { orientation: "horizontal", y: center, x1: start, x2: Math.max(start + 0.28, end) };
-
-      obstacle.type = moving ? "moving" : "static";
-      obstacle.safe = safe;
-      obstacle.color = safe ? "rgba(173, 246, 255, 0.92)" : (index % 2 === 0 ? "#ff4e7a" : "#7c1d49");
-      obstacle.blocksBall = true;
-
-      if (moving) {
-        if (!safe) {
-          movingDangerCount += 1;
-        }
-        obstacle.axis = vertical ? "y" : "x";
-        obstacle.amplitude = Math.min(0.16, 0.07 + chapterIndex * 0.008 + index * 0.018);
-        obstacle.phase = ((chapterStep + index * 3) % 10) / 10;
-      }
-
-      obstacles.push(obstacle);
-    }
-
-    return {
-      target: Math.min(90, 76 + Math.floor((level - 1) / 8)),
-      balls: level < 46 ? 3 : 4,
-      speed: speedCycle[(chapterIndex + chapterStep) % speedCycle.length],
-      obstacles
-    };
-  };
-
-  const generatedLevelConfigs = Object.fromEntries(
-    Array.from({ length: TOTAL_LEVELS - 30 }, (_, index) => {
-      const level = index + 31;
-      return [level, createGeneratedLevelConfig(level)];
-    })
+  const obstacleColor = (safe, colorIndex = 0) => (
+    safe ? SAFE_OBSTACLE_COLOR : DANGER_OBSTACLE_COLORS[colorIndex % DANGER_OBSTACLE_COLORS.length]
   );
+
+  const level = (target, balls, speed, obstacles, purpose) => ({
+    target,
+    balls,
+    speed,
+    obstacles,
+    purpose
+  });
+
+  const obstacleLine = (orientation, coordinate, start, end, safe, colorIndex = 0) => ({
+    orientation,
+    ...(orientation === "vertical"
+      ? { x: coordinate, y1: start, y2: end }
+      : { y: coordinate, x1: start, x2: end }),
+    type: "static",
+    safe,
+    color: obstacleColor(safe, colorIndex),
+    blocksBall: true
+  });
+
+  const movingObstacleLine = (orientation, coordinate, start, end, safe, axis, amplitude, phase, colorIndex = 0) => ({
+    ...obstacleLine(orientation, coordinate, start, end, safe, colorIndex),
+    type: "moving",
+    axis,
+    amplitude,
+    phase
+  });
+
+  const safeV = (x, y1, y2) => obstacleLine("vertical", x, y1, y2, true);
+  const safeH = (y, x1, x2) => obstacleLine("horizontal", y, x1, x2, true);
+  const dangerV = (x, y1, y2, colorIndex = 0) => obstacleLine("vertical", x, y1, y2, false, colorIndex);
+  const dangerH = (y, x1, x2, colorIndex = 0) => obstacleLine("horizontal", y, x1, x2, false, colorIndex);
+  const movingSafeV = (x, y1, y2, axis = "x", amplitude = 0.1, phase = 0) => (
+    movingObstacleLine("vertical", x, y1, y2, true, axis, amplitude, phase)
+  );
+  const movingSafeH = (y, x1, x2, axis = "y", amplitude = 0.1, phase = 0) => (
+    movingObstacleLine("horizontal", y, x1, x2, true, axis, amplitude, phase)
+  );
+  const movingDangerV = (x, y1, y2, axis = "x", amplitude = 0.1, phase = 0, colorIndex = 0) => (
+    movingObstacleLine("vertical", x, y1, y2, false, axis, amplitude, phase, colorIndex)
+  );
+  const movingDangerH = (y, x1, x2, axis = "y", amplitude = 0.1, phase = 0, colorIndex = 0) => (
+    movingObstacleLine("horizontal", y, x1, x2, false, axis, amplitude, phase, colorIndex)
+  );
+
+  const curatedProgressionLevelConfigs = {
+    31: level(79, 3, "medium", [dangerV(0.42, 0.18, 0.82), dangerH(0.58, 0.18, 0.82, 1)], "pressure-cross-lines"),
+    32: level(79, 3, "medium", [movingDangerV(0.54, 0.2, 0.78, "x", 0.09, 0.15), safeH(0.34, 0.22, 0.78)], "pressure-vertical-timing"),
+    33: level(80, 4, "slow", [], "pressure-pure-chaos"),
+    34: level(80, 3, "medium", [safeV(0.34, 0.16, 0.84), safeV(0.66, 0.16, 0.84), dangerH(0.5, 0.36, 0.64)], "pressure-safe-corridor"),
+    35: level(82, 4, "medium", [movingDangerV(0.5, 0.18, 0.82, "x", 0.1, 0.2), movingDangerH(0.5, 0.18, 0.82, "y", 0.1, 0.65, 1), safeH(0.28, 0.22, 0.78)], "pressure-mini-boss"),
+    36: level(81, 3, "fast", [safeV(0.28, 0.18, 0.84), safeV(0.72, 0.16, 0.82), dangerH(0.54, 0.3, 0.7)], "pressure-narrow-lanes"),
+    37: level(81, 4, "medium", [safeH(0.38, 0.18, 0.82), dangerV(0.62, 0.24, 0.78), dangerH(0.72, 0.2, 0.64, 1)], "pressure-safe-danger-combo"),
+    38: level(82, 4, "medium", [movingSafeV(0.35, 0.18, 0.82, "x", 0.08, 0.1), movingDangerH(0.63, 0.2, 0.8, "y", 0.1, 0.55), dangerV(0.74, 0.24, 0.74, 1)], "pressure-dual-moving"),
+    39: level(82, 4, "fast", [safeH(0.28, 0.18, 0.82), safeH(0.72, 0.18, 0.82), dangerV(0.5, 0.34, 0.66)], "pressure-precision-corridor"),
+    40: level(83, 4, "fast", [movingSafeV(0.3, 0.16, 0.84, "x", 0.08, 0), movingDangerH(0.5, 0.18, 0.82, "y", 0.1, 0.3), dangerV(0.68, 0.2, 0.78, 1), safeH(0.78, 0.2, 0.7)], "pressure-boss"),
+
+    41: level(82, 3, "medium", [dangerH(0.48, 0.14, 0.86), safeH(0.36, 0.22, 0.78)], "precision-thin-gap"),
+    42: level(82, 3, "medium", [movingSafeH(0.42, 0.18, 0.82, "y", 0.08, 0.15), movingSafeH(0.66, 0.2, 0.8, "y", 0.07, 0.65), dangerV(0.52, 0.22, 0.76)], "precision-temporary-walls"),
+    43: level(82, 3, "medium", [safeV(0.28, 0.16, 0.72), dangerH(0.62, 0.28, 0.88), dangerV(0.72, 0.28, 0.84, 1)], "precision-asymmetric-field"),
+    44: level(83, 4, "medium", [dangerV(0.38, 0.2, 0.82), dangerV(0.66, 0.16, 0.78, 1), safeH(0.5, 0.2, 0.8)], "precision-safe-pockets"),
+    45: level(83, 4, "fast", [dangerH(0.42, 0.18, 0.84), movingDangerV(0.6, 0.22, 0.8, "x", 0.08, 0.35, 1), safeV(0.25, 0.18, 0.72)], "precision-mini-boss"),
+    46: level(83, 4, "medium", [safeV(0.5, 0.14, 0.86), safeH(0.5, 0.14, 0.86), dangerH(0.28, 0.34, 0.8), dangerV(0.74, 0.24, 0.66, 1)], "precision-split-islands"),
+    47: level(83, 4, "medium", [movingDangerV(0.35, 0.2, 0.82, "x", 0.09, 0.1), movingSafeH(0.66, 0.18, 0.82, "y", 0.09, 0.55), dangerH(0.34, 0.24, 0.76, 1)], "precision-double-moving"),
+    48: level(84, 4, "medium", [movingSafeV(0.68, 0.16, 0.84, "x", 0.09, 0.25), movingDangerH(0.46, 0.18, 0.82, "y", 0.08, 0.75), safeH(0.78, 0.24, 0.72)], "precision-moving-combo"),
+    49: level(84, 4, "fast", [safeV(0.24, 0.18, 0.84), safeV(0.76, 0.16, 0.82), dangerH(0.38, 0.26, 0.74), dangerH(0.66, 0.26, 0.74, 1)], "precision-corridors"),
+    50: level(84, 4, "fast", [dangerV(0.36, 0.16, 0.84), dangerH(0.5, 0.16, 0.84, 1), movingDangerV(0.66, 0.22, 0.78, "x", 0.09, 0.4, 2), safeH(0.26, 0.2, 0.8), safeV(0.82, 0.3, 0.74)], "precision-chapter-boss"),
+
+    51: level(83, 3, "fast", [movingDangerH(0.4, 0.16, 0.84, "y", 0.1, 0.1), safeV(0.28, 0.22, 0.82)], "speed-fast-sweeps"),
+    52: level(83, 3, "fast", [movingDangerV(0.44, 0.18, 0.84, "x", 0.1, 0), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.5, 1)], "speed-cross-blockers"),
+    53: level(83, 4, "medium", [safeH(0.3, 0.18, 0.82), dangerV(0.5, 0.2, 0.82), safeV(0.72, 0.18, 0.74), dangerH(0.68, 0.22, 0.78, 1)], "speed-alternating-layout"),
+    54: level(84, 4, "fast", [movingSafeV(0.5, 0.14, 0.86, "x", 0.13, 0.2), dangerH(0.54, 0.2, 0.8), dangerV(0.78, 0.28, 0.74, 1)], "speed-unstable-wall"),
+    55: level(84, 4, "fast", [movingDangerH(0.36, 0.16, 0.84, "y", 0.11, 0.15), movingDangerV(0.64, 0.18, 0.82, "x", 0.1, 0.65, 1), safeH(0.76, 0.22, 0.78)], "speed-mini-boss"),
+    56: level(84, 4, "fast", [dangerV(0.32, 0.14, 0.7), dangerV(0.68, 0.3, 0.86, 1), safeH(0.5, 0.18, 0.82), dangerH(0.82, 0.22, 0.62, 2)], "speed-split-sectors"),
+    57: level(84, 4, "medium", [safeV(0.2, 0.18, 0.44), safeH(0.24, 0.22, 0.5), safeV(0.8, 0.56, 0.84), safeH(0.76, 0.5, 0.78), dangerV(0.5, 0.22, 0.78)], "speed-safe-anchors"),
+    58: level(85, 4, "fast", [movingSafeH(0.34, 0.18, 0.82, "y", 0.08, 0.1), movingDangerV(0.5, 0.16, 0.84, "x", 0.09, 0.5), movingSafeH(0.7, 0.18, 0.82, "y", 0.08, 0.8)], "speed-moving-maze"),
+    59: level(85, 4, "fast", [safeV(0.3, 0.16, 0.84), movingDangerH(0.5, 0.18, 0.82, "y", 0.1, 0.25), dangerV(0.7, 0.2, 0.8, 1), safeH(0.74, 0.24, 0.78)], "speed-combo-challenge"),
+    60: level(85, 4, "fast", [movingDangerV(0.32, 0.16, 0.84, "x", 0.09, 0), movingDangerH(0.52, 0.18, 0.82, "y", 0.1, 0.4, 1), movingSafeV(0.72, 0.16, 0.84, "x", 0.08, 0.7), safeH(0.26, 0.2, 0.78)], "speed-boss"),
+
+    61: level(84, 3, "medium", [safeV(0.38, 0.16, 0.84), dangerH(0.62, 0.4, 0.86), dangerV(0.76, 0.24, 0.78, 1)], "mind-games-bait-left"),
+    62: level(84, 3, "medium", [safeH(0.48, 0.14, 0.86), dangerV(0.32, 0.2, 0.78), dangerV(0.68, 0.24, 0.82, 1)], "mind-games-anchor-wall"),
+    63: level(84, 4, "medium", [safeV(0.45, 0.18, 0.84), safeH(0.64, 0.18, 0.82), dangerH(0.34, 0.24, 0.76)], "mind-games-two-stage-capture"),
+    64: level(85, 4, "medium", [dangerV(0.28, 0.18, 0.74), dangerH(0.3, 0.28, 0.8, 1), dangerV(0.72, 0.28, 0.84, 2), safeH(0.78, 0.24, 0.72)], "mind-games-trap-routes"),
+    65: level(85, 4, "fast", [safeV(0.52, 0.14, 0.86), movingDangerH(0.5, 0.18, 0.82, "y", 0.09, 0.2), dangerV(0.76, 0.24, 0.78, 1), safeH(0.28, 0.22, 0.68)], "mind-games-mini-boss"),
+    66: level(85, 4, "medium", [dangerH(0.28, 0.18, 0.82), dangerV(0.48, 0.2, 0.8, 1), dangerH(0.72, 0.18, 0.82, 2), safeV(0.82, 0.24, 0.78)], "mind-games-alternating-danger"),
+    67: level(85, 4, "medium", [safeV(0.34, 0.16, 0.84), safeH(0.5, 0.18, 0.82), dangerV(0.58, 0.28, 0.78), dangerH(0.68, 0.34, 0.84, 1)], "mind-games-fake-corridor"),
+    68: level(86, 4, "medium", [movingDangerV(0.5, 0.16, 0.84, "x", 0.11, 0.15), movingSafeH(0.5, 0.18, 0.82, "y", 0.09, 0.65), safeV(0.22, 0.22, 0.78)], "mind-games-timing-puzzle"),
+    69: level(86, 4, "fast", [dangerV(0.3, 0.16, 0.84), dangerH(0.42, 0.2, 0.82, 1), safeV(0.58, 0.2, 0.78), dangerH(0.74, 0.24, 0.76, 2)], "mind-games-dense-fair"),
+    70: level(86, 4, "fast", [safeH(0.28, 0.16, 0.84), movingDangerV(0.42, 0.18, 0.82, "x", 0.09, 0.1), safeV(0.62, 0.16, 0.84), movingDangerH(0.68, 0.18, 0.82, "y", 0.1, 0.55, 1)], "mind-games-puzzle-boss"),
+
+    71: level(85, 3, "medium", [safeV(0.5, 0.18, 0.82)], "mastery-high-target-clean"),
+    72: level(85, 4, "medium", [movingSafeV(0.36, 0.16, 0.84, "x", 0.1, 0), movingSafeV(0.68, 0.16, 0.84, "x", 0.1, 0.5), dangerH(0.5, 0.24, 0.76)], "mastery-pulsing-safe-walls"),
+    73: level(85, 4, "fast", [safeH(0.32, 0.18, 0.82), safeH(0.7, 0.18, 0.82), dangerV(0.42, 0.34, 0.66), dangerV(0.62, 0.34, 0.66, 1)], "mastery-narrow-openings"),
+    74: level(86, 4, "fast", [], "mastery-clean-chaos"),
+    75: level(86, 4, "fast", [movingDangerH(0.42, 0.16, 0.84, "y", 0.1, 0.2), safeV(0.52, 0.16, 0.84), dangerV(0.76, 0.22, 0.8, 1), safeH(0.76, 0.2, 0.72)], "mastery-mini-boss"),
+    76: level(86, 4, "medium", [safeV(0.33, 0.14, 0.86), safeV(0.67, 0.14, 0.86), dangerH(0.52, 0.34, 0.66)], "mastery-safe-divide"),
+    77: level(86, 4, "fast", [dangerH(0.36, 0.16, 0.84), movingDangerV(0.5, 0.2, 0.8, "x", 0.09, 0.45), dangerH(0.7, 0.16, 0.84, 1), safeV(0.82, 0.22, 0.78)], "mastery-timing-forced"),
+    78: level(87, 4, "fast", [safeV(0.26, 0.16, 0.84), dangerV(0.44, 0.18, 0.82), safeV(0.62, 0.16, 0.84), dangerV(0.8, 0.2, 0.78, 1)], "mastery-multi-lane"),
+    79: level(87, 4, "fast", [dangerH(0.28, 0.18, 0.82), safeV(0.36, 0.18, 0.84), movingDangerH(0.54, 0.18, 0.82, "y", 0.08, 0.3), safeV(0.72, 0.16, 0.82), dangerH(0.78, 0.24, 0.76, 1)], "mastery-pre-boss"),
+    80: level(87, 4, "fast", [movingDangerV(0.34, 0.16, 0.84, "x", 0.1, 0), movingSafeH(0.5, 0.18, 0.82, "y", 0.09, 0.35), movingDangerV(0.68, 0.16, 0.84, "x", 0.1, 0.7, 1), safeH(0.78, 0.2, 0.8)], "mastery-boss"),
+
+    81: level(86, 4, "medium", [dangerV(0.26, 0.16, 0.84), dangerH(0.38, 0.18, 0.82, 1), safeV(0.54, 0.2, 0.8), dangerH(0.7, 0.2, 0.82, 2)], "endgame-dense-neon"),
+    82: level(86, 4, "fast", [movingDangerH(0.36, 0.16, 0.84, "y", 0.09, 0.1), movingDangerH(0.68, 0.16, 0.84, "y", 0.09, 0.6, 1), safeV(0.52, 0.18, 0.82)], "endgame-moving-pairs"),
+    83: level(86, 4, "medium", [safeH(0.26, 0.16, 0.84), dangerV(0.38, 0.18, 0.82), safeH(0.5, 0.18, 0.82), dangerV(0.66, 0.18, 0.82, 1), safeH(0.76, 0.16, 0.84)], "endgame-layered-chain"),
+    84: level(87, 4, "fast", [], "endgame-high-speed-clean"),
+    85: level(87, 4, "fast", [movingDangerV(0.32, 0.16, 0.84, "x", 0.11, 0.15), dangerH(0.46, 0.18, 0.82, 1), movingSafeV(0.68, 0.16, 0.84, "x", 0.08, 0.6), safeH(0.78, 0.2, 0.76)], "endgame-mini-boss"),
+    86: level(87, 4, "medium", [safeV(0.24, 0.16, 0.84), dangerH(0.34, 0.26, 0.82), safeH(0.52, 0.18, 0.76), dangerV(0.72, 0.2, 0.84, 1), safeV(0.84, 0.28, 0.76)], "endgame-safe-danger-maze"),
+    87: level(87, 4, "fast", [dangerV(0.34, 0.16, 0.84), dangerV(0.66, 0.16, 0.84, 1), dangerH(0.5, 0.24, 0.76, 2), safeH(0.28, 0.2, 0.8), safeH(0.74, 0.2, 0.8)], "endgame-bounce-chamber"),
+    88: level(88, 4, "fast", [safeV(0.28, 0.16, 0.84), movingDangerH(0.42, 0.18, 0.82, "y", 0.09, 0.25), dangerV(0.58, 0.2, 0.8, 1), safeH(0.74, 0.22, 0.78)], "endgame-precision-speed"),
+    89: level(88, 4, "fast", [safeH(0.24, 0.16, 0.84), dangerV(0.36, 0.18, 0.84), movingDangerV(0.58, 0.18, 0.82, "x", 0.08, 0.4, 1), dangerH(0.72, 0.18, 0.82, 2), safeV(0.78, 0.22, 0.78)], "endgame-final-prep"),
+    90: level(88, 4, "fast", [movingDangerH(0.32, 0.16, 0.84, "y", 0.1, 0), movingDangerV(0.5, 0.16, 0.84, "x", 0.1, 0.35, 1), movingSafeH(0.66, 0.18, 0.82, "y", 0.08, 0.7), dangerV(0.78, 0.22, 0.78, 2), safeV(0.22, 0.22, 0.78)], "endgame-boss"),
+
+    91: level(87, 4, "fast", [movingSafeV(0.3, 0.16, 0.84, "x", 0.08, 0.15), dangerH(0.48, 0.18, 0.82), movingDangerV(0.68, 0.2, 0.8, "x", 0.09, 0.55, 1)], "final-remix-pressure"),
+    92: level(87, 4, "medium", [safeH(0.32, 0.16, 0.84), dangerV(0.42, 0.28, 0.72), safeV(0.62, 0.16, 0.84), dangerH(0.7, 0.24, 0.76, 1)], "final-remix-precision"),
+    93: level(87, 4, "fast", [movingDangerH(0.38, 0.16, 0.84, "y", 0.1, 0.1), safeV(0.52, 0.18, 0.82), movingDangerH(0.72, 0.16, 0.84, "y", 0.09, 0.6, 1)], "final-remix-speed"),
+    94: level(88, 4, "medium", [safeV(0.38, 0.16, 0.84), dangerH(0.36, 0.34, 0.86), safeH(0.58, 0.18, 0.72), dangerV(0.76, 0.22, 0.82, 1)], "final-remix-mind-games"),
+    95: level(88, 4, "fast", [movingDangerV(0.34, 0.16, 0.84, "x", 0.1, 0), safeH(0.5, 0.18, 0.82), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.45, 1), safeV(0.82, 0.24, 0.78)], "final-mini-boss"),
+    96: level(88, 4, "fast", [safeV(0.5, 0.16, 0.84), dangerH(0.32, 0.18, 0.82), dangerH(0.72, 0.18, 0.82, 1)], "final-high-speed-arena"),
+    97: level(89, 4, "fast", [dangerV(0.28, 0.16, 0.84), movingDangerH(0.42, 0.18, 0.82, "y", 0.09, 0.2, 1), safeV(0.54, 0.16, 0.84), movingDangerV(0.76, 0.18, 0.82, "x", 0.08, 0.6, 2)], "final-boss-rush"),
+    98: level(89, 4, "fast", [safeH(0.24, 0.16, 0.84), dangerV(0.36, 0.22, 0.78), safeH(0.5, 0.18, 0.82), dangerV(0.64, 0.22, 0.78, 1), safeH(0.76, 0.16, 0.84)], "final-precision-gauntlet"),
+    99: level(89, 4, "fast", [movingSafeV(0.28, 0.16, 0.84, "x", 0.08, 0.15), movingDangerH(0.38, 0.16, 0.84, "y", 0.09, 0.35), dangerV(0.58, 0.18, 0.82, 1), movingDangerV(0.76, 0.2, 0.8, "x", 0.08, 0.75, 2), safeH(0.78, 0.2, 0.76)], "final-fake-finale"),
+    100: level(90, 4, "fast", [movingSafeV(0.24, 0.16, 0.84, "x", 0.08, 0), movingDangerH(0.34, 0.16, 0.84, "y", 0.1, 0.2), dangerV(0.48, 0.18, 0.82, 1), movingSafeH(0.58, 0.18, 0.82, "y", 0.08, 0.55), movingDangerV(0.72, 0.16, 0.84, "x", 0.1, 0.75, 2), safeH(0.82, 0.18, 0.82)], "final-boss-core-collapse")
+  };
 
   const LEVEL_CONFIGS = {
     1: { target: 70, balls: 1, speed: "slow", obstacles: [], purpose: "tutorial-vertical-line" },
@@ -435,12 +510,12 @@
       balls: 3,
       speed: "medium",
       obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.32, y2: 0.68, type: "moving", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true, axis: "x", amplitude: 0.08, phase: 0.1 },
-        { orientation: "horizontal", y: 0.66, x1: 0.34, x2: 0.66, type: "static", safe: false, color: "#ff4e7a" }
+        movingSafeV(0.5, 0.32, 0.68, "x", 0.08, 0.1),
+        dangerH(0.66, 0.34, 0.66)
       ],
       purpose: "chapter-three-mini-boss"
     },
-    ...generatedLevelConfigs
+    ...curatedProgressionLevelConfigs
   };
   const BALL_STARTS = [
     { x: 0.64, y: 0.42, vx: 0.78, vy: 0.62 },
