@@ -80,13 +80,13 @@
             </div>
             <div class="level-tools">
               <div class="level-boost-panel" id="levelBoostPanel" aria-label="Бусты уровня">
-                <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Молниеносная линия">
+                <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Линия">
                   <span class="boost-icon" aria-hidden="true">⚡</span><span class="boost-label">Линия</span><strong data-booster-count="fastLine">x0</strong>
                 </button>
-                <button class="level-boost-button" type="button" data-level-boost="slowBalls" aria-label="Ледяная пауза">
+                <button class="level-boost-button" type="button" data-level-boost="slowBalls" aria-label="Пауза">
                   <span class="boost-icon" aria-hidden="true">❄</span><span class="boost-label">Пауза</span><strong data-booster-count="slowBalls">x0</strong>
                 </button>
-                <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит чертёжника">
+                <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит">
                   <span class="boost-icon" aria-hidden="true">🛡</span><span class="boost-label">Щит</span><strong data-booster-count="lineShield">x0</strong>
                 </button>
               </div>
@@ -200,9 +200,16 @@
         </div>
       </div>
     </div>
+
+    <div class="viewport-too-small-overlay" id="viewportTooSmallOverlay" role="status" aria-live="polite" aria-hidden="true">
+      <div class="viewport-too-small-panel">
+        <h2>Увеличьте окно</h2>
+        <p>Увеличьте окно, чтобы продолжить игру</p>
+      </div>
+    </div>
   </main>
 
-  <script src="https://yandex.ru/games/sdk/v2"></script>
+  <script src="/sdk.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

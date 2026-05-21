@@ -2,6 +2,8 @@
   const root = document.getElementById("gameRoot");
   const playButton = document.getElementById("playButton");
   const levelScreen = document.getElementById("level-screen");
+  const levelPlayfield = document.getElementById("levelPlayfield");
+  const viewportTooSmallOverlay = document.getElementById("viewportTooSmallOverlay");
   const levelChapterLabel = document.getElementById("levelChapterLabel");
   const levelTitle = document.getElementById("levelTitle");
   const completeCloseButton = document.getElementById("completeCloseButton");
@@ -35,10 +37,9 @@
   const musicToggle = document.getElementById("musicToggle");
   const soundToggle = document.getElementById("soundToggle");
   const SAVE_KEY = "jezzball-progress-v1";
-  const IS_PERF = new URLSearchParams(location.search).has("perf");
-  const IS_DEBUG = new URLSearchParams(location.search).has("debug")
-    || location.hostname === "localhost"
-    || location.hostname === "127.0.0.1";
+  const IS_LOCAL_HOST = ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+  const IS_PERF = IS_LOCAL_HOST && new URLSearchParams(location.search).has("perf");
+  const IS_DEBUG = IS_LOCAL_HOST && new URLSearchParams(location.search).has("debug");
   const CLOUD_SAVE_KEY = "progress";
   const LEADERBOARD_NAME = "stars";
   const INTERSTITIAL_LEVEL_INTERVAL = 3;
@@ -94,17 +95,17 @@
   const BOOSTER_ITEMS = {
     fastLine: {
       icon: "⚡",
-      title: "Молниеносная линия",
+      title: "Линия",
       description: "Следующая линия строится быстрее."
     },
     slowBalls: {
       icon: "❄",
-      title: "Ледяная пауза",
+      title: "Пауза",
       description: "Шары замедляются на 6 секунд."
     },
     lineShield: {
       icon: "🛡",
-      title: "Щит чертёжника",
+      title: "Щит",
       description: "Один удар по строящейся линии не ломает её."
     }
   };
@@ -469,6 +470,8 @@
     cloudSaveTimer: null,
     leaderboardSaveTimer: null,
     localSaveTimer: null,
+    initPromise: null,
+    readyPromise: null,
     pausedByPlatform: false,
     completedSinceInterstitial: 0,
     lastInterstitialAt: 0,
@@ -630,7 +633,8 @@
     helperHintTimer: null,
     obstacleLegendTimer: null,
     lastCompletion: null,
-    replayingCompleted: false
+    replayingCompleted: false,
+    pausedByViewport: false
   };
 
   let confirmResolve = null;
@@ -643,8 +647,9 @@
   let staticLayerCanvas = null;
   let backgroundCacheDirty = true;
   let staticLayerDirty = true;
-  let resizeRaf = null;
-  let resizeTimer = null;
+  let layoutRaf = null;
+  let layoutObserver = null;
+  let lastViewportTooSmall = false;
   let lastDangerObstacleToastAt = 0;
   const perfState = {
     overlay: null,
@@ -881,6 +886,76 @@
     localizeStaticDom();
   };
 
+  const getYandexLanguage = () => yandexState.sdk?.environment?.i18n?.lang || FALLBACK_LANGUAGE;
+
+  const waitForWindowReady = () => {
+    if (document.readyState === "complete") {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      window.addEventListener("load", resolve, { once: true });
+    });
+  };
+
+  const waitForImageAsset = (src) => new Promise((resolve) => {
+    const image = new Image();
+    let settled = false;
+    const done = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      resolve();
+    };
+
+    image.onload = done;
+    image.onerror = done;
+    image.src = src;
+    if (image.complete) {
+      done();
+      return;
+    }
+    window.setTimeout(done, 2500);
+  });
+
+  const waitForCriticalAssets = () => Promise.all([
+    waitForImageAsset("objects/fone/fone_menu.png"),
+    waitForImageAsset("objects/fone/fone_menu_two.png"),
+    document.fonts?.ready?.catch?.(() => null) || Promise.resolve()
+  ]);
+
+  const markYandexGameReady = async () => {
+    if (yandexState.readySent) {
+      return;
+    }
+
+    if (!yandexState.readyPromise) {
+      yandexState.readyPromise = Promise.all([
+        waitForWindowReady(),
+        waitForCriticalAssets()
+      ])
+        .then(() => {
+          if (yandexState.readySent) {
+            return;
+          }
+
+          yandexState.sdk?.features?.LoadingAPI?.ready?.();
+          yandexState.readySent = true;
+        })
+        .catch(() => {
+          if (yandexState.readySent) {
+            return;
+          }
+
+          yandexState.sdk?.features?.LoadingAPI?.ready?.();
+          yandexState.readySent = true;
+        });
+    }
+
+    await yandexState.readyPromise;
+  };
+
   const refreshProgressUi = () => {
     musicToggle.checked = state.music;
     soundToggle.checked = state.sound;
@@ -917,22 +992,37 @@
   };
 
   const initYandexSdk = async () => {
+    if (yandexState.sdk) {
+      return yandexState.sdk;
+    }
+    if (yandexState.initPromise) {
+      return yandexState.initPromise;
+    }
     if (!window.YaGames || typeof window.YaGames.init !== "function") {
       applyLanguage("ru");
-      return;
+      return null;
     }
 
-    try {
+    yandexState.initPromise = (async () => {
       yandexState.sdk = await window.YaGames.init();
-      applyLanguage("ru");
+      applyLanguage(getYandexLanguage());
       registerYandexPauseEvents();
       await initYandexPlayer();
       await loadCloudProgress();
+      updateLifeRestore();
       renderChapterScreens();
-      yandexState.sdk?.features?.LoadingAPI?.ready?.();
-      yandexState.readySent = true;
+      syncViewportLayoutNow({ resizeLevel: false });
+      await markYandexGameReady();
+      return yandexState.sdk;
+    })();
+
+    try {
+      return await yandexState.initPromise;
     } catch (_error) {
+      yandexState.sdk = null;
+      yandexState.initPromise = null;
       applyLanguage("ru");
+      return null;
     }
   };
 
@@ -1312,21 +1402,46 @@
     `;
   };
 
-  const syncViewportHeight = () => {
+  const getViewportSize = () => {
     const viewport = window.visualViewport;
-    const width = Math.max(1, Math.round(viewport?.width || window.innerWidth || document.documentElement.clientWidth || 1));
-    const height = Math.max(1, Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight || 1));
+    return {
+      width: Math.max(1, Math.round(viewport?.width || window.innerWidth || document.documentElement.clientWidth || 1)),
+      height: Math.max(1, Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight || 1))
+    };
+  };
+
+  const syncViewportVars = () => {
+    const { width, height } = getViewportSize();
     document.documentElement.style.setProperty("--viewport-width", `${width}px`);
     document.documentElement.style.setProperty("--viewport-height", `${height}px`);
     root.style.setProperty("--viewport-width", `${width}px`);
     root.style.setProperty("--viewport-height", `${height}px`);
+    return { width, height };
   };
 
   const pressedFeedbackButtons = new WeakSet();
 
+  const syncLevelBoostButtons = () => {
+    Object.entries(BOOSTER_ITEMS).forEach(([key, booster]) => {
+      document.querySelectorAll(`[data-level-boost="${key}"]`).forEach((button) => {
+        const icon = button.querySelector(".boost-icon");
+        const label = button.querySelector(".boost-label");
+        if (icon) {
+          icon.textContent = booster.icon;
+        }
+        if (label) {
+          label.textContent = booster.title;
+          label.dataset.fullLabel = booster.title;
+        }
+        button.setAttribute("aria-label", `${booster.title}. ${booster.description}`);
+      });
+    });
+  };
+
   const renderChapterScreens = () => {
     chapters.forEach(createChapterScreen);
     renderAllChapters();
+    syncLevelBoostButtons();
     document.querySelectorAll("button").forEach(setPressedFeedback);
     updateInventoryBadge();
   };
@@ -1663,6 +1778,33 @@
     }
   };
 
+  const pauseJezzLevelForModal = () => {
+    if (levelState.running && levelScreen.classList.contains("is-active")) {
+      levelState.running = false;
+      levelState.pausedByModal = true;
+      updateGameplayMarker(false);
+      if (levelState.animationId) {
+        window.cancelAnimationFrame(levelState.animationId);
+        levelState.animationId = null;
+      }
+    }
+  };
+
+  const resumeJezzLevelFromModal = () => {
+    if (levelState.pausedByModal && !levelState.completed && !levelState.failed && levelScreen.classList.contains("is-active") && !lastViewportTooSmall && !yandexState.pausedByPlatform && !modalFocusStack.length) {
+      levelState.pausedByModal = false;
+      levelState.running = true;
+      levelState.lastFrameAt = performance.now();
+      updateGameplayMarker(true);
+      if (!levelState.animationId) {
+        levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
+      }
+      return;
+    }
+
+    levelState.pausedByModal = false;
+  };
+
   const showConfirm = ({ title, message, acceptText = t("yes"), cancelText = t("stay") }) => {
     if (!confirmModal) {
       return Promise.resolve(true);
@@ -1681,15 +1823,7 @@
     confirmCancelButton.hidden = !hasCancel;
     confirmCancelButton.textContent = hasCancel ? cancelText : "";
     confirmCancelButton.parentElement?.setAttribute("data-count", hasCancel ? "2" : "1");
-    if (levelState.running && levelScreen.classList.contains("is-active")) {
-      levelState.running = false;
-      levelState.pausedByModal = true;
-      updateGameplayMarker(false);
-      if (levelState.animationId) {
-        window.cancelAnimationFrame(levelState.animationId);
-        levelState.animationId = null;
-      }
-    }
+    pauseJezzLevelForModal();
     confirmModal.classList.add("is-open");
     confirmModal.setAttribute("aria-hidden", "false");
     activateModalFocus(confirmModal, {
@@ -1710,17 +1844,7 @@
     confirmModal.classList.remove("is-open");
     confirmModal.setAttribute("aria-hidden", "true");
     deactivateModalFocus(confirmModal);
-    if (levelState.pausedByModal && !levelState.completed && !levelState.failed && levelScreen.classList.contains("is-active")) {
-      levelState.pausedByModal = false;
-      levelState.running = true;
-      levelState.lastFrameAt = performance.now();
-      updateGameplayMarker(true);
-      if (!levelState.animationId) {
-        levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
-      }
-    } else {
-      levelState.pausedByModal = false;
-    }
+    resumeJezzLevelFromModal();
     const resolve = confirmResolve;
     confirmResolve = null;
     resolve(result);
@@ -2098,9 +2222,24 @@
     return `${minutes}:${String(seconds).padStart(2, "0")}`;
   };
 
+  const getTrustedNow = () => {
+    if (yandexState.sdk && typeof yandexState.sdk.serverTime === "function") {
+      try {
+        const serverNow = Number(yandexState.sdk.serverTime());
+        if (Number.isFinite(serverNow)) {
+          return serverNow;
+        }
+      } catch (_error) {
+        // Local development and older SDK mocks can safely fall back to device time.
+      }
+    }
+
+    return Date.now();
+  };
+
   const syncLifeRestoreTimer = () => {
     const showTimer = Boolean(state.nextLifeAt && state.lives < MAX_LIVES);
-    const text = showTimer ? formatLifeRestoreTime(state.nextLifeAt - Date.now()) : "";
+    const text = showTimer ? formatLifeRestoreTime(state.nextLifeAt - getTrustedNow()) : "";
 
     document.querySelectorAll("[data-life-timer]").forEach((node) => {
       node.hidden = !showTimer;
@@ -2137,6 +2276,7 @@
         button.classList.toggle("is-empty", count <= 0);
       });
     });
+    syncLevelBoostButtons();
     syncLifeRestoreTimer();
     updateInventoryBadge();
     saveProgress();
@@ -2153,7 +2293,7 @@
     if (state.lives >= MAX_LIVES) {
       state.nextLifeAt = null;
     } else if (!state.nextLifeAt) {
-      state.nextLifeAt = Date.now() + LIFE_RESTORE_MS;
+      state.nextLifeAt = getTrustedNow() + LIFE_RESTORE_MS;
     }
     syncResources();
   };
@@ -2165,7 +2305,7 @@
       return;
     }
 
-    const now = Date.now();
+    const now = getTrustedNow();
     if (now >= state.nextLifeAt) {
       const restoredLives = 1 + Math.floor((now - state.nextLifeAt) / LIFE_RESTORE_MS);
       state.lives = Math.min(MAX_LIVES, state.lives + restoredLives);
@@ -2187,7 +2327,7 @@
 
     state.lives -= 1;
     if (!state.nextLifeAt && state.lives < MAX_LIVES) {
-      state.nextLifeAt = Date.now() + LIFE_RESTORE_MS;
+      state.nextLifeAt = getTrustedNow() + LIFE_RESTORE_MS;
     }
     syncResources();
     return true;
@@ -2418,7 +2558,6 @@
               <p>${booster.description}</p>
               ${count > 0 ? `<p class="inventory-status">Статус: в панели уровня</p>` : ""}
             </div>
-            ${count <= 0 ? `<button class="menu-button map-reward-button compact-play" type="button" data-inventory-action="buy-boost">Купить</button>` : ""}
           </article>
         `;
       }).join("")}
@@ -2508,6 +2647,7 @@
     if (!inventoryModal) {
       return;
     }
+    pauseJezzLevelForModal();
     state.inventoryTab = tab;
     renderInventory();
     inventoryModal.classList.add("is-open");
@@ -2522,6 +2662,7 @@
     inventoryModal?.classList.remove("is-open");
     inventoryModal?.setAttribute("aria-hidden", "true");
     deactivateModalFocus(inventoryModal);
+    resumeJezzLevelFromModal();
   };
 
   const waitNextFrame = () => new Promise((resolve) => {
@@ -4443,6 +4584,7 @@
 
     levelState.completed = true;
     levelState.running = false;
+    levelState.pausedByViewport = false;
     updateGameplayMarker(false);
     levelState.activeLine = null;
     const percent = Math.floor(getCaptureRatio() * 100);
@@ -4528,6 +4670,7 @@
 
   const stopJezzLevel = () => {
     levelState.running = false;
+    levelState.pausedByViewport = false;
     updateGameplayMarker(false);
     window.clearTimeout(levelState.helperHintTimer);
     document.querySelector(".level-helper-panel")?.classList.remove("is-visible");
@@ -4557,7 +4700,7 @@
   };
 
   const resumeJezzLevelFromPlatform = () => {
-    if (!yandexState.pausedByPlatform || levelState.completed || levelState.failed || !levelScreen.classList.contains("is-active")) {
+    if (!yandexState.pausedByPlatform || levelState.completed || levelState.failed || !levelScreen.classList.contains("is-active") || lastViewportTooSmall) {
       yandexState.pausedByPlatform = false;
       return;
     }
@@ -4569,6 +4712,75 @@
     if (!levelState.animationId) {
       levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
     }
+  };
+
+  const pauseJezzLevelForViewport = () => {
+    if (levelState.completed || levelState.failed || !levelScreen.classList.contains("is-active")) {
+      levelState.pausedByViewport = false;
+      return;
+    }
+
+    if (levelState.running) {
+      levelState.pausedByViewport = true;
+      levelState.running = false;
+      updateGameplayMarker(false);
+      if (levelState.animationId) {
+        window.cancelAnimationFrame(levelState.animationId);
+        levelState.animationId = null;
+      }
+    }
+  };
+
+  const resumeJezzLevelFromViewport = () => {
+    if (!levelState.pausedByViewport) {
+      return;
+    }
+
+    if (levelState.completed || levelState.failed || !levelScreen.classList.contains("is-active") || modalFocusStack.length || yandexState.pausedByPlatform) {
+      return;
+    }
+
+    levelState.pausedByViewport = false;
+    levelState.running = true;
+    levelState.lastFrameAt = performance.now();
+    updateGameplayMarker(true);
+    if (!levelState.animationId) {
+      levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
+    }
+  };
+
+  const applyViewportTooSmallState = (isTooSmall) => {
+    const changed = lastViewportTooSmall !== isTooSmall;
+    lastViewportTooSmall = isTooSmall;
+    if (changed) {
+      root?.classList.toggle("is-viewport-too-small", isTooSmall);
+      viewportTooSmallOverlay?.setAttribute("aria-hidden", isTooSmall ? "false" : "true");
+    }
+    if (isTooSmall) {
+      pauseJezzLevelForViewport();
+    } else {
+      resumeJezzLevelFromViewport();
+    }
+  };
+
+  const syncViewportLayoutNow = ({ resizeLevel = true } = {}) => {
+    const { width, height } = syncViewportVars();
+    const isTooSmall = width < 320 || height < 360;
+    applyViewportTooSmallState(isTooSmall);
+    if (resizeLevel && levelScreen.classList.contains("is-active") && !isTooSmall) {
+      resizeActiveJezzLevel();
+    }
+  };
+
+  const syncViewportLayout = (options = {}) => {
+    if (layoutRaf) {
+      return;
+    }
+
+    layoutRaf = window.requestAnimationFrame(() => {
+      layoutRaf = null;
+      syncViewportLayoutNow(options);
+    });
   };
 
   const showFullscreenAd = () => new Promise((resolve) => {
@@ -4600,7 +4812,7 @@
   const maybeShowInterstitialAd = async () => {
     yandexState.completedSinceInterstitial += 1;
 
-    const now = Date.now();
+    const now = getTrustedNow();
     if (
       yandexState.completedSinceInterstitial < INTERSTITIAL_LEVEL_INTERVAL
       || now - yandexState.lastInterstitialAt < INTERSTITIAL_MIN_INTERVAL_MS
@@ -4730,6 +4942,7 @@
     updateGameplayMarker(true);
     levelState.completed = false;
     levelState.failed = false;
+    levelState.pausedByViewport = false;
     levelState.config = config;
     levelState.target = config.target;
     levelState.capturedArea = 0;
@@ -5181,6 +5394,7 @@
     saveProgress();
     window.requestAnimationFrame(() => {
       startJezzLevel();
+      syncViewportLayoutNow();
       jezzCanvas?.focus({ preventScroll: true });
       syncKeyboardAim();
     });
@@ -5269,12 +5483,14 @@
     settingsModal.classList.toggle("is-open", isOpen);
     settingsModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
     if (isOpen) {
+      pauseJezzLevelForModal();
       activateModalFocus(settingsModal, {
         initialFocus: settingsModal.querySelector(".settings-close"),
         onEscape: () => toggleSettings(false)
       });
     } else {
       deactivateModalFocus(settingsModal);
+      resumeJezzLevelFromModal();
     }
   };
 
@@ -5486,14 +5702,6 @@
       return;
     }
 
-    if (action === "buy-boost") {
-      await showConfirm({
-        title: t("shop"),
-        message: "Купи бусты в магазине",
-        acceptText: t("ok"),
-        cancelText: null
-      });
-    }
   });
   confirmCancelButton?.addEventListener("click", () => closeConfirm(false));
   confirmAcceptButton?.addEventListener("click", () => closeConfirm(true));
@@ -5525,42 +5733,32 @@
       requestDrawJezzLevel();
     }
   });
-  const scheduleResizeActiveLevel = () => {
-    window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => {
-      if (resizeRaf || !levelScreen.classList.contains("is-active")) {
-        return;
+  const observeViewportLayout = () => {
+    if (!("ResizeObserver" in window) || layoutObserver) {
+      return;
+    }
+
+    layoutObserver = new ResizeObserver(() => syncViewportLayout());
+    [root, levelPlayfield, jezzCanvas].forEach((element) => {
+      if (element) {
+        layoutObserver.observe(element);
       }
-      resizeRaf = window.requestAnimationFrame(() => {
-        resizeRaf = null;
-        resizeActiveJezzLevel();
-      });
-    }, 80);
+    });
   };
 
-  window.addEventListener("resize", () => {
-    syncViewportHeight();
-    scheduleResizeActiveLevel();
-  });
-  window.addEventListener("orientationchange", () => {
-    syncViewportHeight();
-    scheduleResizeActiveLevel();
-  });
-  window.visualViewport?.addEventListener("resize", () => {
-    syncViewportHeight();
-    scheduleResizeActiveLevel();
-  });
-  window.visualViewport?.addEventListener("scroll", () => {
-    syncViewportHeight();
-    scheduleResizeActiveLevel();
-  });
-  document.addEventListener("fullscreenchange", () => {
-    syncViewportHeight();
-    scheduleResizeActiveLevel();
-  });
-  document.addEventListener("webkitfullscreenchange", () => {
-    syncViewportHeight();
-    scheduleResizeActiveLevel();
+  window.addEventListener("resize", () => syncViewportLayout());
+  window.addEventListener("orientationchange", () => syncViewportLayout());
+  window.visualViewport?.addEventListener("resize", () => syncViewportLayout());
+  window.visualViewport?.addEventListener("scroll", () => syncViewportLayout());
+  document.addEventListener("fullscreenchange", () => syncViewportLayout());
+  document.addEventListener("webkitfullscreenchange", () => syncViewportLayout());
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      pauseJezzLevelForPlatform();
+    } else {
+      resumeJezzLevelFromPlatform();
+    }
+    syncViewportLayout();
   });
   window.addEventListener("beforeunload", () => {
     saveProgressImmediate({ flushCloud: true });
@@ -5576,7 +5774,8 @@
   musicToggle.checked = state.music;
   soundToggle.checked = state.sound;
   updateLifeRestore();
-  syncViewportHeight();
+  observeViewportLayout();
+  syncViewportLayoutNow({ resizeLevel: false });
   renderChapterScreens();
   initYandexSdk();
 
