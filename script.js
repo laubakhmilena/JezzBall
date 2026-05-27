@@ -37,7 +37,7 @@
   const musicToggle = document.getElementById("musicToggle");
   const soundToggle = document.getElementById("soundToggle");
   const SAVE_KEY = "jezzball-progress-v1";
-  const IS_LOCAL_HOST = ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+  const IS_LOCAL_HOST = ["localhost", "127.0.0.1", "::1", ""].includes(location.hostname);
   const IS_PERF = IS_LOCAL_HOST && new URLSearchParams(location.search).has("perf");
   const IS_DEBUG = IS_LOCAL_HOST && new URLSearchParams(location.search).has("debug");
   const CLOUD_SAVE_KEY = "progress";
@@ -50,6 +50,11 @@
   const LIFE_RESTORE_MS = 3 * 60 * 1000;
   const TOTAL_LEVELS = 100;
   const LEVEL_ONE_TARGET = 70;
+  const FAST_LINE_MULTIPLIER = 1.75;
+  const SLOW_BALLS_DURATION_MS = 6000;
+  const SLOW_BALLS_MULTIPLIER = 0.42;
+  const LINE_SHIELD_GRACE_MS = 420;
+  const TARGET_EASE_PERCENT = 5;
   const STAR_COIN_MULTIPLIERS = {
     1: 1,
     2: 1.5,
@@ -66,6 +71,121 @@
     medium: 2,
     large: 3
   };
+  const SHOP_TABS = ["recommended", "boosts", "lives", "skins", "chests", "coins"];
+  const SHOP_BOOSTER_PRICES = {
+    fastLine: 180,
+    slowBalls: 220,
+    lineShield: 260,
+    targetEase: 300,
+    penaltyRepair: 240
+  };
+  const SHOP_LIFE_ITEMS = {
+    life_1: { title: "+1 жизнь", icon: "♥", price: 180, lives: 1 },
+    life_3: { title: "+3 жизни", icon: "♥♥♥", price: 480, lives: 3 },
+    life_full: { title: "Полное восстановление", icon: "♥♥♥♥♥", price: 650, fullRestore: true }
+  };
+  const SHOP_CHEST_ITEMS = {
+    small_chest: {
+      title: "Малый сундук",
+      icon: "▣",
+      price: 520,
+      drops: [
+        { chance: 45, reward: { coins: 220 }, oddsLabel: "монеты" },
+        { chance: 30, reward: { coins: 120, boosters: { fastLine: 1 } }, oddsLabel: "монеты + Линия" },
+        { chance: 20, reward: { boosters: { slowBalls: 1 } }, oddsLabel: "Пауза" },
+        { chance: 5, reward: { coins: 180, boosters: { lineShield: 1 } }, oddsLabel: "редкая награда" }
+      ]
+    },
+    medium_chest: {
+      title: "Средний сундук",
+      icon: "▣",
+      price: 900,
+      drops: [
+        { chance: 35, reward: { coins: 450 }, oddsLabel: "монеты" },
+        { chance: 30, reward: { coins: 220, boosters: { slowBalls: 1 } }, oddsLabel: "монеты + Пауза" },
+        { chance: 20, reward: { boosters: { fastLine: 1, lineShield: 1 } }, oddsLabel: "Линия + Щит" },
+        { chance: 10, reward: { coins: 300, lives: 1 }, oddsLabel: "жизнь + монеты" },
+        { chance: 5, reward: { boosters: { fastLine: 2, slowBalls: 1, lineShield: 1, penaltyRepair: 1 } }, oddsLabel: "много бустеров" }
+      ]
+    },
+    big_chest: {
+      title: "Большой сундук",
+      icon: "▣",
+      price: 1400,
+      recommended: true,
+      drops: [
+        { chance: 30, reward: { coins: 850 }, oddsLabel: "монеты" },
+        { chance: 25, reward: { coins: 500, boosters: { fastLine: 2 } }, oddsLabel: "монеты + Линия" },
+        { chance: 20, reward: { coins: 400, lives: 2 }, oddsLabel: "жизни + монеты" },
+        { chance: 15, reward: { boosters: { slowBalls: 2, lineShield: 2 } }, oddsLabel: "Пауза + Щит" },
+        { chance: 8, reward: { coins: 900, boosters: { fastLine: 1, slowBalls: 1, lineShield: 1, targetEase: 1, penaltyRepair: 1 } }, oddsLabel: "монеты + все бустеры" },
+        { chance: 2, reward: { coins: 1400, lives: 2, boosters: { fastLine: 2, slowBalls: 2, lineShield: 2, targetEase: 2, penaltyRepair: 2 } }, oddsLabel: "джекпот" }
+      ]
+    }
+  };
+  const SHOP_SKIN_PRICES = {
+    balls: { neon: 700, ice: 800, shadow: 750, plasma: 850, sun: 900, fire: 950 },
+    lines: { lightning: 650, pulse: 780, crystal: 950, aurora: 900 },
+    captureEffects: { stars: 700, ripple: 780, wave: 900, comet: 950 }
+  };
+  const SHOP_AD_REWARDS = {
+    ad_life_1: {
+      title: "+1 жизнь за рекламу",
+      icon: "♥",
+      description: "Посмотри короткое видео и получи жизнь.",
+      reward: { lives: 1 }
+    },
+    ad_random_booster: {
+      title: "Случайный бустер",
+      icon: "⚡",
+      description: "Посмотри короткое видео и получи один бустер.",
+      randomBooster: true
+    }
+  };
+  const SHOP_IAP_REWARDS = {
+    coins_1000: {
+      title: "1000 монет",
+      icon: "●",
+      description: "+1000 монет для магазина.",
+      meta: "Монеты",
+      reward: { coins: 1000 }
+    },
+    coins_2500: {
+      title: "2500 монет",
+      icon: "●",
+      description: "+2500 монет. Выгоднее базового пакета.",
+      meta: "Выгодно",
+      reward: { coins: 2500 }
+    },
+    coins_6500: {
+      title: "6500 монет",
+      icon: "●",
+      description: "+6500 монет для скинов, жизней и сундуков.",
+      meta: "Много монет",
+      reward: { coins: 6500 }
+    },
+    starter_pack: {
+      title: "Стартовый набор",
+      icon: "★",
+      description: "1500 монет, по 2 каждого бустера, полные жизни.",
+      meta: "Лучший старт",
+      reward: { coins: 1500, lives: MAX_LIVES, boosters: { fastLine: 2, slowBalls: 2, lineShield: 2, targetEase: 2, penaltyRepair: 2 } }
+    },
+    booster_pack: {
+      title: "Большой набор бустеров",
+      icon: "⚡",
+      description: "3000 монет, Линия x8, Пауза x6, Щит x5, Фокус x4, Откат x4.",
+      meta: "Выгодно",
+      reward: { coins: 3000, boosters: { fastLine: 8, slowBalls: 6, lineShield: 5, targetEase: 4, penaltyRepair: 4 } }
+    },
+    mega_pack: {
+      title: "Мега-набор",
+      icon: "▣",
+      description: "7700 монет, 7 жизней и все бустеры x6+.",
+      meta: "Много монет",
+      reward: { coins: 7700, lives: 7, boosters: { fastLine: 7, slowBalls: 6, lineShield: 6, targetEase: 6, penaltyRepair: 6 } }
+    }
+  };
   const CHAPTER_CHEST_REWARDS = {
     0: {
       type: "none",
@@ -75,23 +195,46 @@
     },
     1: {
       type: "small",
-      title: "Малый сундук",
+      title: "Сундук тропы",
       coins: 200,
       lives: 0
     },
     2: {
       type: "medium",
-      title: "Средний сундук",
+      title: "Сундук деревни",
       coins: 400,
       lives: 1
     },
     3: {
       type: "large",
-      title: "Большой сундук",
+      title: "Сундук главы",
       coins: 700,
       lives: 2
     }
   };
+  const ACHIEVEMENTS = [
+    { id: "first_cut", category: "progress", icon: "✦", title: "Первый разрез", description: "Пройди уровень 1.", rewardCoins: 50, target: 1, getValue: () => (isCompletedLevel(1) ? 1 : 0) },
+    { id: "sunny_glade", category: "progress", icon: "☀", title: "Солнечная поляна", description: "Пройди главу 1.", rewardCoins: 120, target: 1, getValue: () => (isChapterComplete(1) ? 1 : 0) },
+    { id: "quiet_village", category: "progress", icon: "♣", title: "Тихая деревня", description: "Пройди главу 2.", rewardCoins: 140, target: 1, getValue: () => (isChapterComplete(2) ? 1 : 0) },
+    { id: "halfway", category: "progress", icon: "◆", title: "Полпути", description: "Открой уровень 51.", rewardCoins: 300, target: 51, getValue: () => Math.min(51, state.currentLevel) },
+    { id: "final_light", category: "progress", icon: "◈", title: "Финал света", description: "Пройди уровень 100.", rewardCoins: 700, target: 1, getValue: () => (isCompletedLevel(100) ? 1 : 0) },
+    { id: "stars_10", category: "stars", icon: "★", title: "10 звёзд", description: "Собери 10 звёзд.", rewardCoins: 80, target: 10, getValue: () => getEarnedStars() },
+    { id: "stars_50", category: "stars", icon: "★", title: "50 звёзд", description: "Собери 50 звёзд.", rewardCoins: 160, target: 50, getValue: () => getEarnedStars() },
+    { id: "stars_100", category: "stars", icon: "★", title: "100 звёзд", description: "Собери 100 звёзд.", rewardCoins: 260, target: 100, getValue: () => getEarnedStars() },
+    { id: "stars_200", category: "stars", icon: "★", title: "200 звёзд", description: "Собери 200 звёзд.", rewardCoins: 450, target: 200, getValue: () => getEarnedStars() },
+    { id: "stars_300", category: "stars", icon: "★", title: "Все 300 звёзд", description: "Собери 300 звёзд.", rewardCoins: 900, target: 300, getValue: () => getEarnedStars() },
+    { id: "clean_win", category: "perfect", icon: "☆", title: "Чистая победа", description: "Получи 3 звезды на любом уровне.", rewardCoins: 100, target: 1, getValue: () => Math.min(1, getPerfectLevelCount()) },
+    { id: "perfect_10", category: "perfect", icon: "☆", title: "Десять идеалов", description: "Получи 3 звезды на 10 уровнях.", rewardCoins: 220, target: 10, getValue: () => getPerfectLevelCount() },
+    { id: "perfect_50", category: "perfect", icon: "☆", title: "Пятьдесят идеалов", description: "Получи 3 звезды на 50 уровнях.", rewardCoins: 600, target: 50, getValue: () => getPerfectLevelCount() },
+    { id: "perfect_chapter", category: "perfect", icon: "✧", title: "Идеальная глава", description: "Закрой любую главу на 30/30 звёзд.", rewardCoins: 350, target: 1, getValue: () => Math.min(1, getPerfectChapterCount()) },
+    { id: "perfect_game", category: "perfect", icon: "✧", title: "Идеальная игра", description: "Закрой все 10 глав на 30/30 звёзд.", rewardCoins: 1200, target: 10, getValue: () => getPerfectChapterCount() },
+    { id: "first_chapter_chest", category: "chest", icon: "▣", title: "Первый сундук главы", description: "Получи любой сундук главы.", rewardCoins: 120, target: 1, getValue: () => Math.min(1, getClaimedChapterChestCount()) },
+    { id: "chest_keeper", category: "chest", icon: "▣", title: "Хранитель сундуков", description: "Получи сундуки во всех 10 главах.", rewardCoins: 500, target: 10, getValue: () => getClaimedChapterChestCount() },
+    { id: "first_style", category: "style", icon: "●", title: "Первый стиль", description: "Купи любой скин.", rewardCoins: 120, target: 1, getValue: () => Math.min(1, getPaidCosmeticCount()) },
+    { id: "collector", category: "style", icon: "●", title: "Коллекционер", description: "Открой 5 платных скинов.", rewardCoins: 350, target: 5, getValue: () => getPaidCosmeticCount() },
+    { id: "booster_stock", category: "booster", icon: "⚡", title: "Запас бустеров", description: "Имей 10 любых бустеров одновременно.", rewardCoins: 250, target: 10, getValue: () => getTotalBoosterCount() }
+  ];
+  const ACHIEVEMENT_IDS = new Set(ACHIEVEMENTS.map((achievement) => achievement.id));
   const BOOSTER_ITEMS = {
     fastLine: {
       icon: "⚡",
@@ -107,12 +250,24 @@
       icon: "🛡",
       title: "Щит",
       description: "Один удар по строящейся линии не ломает её."
+    },
+    targetEase: {
+      icon: "◎",
+      title: "Фокус",
+      description: "Цель уровня снижается на 5% в текущей попытке."
+    },
+    penaltyRepair: {
+      icon: "↩",
+      title: "Откат",
+      description: "Убирает один штраф в текущей попытке."
     }
   };
   const DEFAULT_BOOSTERS = {
     fastLine: 0,
     slowBalls: 0,
-    lineShield: 0
+    lineShield: 0,
+    targetEase: 0,
+    penaltyRepair: 0
   };
   const DEFAULT_SELECTED_BOOSTERS = ["fastLine", "slowBalls", "lineShield"];
   const DEFAULT_COSMETICS = {
@@ -132,6 +287,9 @@
       items: {
         default: { icon: "●", title: "Обычный" },
         neon: { icon: "🟣", title: "Неоновый" },
+        shadow: { icon: "●", title: "Теневой" },
+        plasma: { icon: "✦", title: "Плазма" },
+        sun: { icon: "☀", title: "Солнечный" },
         fire: { icon: "🔥", title: "Огненный" }
       }
     },
@@ -141,7 +299,9 @@
       items: {
         default: { icon: "─", title: "Обычная" },
         lightning: { icon: "⚡", title: "Молния" },
-        crystal: { icon: "💎", title: "Кристалл" }
+        pulse: { icon: "═", title: "Импульс" },
+        crystal: { icon: "💎", title: "Кристалл" },
+        aurora: { icon: "≈", title: "Аврора" }
       }
     },
     captureEffects: {
@@ -150,9 +310,18 @@
       items: {
         default: { icon: "○", title: "Обычный" },
         stars: { icon: "✨", title: "Звёзды" },
-        wave: { icon: "🌊", title: "Волна" }
+        ripple: { icon: "◌", title: "Рябь" },
+        wave: { icon: "🌊", title: "Волна" },
+        comet: { icon: "✹", title: "Комета" }
       }
     }
+  };
+  COSMETIC_GROUPS.balls.items.default.image = "objects/game-objects/ordinary-ball.png";
+  COSMETIC_GROUPS.balls.items.neon.image = "objects/game-objects/neon-ball.png";
+  COSMETIC_GROUPS.balls.items.ice = {
+    icon: "❄",
+    image: "objects/game-objects/ice-ball.png",
+    title: "Ледяной"
   };
   const LEVEL_REWARDS = {
     1: { 1: { coins: 50 }, 2: { coins: 75 }, 3: { coins: 110 } },
@@ -236,7 +405,7 @@
   );
 
   const curatedProgressionLevelConfigs = {
-    31: level(79, 3, "medium", [dangerV(0.42, 0.18, 0.82), dangerH(0.58, 0.18, 0.82, 1)], "pressure-cross-lines"),
+    31: level(79, 3, "medium", [dangerV(0.42, 0.18, 0.82), dangerH(0.58, 0.18, 0.82, 1), safeH(0.78, 0.22, 0.78)], "pressure-cross-lines"),
     32: level(79, 3, "medium", [movingDangerV(0.54, 0.2, 0.78, "x", 0.09, 0.15), safeH(0.34, 0.22, 0.78)], "pressure-vertical-timing"),
     33: level(80, 4, "slow", [], "pressure-pure-chaos"),
     34: level(80, 3, "medium", [safeV(0.34, 0.16, 0.84), safeV(0.66, 0.16, 0.84), dangerH(0.5, 0.36, 0.64)], "pressure-safe-corridor"),
@@ -259,7 +428,7 @@
     50: level(84, 4, "fast", [dangerV(0.36, 0.16, 0.84), dangerH(0.5, 0.16, 0.84, 1), movingDangerV(0.66, 0.22, 0.78, "x", 0.09, 0.4, 2), safeH(0.26, 0.2, 0.8), safeV(0.82, 0.3, 0.74)], "precision-chapter-boss"),
 
     51: level(83, 3, "fast", [movingDangerH(0.4, 0.16, 0.84, "y", 0.1, 0.1), safeV(0.28, 0.22, 0.82)], "speed-fast-sweeps"),
-    52: level(83, 3, "fast", [movingDangerV(0.44, 0.18, 0.84, "x", 0.1, 0), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.5, 1)], "speed-cross-blockers"),
+    52: level(83, 3, "fast", [movingDangerV(0.44, 0.18, 0.84, "x", 0.1, 0), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.5, 1), safeV(0.78, 0.22, 0.78)], "speed-cross-blockers"),
     53: level(83, 4, "medium", [safeH(0.3, 0.18, 0.82), dangerV(0.5, 0.2, 0.82), safeV(0.72, 0.18, 0.74), dangerH(0.68, 0.22, 0.78, 1)], "speed-alternating-layout"),
     54: level(84, 4, "fast", [movingSafeV(0.5, 0.14, 0.86, "x", 0.13, 0.2), dangerH(0.54, 0.2, 0.8), dangerV(0.78, 0.28, 0.74, 1)], "speed-unstable-wall"),
     55: level(84, 4, "fast", [movingDangerH(0.36, 0.16, 0.84, "y", 0.11, 0.15), movingDangerV(0.64, 0.18, 0.82, "x", 0.1, 0.65, 1), safeH(0.76, 0.22, 0.78)], "speed-mini-boss"),
@@ -308,10 +477,10 @@
     94: level(88, 4, "medium", [safeV(0.38, 0.16, 0.84), dangerH(0.36, 0.34, 0.86), safeH(0.58, 0.18, 0.72), dangerV(0.76, 0.22, 0.82, 1)], "final-remix-mind-games"),
     95: level(88, 4, "fast", [movingDangerV(0.34, 0.16, 0.84, "x", 0.1, 0), safeH(0.5, 0.18, 0.82), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.45, 1), safeV(0.82, 0.24, 0.78)], "final-mini-boss"),
     96: level(88, 4, "fast", [safeV(0.5, 0.16, 0.84), dangerH(0.32, 0.18, 0.82), dangerH(0.72, 0.18, 0.82, 1)], "final-high-speed-arena"),
-    97: level(89, 4, "fast", [dangerV(0.28, 0.16, 0.84), movingDangerH(0.42, 0.18, 0.82, "y", 0.09, 0.2, 1), safeV(0.54, 0.16, 0.84), movingDangerV(0.76, 0.18, 0.82, "x", 0.08, 0.6, 2)], "final-boss-rush"),
-    98: level(89, 4, "fast", [safeH(0.24, 0.16, 0.84), dangerV(0.36, 0.22, 0.78), safeH(0.5, 0.18, 0.82), dangerV(0.64, 0.22, 0.78, 1), safeH(0.76, 0.16, 0.84)], "final-precision-gauntlet"),
-    99: level(89, 4, "fast", [movingSafeV(0.28, 0.16, 0.84, "x", 0.08, 0.15), movingDangerH(0.38, 0.16, 0.84, "y", 0.09, 0.35), dangerV(0.58, 0.18, 0.82, 1), movingDangerV(0.76, 0.2, 0.8, "x", 0.08, 0.75, 2), safeH(0.78, 0.2, 0.76)], "final-fake-finale"),
-    100: level(90, 4, "fast", [movingSafeV(0.24, 0.16, 0.84, "x", 0.08, 0), movingDangerH(0.34, 0.16, 0.84, "y", 0.1, 0.2), dangerV(0.48, 0.18, 0.82, 1), movingSafeH(0.58, 0.18, 0.82, "y", 0.08, 0.55), movingDangerV(0.72, 0.16, 0.84, "x", 0.1, 0.75, 2), safeH(0.82, 0.18, 0.82)], "final-boss-core-collapse")
+    97: level(88, 4, "fast", [dangerV(0.28, 0.16, 0.84), movingDangerH(0.42, 0.18, 0.82, "y", 0.09, 0.2, 1), safeV(0.54, 0.16, 0.84), movingDangerV(0.76, 0.18, 0.82, "x", 0.08, 0.6, 2)], "final-boss-rush"),
+    98: level(88, 4, "fast", [safeH(0.24, 0.16, 0.84), dangerV(0.36, 0.22, 0.78), safeH(0.5, 0.18, 0.82), dangerV(0.64, 0.22, 0.78, 1), safeH(0.76, 0.16, 0.84)], "final-precision-gauntlet"),
+    99: level(88, 4, "fast", [movingSafeV(0.28, 0.16, 0.84, "x", 0.08, 0.15), movingDangerH(0.38, 0.16, 0.84, "y", 0.09, 0.35), dangerV(0.58, 0.18, 0.82, 1), movingDangerV(0.76, 0.2, 0.8, "x", 0.08, 0.75, 2), safeH(0.78, 0.2, 0.76)], "final-fake-finale"),
+    100: level(88, 4, "fast", [movingSafeV(0.24, 0.16, 0.84, "x", 0.08, 0), movingDangerH(0.34, 0.16, 0.84, "y", 0.1, 0.2), dangerV(0.48, 0.18, 0.82, 1), movingSafeH(0.58, 0.18, 0.82, "y", 0.08, 0.55), movingDangerV(0.72, 0.16, 0.84, "x", 0.1, 0.75, 2), safeH(0.82, 0.18, 0.82)], "final-boss-core-collapse")
   };
 
   const LEVEL_CONFIGS = {
@@ -395,8 +564,8 @@
       balls: 2,
       speed: "medium",
       obstacles: [
-        { orientation: "vertical", x: 0.36, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" },
-        { orientation: "horizontal", y: 0.64, x1: 0.22, x2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }
+        { orientation: "vertical", x: 0.36, y1: 0.34, y2: 0.66, type: "static", safe: false, color: "#ff4e7a" },
+        { orientation: "horizontal", y: 0.64, x1: 0.25, x2: 0.75, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }
       ],
       purpose: "first-obstacle-combination"
     },
@@ -411,7 +580,7 @@
       target: 78,
       balls: 2,
       speed: "medium",
-      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.18, x2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.14, phase: 0.35 }],
+      obstacles: [{ orientation: "horizontal", y: 0.5, x1: 0.34, x2: 0.66, type: "moving", safe: false, color: "#8d2454", axis: "y", amplitude: 0.14, phase: 0.35 }],
       purpose: "moving-danger-risk"
     },
     19: {
@@ -419,8 +588,8 @@
       balls: 2,
       speed: "fast",
       obstacles: [
-        { orientation: "vertical", x: 0.62, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" },
-        { orientation: "horizontal", y: 0.38, x1: 0.2, x2: 0.8, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }
+        { orientation: "vertical", x: 0.62, y1: 0.34, y2: 0.66, type: "static", safe: false, color: "#ff4e7a" },
+        { orientation: "horizontal", y: 0.38, x1: 0.35, x2: 0.65, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }
       ],
       purpose: "boss-preparation"
     },
@@ -429,9 +598,9 @@
       balls: 3,
       speed: "medium",
       obstacles: [
-        { orientation: "vertical", x: 0.5, y1: 0.18, y2: 0.82, type: "moving", safe: false, color: "#8d2454", axis: "x", amplitude: 0.13, phase: 0.15 },
-        { orientation: "horizontal", y: 0.34, x1: 0.22, x2: 0.78, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
-        { orientation: "horizontal", y: 0.68, x1: 0.18, x2: 0.82, type: "static", safe: false, color: "#ff4e7a" }
+        { orientation: "vertical", x: 0.5, y1: 0.34, y2: 0.66, type: "moving", safe: false, color: "#8d2454", axis: "x", amplitude: 0.13, phase: 0.15 },
+        { orientation: "horizontal", y: 0.34, x1: 0.36, x2: 0.64, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "horizontal", y: 0.68, x1: 0.34, x2: 0.66, type: "static", safe: false, color: "#ff4e7a" }
       ],
       purpose: "chapter-mini-boss"
     },
@@ -542,6 +711,10 @@
   const yandexState = {
     sdk: null,
     player: null,
+    payments: null,
+    catalog: {},
+    paymentsReady: false,
+    paymentsLoading: false,
     cloudSaveTimer: null,
     leaderboardSaveTimer: null,
     localSaveTimer: null,
@@ -669,7 +842,9 @@
     },
     equippedCosmetics: { ...DEFAULT_EQUIPPED_COSMETICS },
     gifts: [],
-    inventoryTab: "chests",
+    unlockedAchievements: new Set(),
+    claimedAchievements: new Set(),
+    inventoryTab: "recommended",
     expandedChapters: new Set([1])
   };
 
@@ -709,7 +884,11 @@
     obstacleLegendTimer: null,
     lastCompletion: null,
     replayingCompleted: false,
-    pausedByViewport: false
+    pausedByViewport: false,
+    fastLineArmed: false,
+    lineShieldArmed: false,
+    slowBallsUntil: 0,
+    targetEaseUsed: false
   };
 
   let confirmResolve = null;
@@ -722,6 +901,7 @@
   let staticLayerCanvas = null;
   let backgroundCacheDirty = true;
   let staticLayerDirty = true;
+  const ballSkinImageCache = new Map();
   let layoutRaf = null;
   let layoutObserver = null;
   let lastViewportTooSmall = false;
@@ -954,6 +1134,8 @@
     setText("#confirmMessage", t("continue"));
     setText("#confirmCancelButton", t("stay"));
     setText("#confirmAcceptButton", t("yes"));
+    setText("#inventoryTitle", t("shop"));
+    setAttribute("#inventoryCloseButton", "aria-label", "Закрыть магазин");
   };
 
   const applyLanguage = (lang) => {
@@ -994,9 +1176,41 @@
     window.setTimeout(done, 2500);
   });
 
+  const getBallSkinImageSrc = (skinId) => COSMETIC_GROUPS.balls.items[skinId]?.image || "";
+
+  const getCachedBallSkinImage = (skinId) => {
+    const src = getBallSkinImageSrc(skinId);
+    if (!src) {
+      return null;
+    }
+
+    let record = ballSkinImageCache.get(src);
+    if (!record) {
+      const image = new Image();
+      record = { image, loaded: false, failed: false };
+      image.onload = () => {
+        record.loaded = true;
+        if (state.equippedCosmetics.ball === skinId) {
+          requestDrawJezzLevel();
+        }
+      };
+      image.onerror = () => {
+        record.failed = true;
+      };
+      image.src = src;
+      ballSkinImageCache.set(src, record);
+    }
+
+    return record.loaded && !record.failed ? record.image : null;
+  };
+
   const waitForCriticalAssets = () => Promise.all([
     waitForImageAsset("objects/fone/fone_menu.png"),
     waitForImageAsset("objects/fone/fone_menu_two.png"),
+    ...Object.values(COSMETIC_GROUPS.balls.items)
+      .map((item) => item.image)
+      .filter(Boolean)
+      .map((src) => waitForImageAsset(src)),
     document.fonts?.ready?.catch?.(() => null) || Promise.resolve()
   ]);
 
@@ -1083,7 +1297,9 @@
       applyLanguage(getYandexLanguage());
       registerYandexPauseEvents();
       await initYandexPlayer();
+      await initYandexPayments();
       await loadCloudProgress();
+      await processPendingYandexPurchases();
       updateLifeRestore();
       renderChapterScreens();
       syncViewportLayoutNow({ resizeLevel: false });
@@ -1098,6 +1314,39 @@
       yandexState.initPromise = null;
       applyLanguage("ru");
       return null;
+    }
+  };
+
+  const initYandexPayments = async () => {
+    if (!yandexState.sdk || yandexState.paymentsLoading) {
+      return yandexState.payments;
+    }
+    if (yandexState.payments) {
+      return yandexState.payments;
+    }
+    if (typeof yandexState.sdk.getPayments !== "function") {
+      return null;
+    }
+
+    yandexState.paymentsLoading = true;
+    try {
+      const payments = await yandexState.sdk.getPayments();
+      yandexState.payments = payments;
+      if (typeof payments.getCatalog === "function") {
+        const catalog = await payments.getCatalog();
+        yandexState.catalog = Object.fromEntries(
+          (Array.isArray(catalog) ? catalog : []).map((product) => [product.id, product])
+        );
+      }
+      yandexState.paymentsReady = true;
+      return payments;
+    } catch (_error) {
+      yandexState.payments = null;
+      yandexState.catalog = {};
+      yandexState.paymentsReady = false;
+      return null;
+    } finally {
+      yandexState.paymentsLoading = false;
     }
   };
 
@@ -1469,8 +1718,7 @@
           <span aria-hidden="true">▶</span>${t("play")}
         </button>
         <nav class="chapter-action-bar" aria-label="${t("shopAndAchievements")}">
-          <button type="button" data-action="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14.26c-.75 0-1.41-.41-1.75-1.03L2 6.2V5h3.21l.94 2h12.9c.75 0 1.24.78.92 1.45l-2.42 5.05A2 2 0 0 1 15.74 14H8.1l-1.1 2h12v2H7c-1.52 0-2.48-1.63-1.75-2.96l1.03-1.86-.12-.24ZM7.1 9l1.42 3h7.22l1.44-3H7.1Z"/></svg>${t("shop")}</button>
-          <button class="inventory-button" type="button" data-action="inventory"><svg class="inventory-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8.7 6.2V5.4C8.7 3.5 10.15 2 12 2s3.3 1.5 3.3 3.4v.8h1.1c1.25 0 2.3.94 2.45 2.18l1.08 9.02A3.08 3.08 0 0 1 16.87 20.8H7.13a3.08 3.08 0 0 1-3.06-3.4l1.08-9.02A2.47 2.47 0 0 1 7.6 6.2h1.1Zm1.85 0h2.9v-.8c0-.88-.62-1.55-1.45-1.55s-1.45.67-1.45 1.55v.8Zm-2.88 2.05a.62.62 0 0 0-.61.55l-1.08 9.03c-.08.62.41 1.17 1.15 1.17h9.74c.74 0 1.23-.55 1.15-1.17L16.94 8.8a.62.62 0 0 0-.61-.55h-1.03v1.4a.93.93 0 0 1-1.85 0v-1.4h-2.9v1.4a.93.93 0 0 1-1.85 0v-1.4H7.67Z"/><path fill="currentColor" opacity=".66" d="M8.2 14.1c.8 1.2 2.18 1.96 3.8 1.96s3-.76 3.8-1.96c.28-.42.16-.98-.26-1.25a.9.9 0 0 0-1.25.25c-.45.67-1.28 1.1-2.29 1.1s-1.84-.43-2.29-1.1a.9.9 0 0 0-1.25-.25.9.9 0 0 0-.26 1.25Z"/></svg>Инвентарь<span class="inventory-badge" hidden>0</span></button>
+          <button class="shop-button" type="button" data-action="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.16 14.26c-.75 0-1.41-.41-1.75-1.03L2 6.2V5h3.21l.94 2h12.9c.75 0 1.24.78.92 1.45l-2.42 5.05A2 2 0 0 1 15.74 14H8.1l-1.1 2h12v2H7c-1.52 0-2.48-1.63-1.75-2.96l1.03-1.86-.12-.24ZM7.1 9l1.42 3h7.22l1.44-3H7.1Z"/></svg>${t("shop")}<span class="inventory-badge shop-badge" hidden>0</span></button>
           <button type="button" data-action="achievements"><span aria-hidden="true">★</span>${t("achievements")}</button>
         </nav>
       </div>
@@ -1674,6 +1922,12 @@
       }))
     : [];
 
+  const normalizeAchievementIds = (savedIds) => new Set(
+    (Array.isArray(savedIds) ? savedIds : [])
+      .map((id) => String(id))
+      .filter((id) => ACHIEVEMENT_IDS.has(id))
+  );
+
   const serializeProgress = () => ({
     currentChapter: state.currentChapter,
     currentLevel: state.currentLevel,
@@ -1691,6 +1945,8 @@
     cosmetics: state.cosmetics,
     equippedCosmetics: state.equippedCosmetics,
     gifts: state.gifts,
+    unlockedAchievements: Array.from(state.unlockedAchievements),
+    claimedAchievements: Array.from(state.claimedAchievements),
     expandedChapters: Array.from(state.expandedChapters)
   });
 
@@ -1725,12 +1981,15 @@
     state.cosmetics = normalizeCosmetics(saved.cosmetics);
     state.equippedCosmetics = normalizeEquippedCosmetics(saved.equippedCosmetics, state.cosmetics);
     state.gifts = normalizeGifts(saved.gifts);
+    state.unlockedAchievements = normalizeAchievementIds(saved.unlockedAchievements);
+    state.claimedAchievements = normalizeAchievementIds(saved.claimedAchievements);
     state.expandedChapters = new Set(
       Array.isArray(saved.expandedChapters)
         ? saved.expandedChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
         : [getChapterForLevel(state.currentLevel)]
     );
     state.expandedChapters.add(getChapterForLevel(state.currentLevel));
+    evaluateAchievements();
   };
 
   const saveCloudProgress = async (flush = false) => {
@@ -1926,8 +2185,8 @@
   };
 
   const getRewardLineMarkup = (reward) => `
-    <div class="chapter-chest-reward-line"><span aria-hidden="true">●</span><strong>+${reward.coins}</strong> монет</div>
-    ${reward.lives > 0 ? `<div class="chapter-chest-reward-line"><span aria-hidden="true">♥</span><strong>+${reward.lives}</strong> жизней</div>` : ""}
+    <div class="chapter-chest-reward-line chapter-chest-reward-line-coin"><span aria-hidden="true">●</span><strong>+${reward.coins}</strong> монет</div>
+    ${reward.lives > 0 ? `<div class="chapter-chest-reward-line chapter-chest-reward-line-life"><span aria-hidden="true">♥</span><strong>+${reward.lives}</strong> жизней</div>` : ""}
   `;
 
   const showChapterChestResult = (summary) => showConfirm({
@@ -1963,51 +2222,6 @@
     return false;
   };
 
-  const showChapterChestPrompt = (chapterId) => new Promise((resolve) => {
-    const reward = getPendingChestReward(chapterId);
-    if (!reward.hasReward) {
-      resolve(false);
-      return;
-    }
-
-    const panel = document.createElement("div");
-    panel.className = "chapter-chest-panel is-visible";
-    panel.id = "chapterChestPanel";
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-modal", "true");
-    panel.innerHTML = `
-      <div class="chapter-chest-card">
-        <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
-        <h2>${reward.claimedTier > CHEST_TIERS.none ? "Сундук главы улучшен!" : "Сундук главы готов!"}</h2>
-        <p>Глава ${chapterId}</p>
-        <div class="chapter-chest-type">
-          ${reward.claimedTier > CHEST_TIERS.none
-            ? `Было: ${reward.previousTitle}<br>Стало: ${reward.nextTitle}`
-            : `Получен: ${reward.nextTitle}`}
-        </div>
-        <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
-        <div class="chapter-chest-actions">
-          <button class="menu-button map-reward-button compact-play" type="button" data-choice="later">Позже</button>
-          <button class="menu-button play-button compact-play" type="button" data-choice="open">Открыть</button>
-        </div>
-      </div>
-    `;
-
-    const close = (shouldOpen) => {
-      deactivateModalFocus(panel);
-      panel.remove();
-      resolve(shouldOpen);
-    };
-
-    panel.querySelector('[data-choice="later"]')?.addEventListener("click", () => close(false), { once: true });
-    panel.querySelector('[data-choice="open"]')?.addEventListener("click", () => close(true), { once: true });
-    root.append(panel);
-    activateModalFocus(panel, {
-      initialFocus: panel.querySelector('[data-choice="open"]'),
-      onEscape: () => close(false)
-    });
-  });
-
   const showChapterChestClaimPanel = (chapterId) => new Promise((resolve) => {
     const reward = getPendingChestReward(chapterId);
     if (!reward.hasReward) {
@@ -2016,46 +2230,41 @@
     }
 
     const panel = document.createElement("div");
-    panel.className = "chapter-chest-panel is-visible";
+    panel.className = "chapter-chest-panel chapter-chest-reward-panel is-visible";
     panel.id = "chapterChestPanel";
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-modal", "true");
+    let result = null;
     panel.innerHTML = `
-      <div class="chapter-chest-card">
+      <div class="chapter-chest-card chapter-chest-reward-card">
+        <button class="reward-close chapter-chest-reward-close" type="button" aria-label="Закрыть">×</button>
         <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
-        <h2>${reward.claimedTier > CHEST_TIERS.none ? "Сундук улучшен!" : "Сундук главы!"}</h2>
+        <h2>Ваша награда</h2>
         <p>Глава ${chapterId}</p>
-        <div class="chapter-chest-stars">Собрано звёзд: ${getChapterStars(chapterId)} / 30</div>
-        <div class="chapter-chest-type">
-          ${reward.claimedTier > CHEST_TIERS.none
-            ? `Было: ${reward.previousTitle}<br>Стало: ${reward.nextTitle}`
-            : `Получен: ${reward.nextTitle}`}
-        </div>
         <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
-        <button class="menu-button play-button compact-play chapter-chest-claim" type="button">Забрать</button>
+        <button class="menu-button play-button compact-play chapter-chest-claim" type="button">Получить</button>
       </div>
     `;
 
-    panel.querySelector(".chapter-chest-claim")?.addEventListener("click", async () => {
-      const result = openChapterChest(chapterId, { silent: true });
+    const close = () => {
       deactivateModalFocus(panel);
       panel.remove();
-      if (result) {
-        await showChapterChestResult({
-          title: result.claimedTier > CHEST_TIERS.none ? "Апгрейд получен" : "Глава завершена",
-          message: `Получено: +${result.coins} монет${result.gainedLives > 0 ? `, +${result.gainedLives} жизней` : ""}`
-        });
-      }
       resolve(result);
+    };
+
+    panel.querySelector(".chapter-chest-claim")?.addEventListener("click", () => {
+      result = openChapterChest(chapterId, { silent: true });
+      const claimButton = panel.querySelector(".chapter-chest-claim");
+      if (claimButton) {
+        claimButton.textContent = "Награда получена";
+        claimButton.disabled = true;
+        claimButton.classList.add("is-claimed");
+      }
     }, { once: true });
+    panel.querySelector(".chapter-chest-reward-close")?.addEventListener("click", close, { once: true });
     root.append(panel);
     activateModalFocus(panel, {
-      initialFocus: panel.querySelector(".chapter-chest-claim"),
-      onEscape: () => {
-        deactivateModalFocus(panel);
-        panel.remove();
-        resolve(null);
-      }
+      initialFocus: panel.querySelector(".chapter-chest-claim")
     });
   });
 
@@ -2069,6 +2278,7 @@
     state.coins += reward.coins;
     state.lives = Math.min(MAX_LIVES, state.lives + reward.lives);
     ensureChapterChest(chapterId).claimedTier = ensureChapterChest(chapterId).earnedTier;
+    evaluateAchievements();
     saveProgressImmediate();
     syncResources();
     renderChapterScreens();
@@ -2108,6 +2318,7 @@
     pending.forEach((reward) => {
       ensureChapterChest(reward.chapterId).claimedTier = ensureChapterChest(reward.chapterId).earnedTier;
     });
+    evaluateAchievements();
     saveProgressImmediate();
     syncResources();
     renderChapterScreens();
@@ -2131,18 +2342,17 @@
         <button class="reward-close chapter-chests-close" type="button" aria-label="Закрыть">×</button>
         <div class="chapter-chest-icon" aria-hidden="true">🎁</div>
         <h2>Сундуки</h2>
-        ${pending.length > 1 ? `<button class="menu-button play-button compact-play chapter-open-all" type="button">Открыть все</button>` : ""}
+        ${pending.length > 1 ? `<button class="menu-button play-button compact-play chapter-open-all" type="button">Получить все</button>` : ""}
         <div class="chapter-chests-list">
           ${pending.length
             ? pending.map((reward) => `
               <article class="chapter-chest-item">
                 <h3>${reward.claimedTier > CHEST_TIERS.none ? `Апгрейд сундука главы ${reward.chapterId}` : `Глава ${reward.chapterId}`}</h3>
                 <p>${reward.claimedTier > CHEST_TIERS.none
-                  ? `Было: ${reward.previousTitle}<br>Стало: ${reward.nextTitle}`
-                  : `Тип сундука: ${reward.nextTitle}`}</p>
+                  ? `Улучшен до: ${reward.nextTitle}`
+                  : `Награда: ${reward.nextTitle}`}</p>
                 <p>Звёзды главы: ${getChapterStars(reward.chapterId)} / 30</p>
-                <div class="chapter-chest-rewards">${getRewardLineMarkup(reward)}</div>
-                <button class="menu-button play-button compact-play" type="button" data-open-chest="${reward.chapterId}">Открыть</button>
+                <button class="menu-button play-button compact-play" type="button" data-open-chest="${reward.chapterId}">Получить</button>
               </article>
             `).join("")
             : `
@@ -2231,6 +2441,9 @@
         completion.chapterChestId = completedChapterId;
       }
       if (completedChapterFinal && completedLevel < TOTAL_LEVELS) {
+        if (completedChapterId === 2) {
+          state.expandedChapters.delete(completedChapterId);
+        }
         state.expandedChapters.add(completedNextChapterId);
         state.currentChapter = completedNextChapterId;
       }
@@ -2265,6 +2478,68 @@
   };
 
   const getEarnedStars = () => Object.values(state.starsByLevel).reduce((sum, stars) => sum + (Number(stars) || 0), 0);
+
+  const getPerfectLevelCount = () => Object.values(state.starsByLevel)
+    .filter((stars) => Number(stars) >= 3)
+    .length;
+
+  const getPerfectChapterCount = () => chapters.reduce((count, chapter) => (
+    getChapterStars(chapter.id) >= 30 ? count + 1 : count
+  ), 0);
+
+  const getClaimedChapterChestCount = () => chapters.reduce((count, chapter) => {
+    const chest = state.chapterChests[chapter.id];
+    return count + (Number(chest?.claimedTier) > CHEST_TIERS.none ? 1 : 0);
+  }, 0);
+
+  const getPaidCosmeticCount = () => Object.entries(COSMETIC_GROUPS).reduce((count, [group]) => {
+    const owned = Array.isArray(state.cosmetics[group]) ? state.cosmetics[group] : [];
+    const defaults = new Set(DEFAULT_COSMETICS[group] || []);
+    return count + owned.filter((skinId) => !defaults.has(skinId)).length;
+  }, 0);
+
+  const getTotalBoosterCount = () => Object.values(state.boosters).reduce((sum, count) => (
+    sum + Math.max(0, Math.round(Number(count) || 0))
+  ), 0);
+
+  const getAchievementProgress = (achievement) => {
+    const target = Math.max(1, Math.round(Number(achievement.target) || 1));
+    const rawValue = Math.max(0, Math.round(Number(achievement.getValue?.() || 0)));
+    const value = Math.min(target, rawValue);
+    const claimed = state.claimedAchievements.has(achievement.id);
+    const unlocked = claimed || state.unlockedAchievements.has(achievement.id) || value >= target;
+    return {
+      value,
+      target,
+      percent: Math.min(100, Math.round((value / target) * 100)),
+      unlocked,
+      claimed,
+      ready: unlocked && !claimed
+    };
+  };
+
+  const evaluateAchievements = (options = {}) => {
+    let changed = false;
+    ACHIEVEMENTS.forEach((achievement) => {
+      const progress = getAchievementProgress(achievement);
+      if (progress.unlocked && !state.unlockedAchievements.has(achievement.id)) {
+        state.unlockedAchievements.add(achievement.id);
+        changed = true;
+      }
+    });
+
+    if (changed && options.save) {
+      saveProgress();
+    }
+    return changed;
+  };
+
+  const getClaimableAchievementCount = () => {
+    evaluateAchievements();
+    return ACHIEVEMENTS.reduce((count, achievement) => (
+      count + (state.unlockedAchievements.has(achievement.id) && !state.claimedAchievements.has(achievement.id) ? 1 : 0)
+    ), 0);
+  };
 
   const submitLeaderboardScore = async () => {
     if (IS_DEBUG) {
@@ -2326,6 +2601,8 @@
     state.achievements = getEarnedStars();
     state.lives = Math.min(MAX_LIVES, Math.max(0, state.lives));
     state.coins = Math.max(0, state.coins);
+    evaluateAchievements();
+    const slowActive = getTrustedNow() < levelState.slowBallsUntil;
 
     document.querySelectorAll('[data-resource="coins"]').forEach((node) => {
       setTextIfChanged(node, state.coins);
@@ -2343,12 +2620,16 @@
     });
     Object.keys(DEFAULT_BOOSTERS).forEach((key) => {
       const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
+      const isArmed = (key === "fastLine" && levelState.fastLineArmed) || (key === "lineShield" && levelState.lineShieldArmed);
+      const isActive = (key === "slowBalls" && slowActive) || (key === "targetEase" && levelState.targetEaseUsed);
       document.querySelectorAll(`[data-booster-count="${key}"]`).forEach((node) => {
         setTextIfChanged(node, `x${count}`);
       });
       document.querySelectorAll(`[data-level-boost="${key}"]`).forEach((button) => {
-        button.disabled = count <= 0;
+        button.disabled = count <= 0 && !isArmed && !isActive;
         button.classList.toggle("is-empty", count <= 0);
+        button.classList.toggle("is-armed", isArmed);
+        button.classList.toggle("is-active", isActive);
       });
     });
     syncLevelBoostButtons();
@@ -2565,6 +2846,38 @@
     return parts.length ? parts.join(", ") : "Бонус";
   };
 
+  const cloneShopReward = (reward = {}) => ({
+    coins: Math.max(0, Math.round(Number(reward.coins) || 0)),
+    lives: Math.max(0, Math.round(Number(reward.lives) || 0)),
+    boosters: { ...(reward.boosters || {}) },
+    cosmetics: reward.cosmetics ? { ...reward.cosmetics } : undefined
+  });
+
+  const rollShopChestReward = (chestId) => {
+    const chest = SHOP_CHEST_ITEMS[chestId];
+    const drops = Array.isArray(chest?.drops) ? chest.drops : [];
+    const totalChance = drops.reduce((sum, drop) => sum + Math.max(0, Number(drop.chance) || 0), 0);
+    if (!chest || !totalChance) {
+      return null;
+    }
+
+    let roll = Math.random() * totalChance;
+    const selectedDrop = drops.find((drop) => {
+      roll -= Math.max(0, Number(drop.chance) || 0);
+      return roll < 0;
+    }) || drops[drops.length - 1];
+
+    const reward = cloneShopReward(selectedDrop.reward);
+    return {
+      chestId,
+      chestTitle: chest.title,
+      icon: chest.icon,
+      chance: selectedDrop.chance,
+      reward,
+      rewardText: formatRewardText(reward)
+    };
+  };
+
   const getPendingGifts = () => state.gifts.filter((gift) => gift.claimed !== true);
 
   const getInventoryBadgeCount = () => getPendingChests().length + getPendingGifts().length;
@@ -2576,7 +2889,7 @@
       badge.hidden = count <= 0;
       setTextIfChanged(badge, count);
     });
-    document.querySelectorAll(".inventory-button").forEach((button) => {
+    document.querySelectorAll(".shop-button").forEach((button) => {
       button.classList.toggle("has-pending-chests", hasPendingChests);
     });
     document.querySelectorAll('[data-inventory-tab="chests"]').forEach((button) => {
@@ -2585,35 +2898,439 @@
     inventoryModal?.classList.toggle("has-pending-chests", hasPendingChests);
   };
 
+  const SHOP_NOT_ENOUGH_COINS_TEXT = "Не хватает монет";
+
+  const formatPrice = (price) => `<span class="shop-price"><span aria-hidden="true">●</span>${price}</span>`;
+
+  const canAffordShopItem = (price) => state.coins >= Math.max(0, Math.round(Number(price) || 0));
+
+  const getCoinPurchaseButtonText = (price) => (
+    canAffordShopItem(price) ? formatPrice(price) : SHOP_NOT_ENOUGH_COINS_TEXT
+  );
+
+  const canUseRewardedAd = () => Boolean(yandexState.sdk?.adv && typeof yandexState.sdk.adv.showRewardedVideo === "function");
+
+  const getShopProduct = (id) => yandexState.catalog?.[id] || null;
+
+  const hasAvailableIapCatalog = () => (
+    yandexState.paymentsReady
+    && Object.keys(SHOP_IAP_REWARDS).some((id) => Boolean(getShopProduct(id)))
+  );
+
+  const getVisibleShopTabs = () => SHOP_TABS.filter((tab) => tab !== "coins" || hasAvailableIapCatalog());
+
+  const resolveShopTab = (tab) => (getVisibleShopTabs().includes(tab) ? tab : "recommended");
+
+  const getProductPriceMarkup = (id) => {
+    const product = getShopProduct(id);
+    if (!product) {
+      return "Скоро";
+    }
+    const image = typeof product.getPriceCurrencyImage === "function"
+      ? product.getPriceCurrencyImage("small")
+      : "";
+    return `
+      ${image ? `<img class="shop-yan-icon" src="${escapeHtml(image)}" alt="" aria-hidden="true">` : ""}
+      ${escapeHtml(product.price || product.priceValue || "Купить")}
+    `;
+  };
+
+  const addBoosters = (boosters = {}) => {
+    Object.entries(boosters || {}).forEach(([key, count]) => {
+      if (Object.prototype.hasOwnProperty.call(DEFAULT_BOOSTERS, key)) {
+        state.boosters[key] = Math.max(0, Math.round(Number(state.boosters[key]) || 0))
+          + Math.max(0, Math.round(Number(count) || 0));
+      }
+    });
+  };
+
+  const grantShopReward = (reward = {}) => {
+    state.coins += Math.max(0, Math.round(Number(reward.coins) || 0));
+    state.lives = Math.min(MAX_LIVES, state.lives + Math.max(0, Math.round(Number(reward.lives) || 0)));
+    addBoosters(reward.boosters);
+    addGiftCosmetics(reward.cosmetics);
+    syncResources();
+    saveProgressImmediate({ flushCloud: true });
+    renderInventory();
+  };
+
+  let activeShopChestResultPanel = null;
+
+  const closeShopChestResult = () => {
+    if (!activeShopChestResultPanel) {
+      return;
+    }
+    const panel = activeShopChestResultPanel;
+    activeShopChestResultPanel = null;
+    deactivateModalFocus(panel);
+    panel.remove();
+  };
+
+  const grantRolledChestReward = (rolledReward = {}) => {
+    grantShopReward(rolledReward.reward || rolledReward);
+  };
+
+  const showShopChestResult = (rolledReward) => {
+    if (!rolledReward || activeShopChestResultPanel) {
+      return;
+    }
+
+    const panel = document.createElement("div");
+    panel.className = "shop-chest-result-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-label", "Результат сундука");
+    panel.innerHTML = `
+      <div class="shop-chest-result-card">
+        <div class="shop-chest-result-icon" aria-hidden="true">${escapeHtml(rolledReward.icon || "▣")}</div>
+        <p class="shop-chest-result-kicker">Выпало из сундука</p>
+        <h3>${escapeHtml(rolledReward.chestTitle || "Сундук")}</h3>
+        <div class="shop-chest-result-reward">${escapeHtml(rolledReward.rewardText || formatRewardText(rolledReward.reward || {}))}</div>
+        <button class="menu-button play-button compact-play shop-chest-result-claim" type="button">Забрать</button>
+      </div>
+    `;
+
+    const claimButton = panel.querySelector(".shop-chest-result-claim");
+    claimButton?.addEventListener("click", () => {
+      if (claimButton.disabled) {
+        return;
+      }
+      claimButton.disabled = true;
+      grantRolledChestReward(rolledReward);
+      closeShopChestResult();
+    }, { once: true });
+
+    activeShopChestResultPanel = panel;
+    (inventoryModal || document.body).append(panel);
+    activateModalFocus(panel, {
+      initialFocus: claimButton
+    });
+  };
+
+  const showShopNotice = (message) => {
+    showConfirm({
+      title: t("shop"),
+      message,
+      acceptText: t("ok"),
+      cancelText: null
+    });
+  };
+
+  const spendCoins = (price) => {
+    if (!canAffordShopItem(price)) {
+      return false;
+    }
+    state.coins -= Math.max(0, Math.round(Number(price) || 0));
+    return true;
+  };
+
+  const buyBooster = (key) => {
+    const price = SHOP_BOOSTER_PRICES[key];
+    if (!price || !spendCoins(price)) {
+      return;
+    }
+    addBoosters({ [key]: 1 });
+    syncResources();
+    saveProgressImmediate({ flushCloud: true });
+    renderInventory();
+  };
+
+  const getMissingLives = () => Math.max(0, MAX_LIVES - state.lives);
+
+  const isLifeItemUseful = (item) => {
+    const missingLives = getMissingLives();
+    if (missingLives <= 0) {
+      return false;
+    }
+    if (item.fullRestore) {
+      return missingLives >= 4;
+    }
+    return Math.max(0, Math.round(Number(item.lives) || 0)) <= missingLives;
+  };
+
+  const buyLifeItem = (id) => {
+    const item = SHOP_LIFE_ITEMS[id];
+    if (!item) {
+      return;
+    }
+    const missingLives = getMissingLives();
+    if (missingLives <= 0) {
+      showShopNotice(t("livesFull"));
+      return;
+    }
+    if (!isLifeItemUseful(item)) {
+      showShopNotice("Выберите меньший набор жизней.");
+      return;
+    }
+    if (!spendCoins(item.price)) {
+      return;
+    }
+    state.lives = item.fullRestore ? MAX_LIVES : Math.min(MAX_LIVES, state.lives + item.lives);
+    if (state.lives >= MAX_LIVES) {
+      state.nextLifeAt = null;
+    }
+    syncResources();
+    saveProgressImmediate({ flushCloud: true });
+    renderInventory();
+  };
+
+  const buyShopChest = (id) => {
+    const item = SHOP_CHEST_ITEMS[id];
+    if (!item || activeShopChestResultPanel || !spendCoins(item.price)) {
+      return;
+    }
+    const rolledReward = rollShopChestReward(id);
+    if (!rolledReward) {
+      state.coins += item.price;
+      syncResources();
+      showShopNotice("Сундук временно недоступен.");
+      return;
+    }
+    syncResources();
+    renderInventory();
+    showShopChestResult(rolledReward);
+  };
+
+  const buySkin = (group, skinId) => {
+    const config = COSMETIC_GROUPS[group];
+    const price = SHOP_SKIN_PRICES[group]?.[skinId];
+    if (!config || !price) {
+      return;
+    }
+    if (state.cosmetics[group]?.includes(skinId)) {
+      equipSkin(group, skinId);
+      return;
+    }
+    if (!spendCoins(price)) {
+      return;
+    }
+    state.cosmetics[group].push(skinId);
+    state.equippedCosmetics[config.equippedKey] = skinId;
+    syncResources();
+    saveProgressImmediate({ flushCloud: true });
+    staticLayerDirty = true;
+    requestDrawJezzLevel();
+    renderInventory();
+  };
+
+  const spendBooster = (key) => {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_BOOSTERS, key)) {
+      return false;
+    }
+    const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
+    if (count <= 0) {
+      showLevelToast("Этот буст закончился");
+      syncResources();
+      return false;
+    }
+    state.boosters[key] = count - 1;
+    saveProgressImmediate({ flushCloud: true });
+    return true;
+  };
+
+  const useLevelBooster = (key) => {
+    if (!levelScreen.classList.contains("is-active") || !levelState.running || levelState.completed || levelState.failed) {
+      return;
+    }
+
+    if (key === "fastLine") {
+      if (levelState.fastLineArmed) {
+        showLevelToast("Быстрая линия уже готова");
+        return;
+      }
+      if (!spendBooster(key)) {
+        return;
+      }
+      levelState.fastLineArmed = true;
+      showLevelToast("Следующая линия будет быстрее");
+    } else if (key === "slowBalls") {
+      if (getTrustedNow() < levelState.slowBallsUntil && Math.max(0, Math.round(Number(state.boosters[key]) || 0)) <= 0) {
+        showLevelToast("Шары уже замедлены");
+        return;
+      }
+      if (!spendBooster(key)) {
+        return;
+      }
+      levelState.slowBallsUntil = Math.max(levelState.slowBallsUntil, getTrustedNow()) + SLOW_BALLS_DURATION_MS;
+      showLevelToast("Шары замедлены на 6 секунд");
+    } else if (key === "lineShield") {
+      if (levelState.lineShieldArmed) {
+        showLevelToast("Щит уже готов");
+        return;
+      }
+      if (!spendBooster(key)) {
+        return;
+      }
+      levelState.lineShieldArmed = true;
+      showLevelToast("Щит защитит следующую линию");
+    } else if (key === "targetEase") {
+      if (levelState.targetEaseUsed) {
+        showLevelToast("Фокус уже применён");
+        return;
+      }
+      if (!spendBooster(key)) {
+        return;
+      }
+      levelState.target = Math.max(50, levelState.target - TARGET_EASE_PERCENT);
+      levelState.targetEaseUsed = true;
+      syncLevelHud();
+      showLevelToast(`Цель снижена до ${levelState.target}%`);
+      if (getCaptureRatio() * 100 >= levelState.target) {
+        finishJezzLevel();
+      }
+    } else if (key === "penaltyRepair") {
+      if (levelState.penalties <= 0) {
+        showLevelToast("Штрафов пока нет");
+        return;
+      }
+      if (!spendBooster(key)) {
+        return;
+      }
+      levelState.penalties = Math.max(0, levelState.penalties - 1);
+      syncLevelHud();
+      showLevelToast("Один штраф убран");
+    }
+
+    syncResources();
+    requestDrawJezzLevel();
+  };
+
+  const grantIapPurchase = async (productId) => {
+    const config = SHOP_IAP_REWARDS[productId];
+    if (!config) {
+      return false;
+    }
+    grantShopReward(config.reward);
+    return true;
+  };
+
+  const consumeYandexPurchase = async (purchase) => {
+    const token = purchase?.purchaseToken;
+    if (!token || !yandexState.payments || typeof yandexState.payments.consumePurchase !== "function") {
+      return;
+    }
+
+    try {
+      await yandexState.payments.consumePurchase(token);
+    } catch (_error) {
+      // The purchase will be retried by getPurchases() on the next launch.
+    }
+  };
+
+  const processPendingYandexPurchases = async () => {
+    const payments = yandexState.payments || await initYandexPayments();
+    if (!payments || typeof payments.getPurchases !== "function") {
+      return;
+    }
+
+    try {
+      const purchases = await payments.getPurchases();
+      for (const purchase of Array.isArray(purchases) ? purchases : []) {
+        const productId = purchase?.productID || purchase?.productId || purchase?.id;
+        if (await grantIapPurchase(productId)) {
+          await consumeYandexPurchase(purchase);
+        }
+      }
+    } catch (_error) {
+      // Payment recovery is best effort and must not block the game launch.
+    }
+  };
+
+  const buyIapProduct = async (productId) => {
+    const product = getShopProduct(productId);
+    const payments = yandexState.payments || await initYandexPayments();
+    if (!product || !payments || typeof payments.purchase !== "function") {
+      showShopNotice("Покупка пока недоступна.");
+      renderInventory();
+      return;
+    }
+
+    try {
+      const purchase = await payments.purchase({ id: productId });
+      if (await grantIapPurchase(productId)) {
+        await consumeYandexPurchase(purchase);
+        renderInventory();
+      }
+    } catch (_error) {
+      showShopNotice("Покупка не завершена.");
+    }
+  };
+
+  const renderShopCard = ({
+    classes = "",
+    image = "",
+    icon = "◆",
+    title,
+    description,
+    meta = "",
+    action = "",
+    disabled = false,
+    featured = false,
+    buttonText = ""
+  }) => `
+    <article class="inventory-card shop-card ${classes} ${featured ? "is-featured" : ""}">
+      <div class="inventory-card-icon shop-card-icon" aria-hidden="true">${image ? `<img class="shop-card-image" src="${escapeHtml(image)}" alt="">` : icon}</div>
+      <div class="inventory-card-body">
+        <h3>${title}</h3>
+        ${description ? `<p>${description}</p>` : ""}
+        ${meta ? `<p class="inventory-status">${meta}</p>` : ""}
+      </div>
+      ${action ? `<button class="menu-button play-button compact-play shop-buy-button" type="button" ${disabled ? "disabled" : ""} ${action}>${buttonText || (disabled ? "Недоступно" : "")}</button>` : ""}
+    </article>
+  `;
+
+  const renderCoinButton = (action, price, disabled = false) => {
+    const isDisabled = disabled || !canAffordShopItem(price);
+    return `<button class="menu-button play-button compact-play shop-buy-button" type="button" ${isDisabled ? "disabled" : ""} ${action}>${disabled ? "Недоступно" : getCoinPurchaseButtonText(price)}</button>`;
+  };
+
   const renderInventoryChests = () => {
     const pending = getPendingChests();
+    const shopChests = `
+      <div class="shop-section-title"><span aria-hidden="true">★</span><h3>Сундуки магазина</h3></div>
+      <div class="inventory-card-list shop-grid">
+        ${Object.entries(SHOP_CHEST_ITEMS).map(([id, item]) => renderShopCard({
+          classes: `chest-card chest-${id}`,
+          icon: item.icon,
+          title: escapeHtml(item.title),
+          description: "Случайная награда",
+          meta: item.recommended ? "Рекомендуем" : "",
+          featured: item.recommended,
+          action: `data-inventory-action="buy-chest" data-chest-id="${id}"`,
+          disabled: !canAffordShopItem(item.price),
+          buttonText: getCoinPurchaseButtonText(item.price)
+        })).join("")}
+      </div>
+    `;
+
     if (!pending.length) {
       return `
+        ${shopChests}
         <div class="inventory-empty">
-          <h3>Сундуков пока нет</h3>
-          <p>Собирай звёзды в главах, чтобы получать сундуки.</p>
+          <h3>Сундуков за главы пока нет</h3>
+          <p>Собирай звёзды в главах, чтобы получать бесплатные сундуки.</p>
         </div>
       `;
     }
 
     return `
-      ${pending.length > 1 ? `<button class="menu-button play-button compact-play open-all-chests-button" type="button" data-inventory-action="open-all-chests">Открыть все</button>` : ""}
+      ${shopChests}
+      <div class="shop-section-title"><span aria-hidden="true">▣</span><h3>Сундуки за главы</h3></div>
+      ${pending.length > 1 ? `<button class="menu-button play-button compact-play open-all-chests-button" type="button" data-inventory-action="open-all-chests">Получить все</button>` : ""}
       <div class="inventory-card-list">
         ${pending.map((reward) => {
           const isUpgrade = reward.claimedTier > CHEST_TIERS.none;
-          const actionText = isUpgrade ? "Забрать" : "Открыть";
           return `
             <article class="inventory-card chest-card">
               <div class="inventory-card-icon" aria-hidden="true">🎁</div>
               <div class="inventory-card-body">
                 <h3>${escapeHtml(getChapterChestName(reward.chapterId, isUpgrade))}</h3>
-                ${isUpgrade
-                  ? `<p>Было: ${escapeHtml(reward.previousTitle)}</p><p>Стало: ${escapeHtml(reward.nextTitle)}</p>`
-                  : `<p>${escapeHtml(reward.nextTitle)}</p>`}
+                <p>${isUpgrade
+                  ? `Улучшен до: ${escapeHtml(reward.nextTitle)}`
+                  : `Награда: ${escapeHtml(reward.nextTitle)}`}</p>
                 <p>Звёзды: ${getChapterStars(reward.chapterId)} / 30</p>
-                <p>${isUpgrade ? "Доп. награда" : "Награда"}: ${escapeHtml(formatRewardText(reward))}</p>
               </div>
-              <button class="menu-button play-button compact-play" type="button" data-inventory-action="open-chest" data-chapter-id="${reward.chapterId}">${actionText}</button>
+              <button class="menu-button play-button compact-play" type="button" data-inventory-action="open-chest" data-chapter-id="${reward.chapterId}">Получить</button>
             </article>
           `;
         }).join("")}
@@ -2622,40 +3339,126 @@
   };
 
   const renderInventoryBoosts = () => `
-    <div class="inventory-card-list">
+    <div class="inventory-card-list shop-grid">
       ${Object.entries(BOOSTER_ITEMS).map(([key, booster]) => {
         const count = Math.max(0, Math.round(Number(state.boosters[key]) || 0));
-        return `
-          <article class="inventory-card boost-card">
-            <div class="inventory-card-icon" aria-hidden="true">${booster.icon}</div>
-            <div class="inventory-card-body">
-              <h3>${booster.title} x${count}</h3>
-              <p>${booster.description}</p>
-              ${count > 0 ? `<p class="inventory-status">Статус: в панели уровня</p>` : ""}
-            </div>
-          </article>
-        `;
+        const price = SHOP_BOOSTER_PRICES[key];
+        return renderShopCard({
+          classes: `boost-card boost-${key}`,
+          icon: booster.icon,
+          title: `${booster.title} x${count}`,
+          description: booster.description,
+          meta: count > 0 ? "Есть в панели уровня" : "",
+          action: `data-inventory-action="buy-booster" data-booster-id="${key}"`,
+          disabled: !canAffordShopItem(price),
+          buttonText: getCoinPurchaseButtonText(price)
+        });
       }).join("")}
+      ${Object.entries(SHOP_AD_REWARDS)
+        .filter(([, item]) => item.randomBooster)
+        .map(([id, item]) => renderShopCard({
+          classes: "ad-card boost-card ad-random-booster",
+          icon: item.icon,
+          title: escapeHtml(item.title),
+          description: escapeHtml(item.description),
+          meta: canUseRewardedAd() ? "Rewarded video" : "Реклама недоступна",
+          action: `data-inventory-action="watch-ad" data-ad-id="${id}"`,
+          disabled: !canUseRewardedAd(),
+          buttonText: canUseRewardedAd() ? "Смотреть" : "Недоступно"
+        })).join("")}
     </div>
   `;
+
+  const renderInventoryLives = () => `
+    <div class="inventory-card-list shop-grid">
+      ${Object.entries(SHOP_LIFE_ITEMS).map(([id, item]) => {
+        const disabled = state.lives >= MAX_LIVES || !canAffordShopItem(item.price);
+        return renderShopCard({
+          classes: `life-card life-${id}`,
+          icon: item.icon,
+          title: escapeHtml(item.title),
+          description: item.fullRestore ? "Восстановить все жизни до максимума." : `Добавить ${item.lives} ${item.lives === 1 ? "жизнь" : "жизни"}.`,
+          meta: state.lives >= MAX_LIVES ? t("livesFull") : `Сейчас: ${state.lives}/${MAX_LIVES}`,
+          action: `data-inventory-action="buy-life" data-life-id="${id}"`,
+          disabled,
+          buttonText: state.lives >= MAX_LIVES ? "Недоступно" : getCoinPurchaseButtonText(item.price)
+        });
+      }).join("")}
+      ${Object.entries(SHOP_AD_REWARDS).map(([id, item]) => renderShopCard({
+        classes: "ad-card",
+        icon: item.icon,
+        title: escapeHtml(item.title),
+        description: escapeHtml(item.description),
+        meta: canUseRewardedAd() ? "Rewarded video" : "Реклама недоступна",
+        action: `data-inventory-action="watch-ad" data-ad-id="${id}"`,
+        disabled: !canUseRewardedAd()
+      }).replace("></button>", ">Смотреть</button>")).join("")}
+    </div>
+  `;
+
+  const renderSmartInventoryLives = () => {
+    const missingLives = getMissingLives();
+    const usefulLifeCards = Object.entries(SHOP_LIFE_ITEMS)
+      .filter(([, item]) => isLifeItemUseful(item))
+      .map(([id, item]) => renderShopCard({
+        classes: `life-card life-${id}`,
+        icon: item.icon,
+        title: escapeHtml(item.title),
+        description: item.fullRestore ? "Восстановить все жизни до максимума." : `Добавить ${item.lives} ${item.lives === 1 ? "жизнь" : "жизни"}.`,
+        meta: `Не хватает: ${missingLives}/${MAX_LIVES}`,
+        action: `data-inventory-action="buy-life" data-life-id="${id}"`,
+        disabled: !canAffordShopItem(item.price),
+        buttonText: getCoinPurchaseButtonText(item.price)
+      }));
+    const adCards = missingLives > 0
+      ? Object.entries(SHOP_AD_REWARDS)
+        .filter(([, item]) => item.reward?.lives)
+        .map(([id, item]) => renderShopCard({
+        classes: "ad-card ad-life",
+        icon: item.icon,
+        title: escapeHtml(item.title),
+        description: escapeHtml(item.description),
+        meta: canUseRewardedAd() ? `Не хватает: ${missingLives}/${MAX_LIVES}` : "Реклама недоступна",
+        action: `data-inventory-action="watch-ad" data-ad-id="${id}"`,
+        disabled: !canUseRewardedAd(),
+        buttonText: canUseRewardedAd() ? "Смотреть" : "Недоступно"
+      }))
+      : [];
+    const cards = [...usefulLifeCards, ...adCards];
+    if (!cards.length) {
+      return `
+        <div class="inventory-empty">
+          <h3>${escapeHtml(t("livesFull"))}</h3>
+          <p>Сейчас: ${state.lives}/${MAX_LIVES}. Покупки жизней появятся, когда они понадобятся.</p>
+        </div>
+      `;
+    }
+    return `<div class="inventory-card-list shop-grid">${cards.join("")}</div>`;
+  };
 
   const renderInventorySkins = () => Object.entries(COSMETIC_GROUPS).map(([group, config]) => `
     <section class="inventory-skin-group">
       <h3>${config.title}</h3>
-      <div class="inventory-card-list">
-        ${(state.cosmetics[group] || []).map((skinId) => {
-          const skin = config.items[skinId] || { icon: "◆", title: skinId };
+      <div class="inventory-card-list shop-grid">
+        ${Object.entries(config.items).map(([skinId, skin]) => {
+          const itemSkin = skin || { icon: "◆", title: skinId };
+          const isDefault = skinId === "default";
+          const price = SHOP_SKIN_PRICES[group]?.[skinId] || 0;
+          const owned = state.cosmetics[group]?.includes(skinId);
           const isEquipped = state.equippedCosmetics[config.equippedKey] === skinId;
-          return `
-            <article class="inventory-card skin-card">
-              <div class="inventory-card-icon" aria-hidden="true">${skin.icon}</div>
-              <div class="inventory-card-body">
-                <h3>${escapeHtml(skin.title)}</h3>
-                <p class="inventory-status">${isEquipped ? "Выбран" : "Куплен"}</p>
-              </div>
-              ${isEquipped ? "" : `<button class="menu-button play-button compact-play" type="button" data-inventory-action="equip-skin" data-cosmetic-group="${group}" data-skin-id="${escapeHtml(skinId)}">Выбрать</button>`}
-            </article>
-          `;
+          const needsCoins = !owned && !isDefault;
+          const buttonText = isEquipped ? "Выбран" : (owned || isDefault ? "Выбрать" : getCoinPurchaseButtonText(price));
+          return renderShopCard({
+            classes: `skin-card skin-${group} skin-${skinId}`,
+            icon: itemSkin.icon,
+            image: itemSkin.image || "",
+            title: escapeHtml(itemSkin.title),
+            description: isDefault ? "Базовый стиль." : "Косметический стиль для игры.",
+            meta: isEquipped ? "Выбран" : (owned || isDefault ? "Куплен" : "Новый стиль"),
+            action: `data-inventory-action="${owned || isDefault ? "equip-skin" : "buy-skin"}" data-cosmetic-group="${group}" data-skin-id="${escapeHtml(skinId)}"`,
+            disabled: isEquipped || (needsCoins && !canAffordShopItem(price)),
+            buttonText
+          });
         }).join("")}
       </div>
     </section>
@@ -2689,41 +3492,85 @@
     `;
   };
 
+  const renderInventoryCoins = () => `
+    <div class="inventory-card-list shop-grid">
+      ${Object.entries(SHOP_IAP_REWARDS).map(([id, item]) => {
+        const product = getShopProduct(id);
+        return renderShopCard({
+          classes: `iap-card iap-${id}`,
+          icon: item.icon,
+          title: escapeHtml(product?.title || item.title),
+          description: escapeHtml(product?.description || item.description || formatRewardText(item.reward)),
+          meta: product ? escapeHtml(item.meta || "Покупка через Яндекс Игры") : "Добавьте товар в Консоли Яндекс Игр",
+          action: `data-inventory-action="buy-iap" data-product-id="${id}"`,
+          disabled: !product,
+          buttonText: getProductPriceMarkup(id)
+        });
+      }).join("")}
+    </div>
+  `;
+
+  const renderInventoryRecommended = () => `
+    <div class="shop-recommendation">
+      ${renderInventoryBoosts()}
+      <div class="shop-feature-card chest-card chest-big_chest">
+        <div>
+          <span class="shop-feature-kicker">★ Рекомендуем ★</span>
+          <h3>${SHOP_CHEST_ITEMS.big_chest.title}</h3>
+          <p>Случайная награда</p>
+        </div>
+        <div class="shop-feature-icon" aria-hidden="true">▣</div>
+        ${renderCoinButton(`data-inventory-action="buy-chest" data-chest-id="big_chest"`, SHOP_CHEST_ITEMS.big_chest.price, false)}
+      </div>
+      <div class="shop-section-title"><span aria-hidden="true">♥</span><h3>Быстрые награды</h3></div>
+      ${renderSmartInventoryLives()}
+      ${getPendingGifts().length ? `<div class="shop-section-title"><span aria-hidden="true">★</span><h3>Подарки</h3></div>${renderInventoryGifts()}` : ""}
+    </div>
+  `;
+
   const renderInventory = () => {
     if (!inventoryContent) {
       return;
     }
+    state.inventoryTab = resolveShopTab(state.inventoryTab);
+    const visibleTabs = getVisibleShopTabs();
 
     inventoryModal?.querySelectorAll("[data-inventory-tab]").forEach((button) => {
-      const isActive = button.dataset.inventoryTab === state.inventoryTab;
+      const isVisible = visibleTabs.includes(button.dataset.inventoryTab);
+      const isActive = isVisible && button.dataset.inventoryTab === state.inventoryTab;
+      button.hidden = !isVisible;
+      button.setAttribute("aria-hidden", isVisible ? "false" : "true");
       button.classList.toggle("is-active", isActive);
       button.setAttribute("aria-selected", isActive ? "true" : "false");
     });
 
     const renderers = {
+      recommended: renderInventoryRecommended,
       chests: renderInventoryChests,
       boosts: renderInventoryBoosts,
+      lives: renderSmartInventoryLives,
       skins: renderInventorySkins,
-      gifts: renderInventoryGifts
+      gifts: renderInventoryGifts,
+      coins: renderInventoryCoins
     };
-    inventoryContent.innerHTML = (renderers[state.inventoryTab] || renderInventoryChests)();
+    inventoryContent.innerHTML = (renderers[state.inventoryTab] || renderInventoryRecommended)();
     updateInventoryBadge();
   };
 
   const setInventoryTab = (tab) => {
-    if (!["chests", "boosts", "skins", "gifts"].includes(tab)) {
+    if (!getVisibleShopTabs().includes(tab)) {
       return;
     }
     state.inventoryTab = tab;
     renderInventory();
   };
 
-  const openInventoryModal = (tab = "chests") => {
+  const openInventoryModal = (tab = "recommended") => {
     if (!inventoryModal) {
       return;
     }
     pauseJezzLevelForModal();
-    state.inventoryTab = tab;
+    state.inventoryTab = resolveShopTab(tab);
     renderInventory();
     inventoryModal.classList.add("is-open");
     inventoryModal.setAttribute("aria-hidden", "false");
@@ -2734,10 +3581,178 @@
   };
 
   const closeInventoryModal = () => {
+    if (activeShopChestResultPanel) {
+      return;
+    }
     inventoryModal?.classList.remove("is-open");
     inventoryModal?.setAttribute("aria-hidden", "true");
     deactivateModalFocus(inventoryModal);
     resumeJezzLevelFromModal();
+  };
+
+  let activeAchievementsPanel = null;
+
+  const closeAchievementsPanel = () => {
+    if (!activeAchievementsPanel) {
+      return;
+    }
+    const panel = activeAchievementsPanel;
+    activeAchievementsPanel = null;
+    panel.removeEventListener("click", handleAchievementsPanelClick);
+    deactivateModalFocus(panel);
+    panel.remove();
+    resumeJezzLevelFromModal();
+  };
+
+  const getAchievementStatusText = (progress) => {
+    if (progress.claimed) {
+      return "Получено";
+    }
+    if (progress.ready) {
+      return "Готово";
+    }
+    return `${progress.value}/${progress.target}`;
+  };
+
+  const renderAchievementItem = (achievement) => {
+    const progress = getAchievementProgress(achievement);
+    const categoryClass = `achievement-${String(achievement.category || "progress").replace(/[^a-z0-9_-]/gi, "")}`;
+    const buttonText = progress.claimed ? "Получено" : (progress.ready ? "Забрать" : "Не готово");
+    const classes = [
+      "achievement-item",
+      categoryClass,
+      progress.ready ? "is-ready" : "",
+      progress.claimed ? "is-claimed" : "",
+      !progress.unlocked ? "is-locked" : ""
+    ].filter(Boolean).join(" ");
+
+    return `
+      <article class="${classes}">
+        <div class="achievement-icon" aria-hidden="true">${escapeHtml(achievement.icon || "★")}</div>
+        <div class="achievement-body">
+          <div class="achievement-title-row">
+            <h3>${escapeHtml(achievement.title)}</h3>
+            <span class="achievement-status">${getAchievementStatusText(progress)}</span>
+          </div>
+          <p>${escapeHtml(achievement.description)}</p>
+          <div class="achievement-meter" aria-label="Прогресс ${progress.value} из ${progress.target}">
+            <span style="width: ${progress.percent}%"></span>
+          </div>
+        </div>
+        <div class="achievement-reward">
+          <strong>+${achievement.rewardCoins}</strong>
+          <span>монет</span>
+        </div>
+        <button
+          class="menu-button play-button compact-play achievement-claim"
+          type="button"
+          data-achievement-claim="${escapeHtml(achievement.id)}"
+          ${progress.ready ? "" : "disabled"}
+        >${buttonText}</button>
+      </article>
+    `;
+  };
+
+  const getSortedAchievements = () => ACHIEVEMENTS
+    .map((achievement, index) => ({
+      achievement,
+      progress: getAchievementProgress(achievement),
+      index
+    }))
+    .sort((left, right) => {
+      const getGroup = (item) => {
+        if (item.progress.ready) {
+          return 0;
+        }
+        return item.progress.claimed ? 2 : 1;
+      };
+      return getGroup(left) - getGroup(right) || left.index - right.index;
+    })
+    .map((item) => item.achievement);
+
+  const renderAchievementsPanel = () => {
+    if (!activeAchievementsPanel) {
+      return;
+    }
+    evaluateAchievements();
+    const claimedCount = state.claimedAchievements.size;
+    const readyCount = getClaimableAchievementCount();
+    const list = activeAchievementsPanel.querySelector(".achievements-list");
+    const summary = activeAchievementsPanel.querySelector(".achievements-summary");
+    if (summary) {
+      summary.textContent = readyCount > 0
+        ? `Готово к получению: ${readyCount}. Получено: ${claimedCount}/${ACHIEVEMENTS.length}.`
+        : `Получено: ${claimedCount}/${ACHIEVEMENTS.length}.`;
+    }
+    if (list) {
+      list.innerHTML = getSortedAchievements().map(renderAchievementItem).join("");
+    }
+  };
+
+  const claimAchievement = (achievementId) => {
+    const achievement = ACHIEVEMENTS.find((item) => item.id === achievementId);
+    if (!achievement) {
+      return;
+    }
+    evaluateAchievements();
+    if (!state.unlockedAchievements.has(achievement.id) || state.claimedAchievements.has(achievement.id)) {
+      return;
+    }
+
+    state.claimedAchievements.add(achievement.id);
+    state.coins += Math.max(0, Math.round(Number(achievement.rewardCoins) || 0));
+    syncResources();
+    saveProgressImmediate({ flushCloud: true });
+    renderAchievementsPanel();
+  };
+
+  function handleAchievementsPanelClick(event) {
+    const closeButton = event.target.closest("[data-achievements-close]");
+    if (closeButton) {
+      closeAchievementsPanel();
+      return;
+    }
+
+    const claimButton = event.target.closest("[data-achievement-claim]");
+    if (!claimButton || claimButton.disabled) {
+      return;
+    }
+    claimAchievement(claimButton.dataset.achievementClaim);
+  }
+
+  const openAchievementsPanel = () => {
+    if (activeAchievementsPanel) {
+      renderAchievementsPanel();
+      return;
+    }
+    evaluateAchievements();
+    pauseJezzLevelForModal();
+
+    const panel = document.createElement("div");
+    panel.className = "achievements-panel is-open";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-label", t("achievements"));
+    panel.innerHTML = `
+      <div class="achievements-card">
+        <header class="achievements-header">
+          <div>
+            <h2>${t("achievements")}</h2>
+            <p class="achievements-summary"></p>
+          </div>
+          <button class="inventory-close" type="button" aria-label="Закрыть" data-achievements-close>×</button>
+        </header>
+        <div class="achievements-list"></div>
+      </div>
+    `;
+    panel.addEventListener("click", handleAchievementsPanelClick);
+    activeAchievementsPanel = panel;
+    root.append(panel);
+    renderAchievementsPanel();
+    activateModalFocus(panel, {
+      initialFocus: panel.querySelector("[data-achievements-close]"),
+      onEscape: closeAchievementsPanel
+    });
   };
 
   const waitNextFrame = () => new Promise((resolve) => {
@@ -2750,8 +3765,10 @@
       return;
     }
     state.equippedCosmetics[config.equippedKey] = skinId;
-    saveProgress();
+    saveProgressImmediate({ flushCloud: true });
     renderInventory();
+    staticLayerDirty = true;
+    requestDrawJezzLevel();
   };
 
   const addGiftCosmetics = (cosmetics) => {
@@ -2783,6 +3800,7 @@
     });
     addGiftCosmetics(gift.cosmetics);
     gift.claimed = true;
+    evaluateAchievements();
     saveProgressImmediate();
     syncResources();
     renderInventory();
@@ -3044,7 +4062,7 @@
       blocksBall: obstacle.blocksBall ?? true,
       blocksLine: obstacle.blocksLine ?? true,
       dangerForLine: obstacle.dangerForLine ?? !isSafe,
-      solidForCapture: obstacle.solidForCapture ?? !isMoving
+      solidForCapture: obstacle.solidForCapture ?? (isSafe && !isMoving)
     };
   };
 
@@ -3903,11 +4921,13 @@
       ...area,
       balls: getAreaBalls(area)
     }));
-    const tooSmall = areasWithBalls.length > 0 && areasWithBalls.some((area) => !isAreaLargeEnoughToCapture(area));
-    const capturableAreas = areasWithBalls.filter((area) => area.balls.length === 0 && isAreaLargeEnoughToCapture(area));
+    const tooSmallBallArea = areasWithBalls.length > 0 && areasWithBalls.some((area) => (
+      area.balls.length > 0 && !isAreaLargeEnoughToCapture(area)
+    ));
+    const capturableAreas = areasWithBalls.filter((area) => area.balls.length === 0);
     const activeAreas = areasWithBalls.filter((area) => area.balls.length > 0 && isAreaLargeEnoughToCapture(area));
     const separatedBalls = activeAreas.filter((area) => area.balls.length > 0).length >= 2;
-    const canSplit = areasWithBalls.length >= 2 && !tooSmall;
+    const canSplit = areasWithBalls.length >= 2 && !tooSmallBallArea;
     const canKeepLine = canSplit && (capturableAreas.length > 0 || separatedBalls);
 
     if (!canSplit) {
@@ -3923,7 +4943,7 @@
         capturableAreas,
         activeAreas,
         separatedBalls,
-        reason: tooSmall ? "too-small" : "no-split"
+        reason: tooSmallBallArea ? "too-small" : "no-split"
       };
     }
 
@@ -4057,6 +5077,9 @@
     levelState.gestureLockedOrientation = null;
     levelState.gesturePointerId = null;
     levelState.draftPointer = null;
+    levelState.fastLineArmed = false;
+    levelState.lineShieldArmed = false;
+    levelState.targetEaseUsed = false;
     levelState.aimPointer = null;
     stopJezzLevel();
     syncLevelHud();
@@ -4092,6 +5115,17 @@
     }
 
     return false;
+  };
+
+  const absorbLineHitWithShield = () => {
+    const line = levelState.activeLine;
+    if (!line?.shielded) {
+      return false;
+    }
+    line.shielded = false;
+    line.shieldGraceUntil = performance.now() + LINE_SHIELD_GRACE_MS;
+    showLevelToast("Щит поглотил удар");
+    return true;
   };
 
   const cancelActiveLine = (penalize = false, message = null) => {
@@ -4149,7 +5183,8 @@
     if (!line) {
       return null;
     }
-    if (lineHitBall(line)) {
+    const shieldGrace = Number(line.shieldGraceUntil) || 0;
+    if (performance.now() >= shieldGrace && lineHitBall(line)) {
       return "ball";
     }
     return levelState.obstacles.some((obstacle) => (
@@ -4178,7 +5213,7 @@
       return;
     }
 
-    const grow = LINE_GROW_SPEED * dt;
+    const grow = LINE_GROW_SPEED * (line.fastLine ? FAST_LINE_MULTIPLIER : 1) * dt;
     if (line.orientation === "vertical") {
       const boundA = line.boundA ?? rect.y;
       const boundB = line.boundB ?? rect.y + rect.h;
@@ -4195,6 +5230,9 @@
 
     const collision = getActiveLineCollision();
     if (collision === "ball") {
+      if (absorbLineHitWithShield()) {
+        return;
+      }
       handleLinePenalty();
       return;
     }
@@ -4315,7 +5353,14 @@
         ball.y = Math.min(rect.y + rect.h - ball.r, Math.max(rect.y + ball.r, ball.y));
       }
 
-      if (levelState.activeLine && activeLineHitBall(levelState.activeLine, ball, previous)) {
+      if (
+        levelState.activeLine
+        && performance.now() >= (Number(levelState.activeLine.shieldGraceUntil) || 0)
+        && activeLineHitBall(levelState.activeLine, ball, previous)
+      ) {
+        if (absorbLineHitWithShield()) {
+          return;
+        }
         handleLinePenalty();
         return;
       }
@@ -4547,9 +5592,10 @@
     const ctx = staticLayerCanvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
     levelState.capturedRects.forEach((captured) => {
+      const captureColors = getCaptureGradientColors();
       const capturedGradient = ctx.createLinearGradient(captured.x, captured.y, captured.x + captured.w, captured.y + captured.h);
-      capturedGradient.addColorStop(0, "rgba(255, 211, 91, 0.7)");
-      capturedGradient.addColorStop(1, "rgba(255, 78, 211, 0.48)");
+      capturedGradient.addColorStop(0, captureColors[0]);
+      capturedGradient.addColorStop(1, captureColors[1]);
       ctx.fillStyle = capturedGradient;
       ctx.fillRect(captured.x, captured.y, captured.w, captured.h);
       ctx.strokeStyle = "rgba(255, 242, 190, 0.78)";
@@ -4572,6 +5618,60 @@
     });
     levelState.obstacles.filter((obstacle) => !obstacle.moving).forEach((obstacle) => drawObstacle(ctx, obstacle));
     staticLayerDirty = false;
+  };
+
+  const getEquippedLineColors = () => {
+    if (state.equippedCosmetics.line === "lightning") {
+      return ["rgba(121, 238, 255, 0.98)", "rgba(255, 244, 113, 0.98)", "rgba(101, 102, 255, 0.98)"];
+    }
+    if (state.equippedCosmetics.line === "pulse") {
+      return ["rgba(255, 255, 255, 0.98)", "rgba(255, 117, 199, 0.98)", "rgba(77, 231, 255, 0.98)"];
+    }
+    if (state.equippedCosmetics.line === "crystal") {
+      return ["rgba(195, 250, 255, 0.98)", "rgba(164, 115, 255, 0.98)", "rgba(255, 118, 231, 0.98)"];
+    }
+    if (state.equippedCosmetics.line === "aurora") {
+      return ["rgba(206, 255, 190, 0.98)", "rgba(91, 231, 255, 0.98)", "rgba(255, 142, 236, 0.98)"];
+    }
+    return ["rgba(126, 247, 255, 0.96)", "rgba(255, 246, 145, 0.98)", "rgba(255, 91, 218, 0.96)"];
+  };
+
+  const getEquippedBallColors = () => {
+    if (state.equippedCosmetics.ball === "fire") {
+      return ["#ffffff", "#ffd25e", "#ff4f7a"];
+    }
+    if (state.equippedCosmetics.ball === "shadow") {
+      return ["#d7ccff", "#7758d8", "#1b123d"];
+    }
+    if (state.equippedCosmetics.ball === "plasma") {
+      return ["#ffffff", "#6ff2ff", "#ff5fd7"];
+    }
+    if (state.equippedCosmetics.ball === "sun") {
+      return ["#ffffff", "#ffe15c", "#ff8b2f"];
+    }
+    if (state.equippedCosmetics.ball === "neon") {
+      return ["#ffffff", "#ff7cff", "#6b4cff"];
+    }
+    if (state.equippedCosmetics.ball === "ice") {
+      return ["#ffffff", "#b8f6ff", "#57a9ff"];
+    }
+    return ["#ffffff", "#9ff7ff", "#3f46ff"];
+  };
+
+  const getCaptureGradientColors = () => {
+    if (state.equippedCosmetics.captureEffect === "stars") {
+      return ["rgba(255, 241, 128, 0.76)", "rgba(165, 109, 255, 0.54)"];
+    }
+    if (state.equippedCosmetics.captureEffect === "ripple") {
+      return ["rgba(159, 247, 255, 0.7)", "rgba(109, 255, 188, 0.46)"];
+    }
+    if (state.equippedCosmetics.captureEffect === "wave") {
+      return ["rgba(113, 235, 255, 0.7)", "rgba(72, 109, 255, 0.5)"];
+    }
+    if (state.equippedCosmetics.captureEffect === "comet") {
+      return ["rgba(255, 216, 106, 0.74)", "rgba(255, 91, 170, 0.52)"];
+    }
+    return ["rgba(255, 211, 91, 0.7)", "rgba(255, 78, 211, 0.48)"];
   };
 
   const drawJezzLevel = () => {
@@ -4607,12 +5707,13 @@
       if (lowPerformanceMode) {
         ctx.strokeStyle = "rgba(126, 247, 255, 0.96)";
       } else {
+        const lineColors = getEquippedLineColors();
         const lineGradient = line.orientation === "vertical"
           ? ctx.createLinearGradient(line.x, line.endA, line.x, line.endB)
           : ctx.createLinearGradient(line.endA, line.y, line.endB, line.y);
-        lineGradient.addColorStop(0, "rgba(126, 247, 255, 0.96)");
-        lineGradient.addColorStop(0.5, "rgba(255, 246, 145, 0.98)");
-        lineGradient.addColorStop(1, "rgba(255, 91, 218, 0.96)");
+        lineGradient.addColorStop(0, lineColors[0]);
+        lineGradient.addColorStop(0.5, lineColors[1]);
+        lineGradient.addColorStop(1, lineColors[2]);
         ctx.strokeStyle = lineGradient;
         ctx.shadowColor = "rgba(255, 237, 132, 0.45)";
         ctx.shadowBlur = 7;
@@ -4634,18 +5735,32 @@
     drawGestureDirectionHint(ctx);
 
     levelState.balls.forEach((ball) => {
-      if (lowPerformanceMode) {
+      const ballSkinImage = lowPerformanceMode ? null : getCachedBallSkinImage(state.equippedCosmetics.ball);
+      if (ballSkinImage) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(ballSkinImage, ball.x - ball.r, ball.y - ball.r, ball.r * 2, ball.r * 2);
+        ctx.restore();
+      } else if (lowPerformanceMode) {
         ctx.fillStyle = "#78eaff";
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+        ctx.fill();
       } else {
+        const ballColors = getEquippedBallColors();
         const gradient = ctx.createRadialGradient(ball.x - 4, ball.y - 5, 2, ball.x, ball.y, ball.r + 4);
-        gradient.addColorStop(0, "#ffffff");
-        gradient.addColorStop(0.28, "#9ff7ff");
-        gradient.addColorStop(1, "#3f46ff");
+        gradient.addColorStop(0, ballColors[0]);
+        gradient.addColorStop(0.28, ballColors[1]);
+        gradient.addColorStop(1, ballColors[2]);
         ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-      ctx.fill();
       ctx.strokeStyle = "rgba(255,255,255,0.85)";
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -4729,12 +5844,17 @@
     const dt = Math.min(0.033, Math.max(0, (time - levelState.lastFrameAt) / 1000 || 0));
     levelState.lastFrameAt = time;
     levelState.elapsed += dt;
+    if (levelState.slowBallsUntil && getTrustedNow() >= levelState.slowBallsUntil) {
+      levelState.slowBallsUntil = 0;
+      syncResources();
+    }
     levelState.obstacles.forEach((obstacle) => {
       if (obstacle.moving) {
         updateObstacleGeometry(obstacle, levelState.rect, levelState.elapsed);
       }
     });
-    updateBalls(dt);
+    const ballDt = getTrustedNow() < levelState.slowBallsUntil ? dt * SLOW_BALLS_MULTIPLIER : dt;
+    updateBalls(ballDt);
     updateActiveLine(dt);
     drawJezzLevel();
     trackFramePerformance(time, dt);
@@ -4934,6 +6054,44 @@
     }
   });
 
+  const showRewardedShopAd = (item) => new Promise((resolve) => {
+    if (!canUseRewardedAd()) {
+      resolve(false);
+      return;
+    }
+
+    let rewarded = false;
+
+    try {
+      yandexState.sdk.adv.showRewardedVideo({
+        callbacks: {
+          onOpen: pauseJezzLevelForPlatform,
+          onRewarded: () => {
+            rewarded = true;
+            if (item.randomBooster) {
+              const keys = Object.keys(DEFAULT_BOOSTERS);
+              const key = keys[Math.floor(Math.random() * keys.length)] || keys[0];
+              grantShopReward({ boosters: { [key]: 1 } });
+            } else {
+              grantShopReward(item.reward);
+            }
+          },
+          onClose: () => {
+            resumeJezzLevelFromPlatform();
+            resolve(rewarded);
+          },
+          onError: () => {
+            resumeJezzLevelFromPlatform();
+            resolve(false);
+          }
+        }
+      });
+    } catch (_error) {
+      resumeJezzLevelFromPlatform();
+      resolve(false);
+    }
+  });
+
   const mapPointBetweenRects = (point, fromRect, toRect) => ({
     x: toRect.x + ((point.x - fromRect.x) / fromRect.w) * toRect.w,
     y: toRect.y + ((point.y - fromRect.y) / fromRect.h) * toRect.h
@@ -5032,6 +6190,10 @@
     levelState.elapsed = 0;
     levelState.activeLine = null;
     levelState.lineOrientation = "vertical";
+    levelState.fastLineArmed = false;
+    levelState.lineShieldArmed = false;
+    levelState.slowBallsUntil = 0;
+    levelState.targetEaseUsed = false;
     syncLineOrientationButtons();
     levelState.gestureStartPoint = null;
     levelState.gestureCurrentPoint = null;
@@ -5124,9 +6286,6 @@
       orientation: levelState.lineOrientation || "vertical",
       rect
     };
-    if (getLineCastResult(nextPoint, levelState.aimPointer.orientation, rect).failReason === "danger") {
-      showDangerObstacleToast();
-    }
     requestDrawJezzLevel();
     return levelState.aimPointer;
   };
@@ -5218,6 +6377,10 @@
     const orientation = castResult.orientation;
     const rect = castResult.rect;
     const segment = castResult.previewSegment;
+    const fastLine = levelState.fastLineArmed;
+    const shielded = levelState.lineShieldArmed;
+    levelState.fastLineArmed = false;
+    levelState.lineShieldArmed = false;
     levelState.activeRect = rect;
     levelState.activeLine = orientation === "vertical"
       ? {
@@ -5235,6 +6398,9 @@
         negativeHit: castResult.negativeHit,
         positiveHit: castResult.positiveHit,
         done: false,
+        fastLine,
+        shielded,
+        shieldGraceUntil: 0,
         rect,
         sourceArea: rect,
         sourceRect: rect
@@ -5254,12 +6420,16 @@
         negativeHit: castResult.negativeHit,
         positiveHit: castResult.positiveHit,
         done: false,
+        fastLine,
+        shielded,
+        shieldGraceUntil: 0,
         rect,
         sourceArea: rect,
         sourceRect: rect
       };
     levelState.draftPointer = null;
     levelState.aimPointer = null;
+    syncResources();
   };
 
   const getBuildableTapOrientation = (point, rect) => {
@@ -5335,11 +6505,6 @@
 
     event.preventDefault();
     const orientation = levelState.lineOrientation || "vertical";
-    const castResult = getLineCastResult(point, orientation, rect);
-    if (castResult.failReason === "danger") {
-      showDangerObstacleToast();
-    }
-
     levelState.aimPointer = {
       x: point.x,
       y: point.y,
@@ -5382,6 +6547,137 @@
     jezzCanvas.releasePointerCapture?.(event.pointerId);
     clearLineGesture();
     requestDrawJezzLevel();
+  };
+
+  const runDevLevelAudit = (levels = Array.from({ length: TOTAL_LEVELS }, (_, index) => index + 1)) => {
+    const auditRect = { x: 0, y: 0, w: 480, h: 640 };
+    const stateKeys = [
+      "config",
+      "target",
+      "capturedArea",
+      "totalArea",
+      "penalties",
+      "rect",
+      "activeRect",
+      "activeRects",
+      "capturedRects",
+      "walls",
+      "obstacles",
+      "elapsed",
+      "activeLine",
+      "balls",
+      "ball"
+    ];
+    const previous = {};
+    stateKeys.forEach((key) => {
+      previous[key] = levelState[key];
+    });
+
+    const scanLevel = (levelNumber) => {
+      const config = getLevelConfig(levelNumber);
+      const speed = getSpeedValue(config.speed, auditRect);
+      levelState.config = config;
+      levelState.target = config.target;
+      levelState.capturedArea = 0;
+      levelState.totalArea = rectArea(auditRect);
+      levelState.penalties = 0;
+      levelState.rect = auditRect;
+      levelState.activeRect = auditRect;
+      levelState.activeRects = [auditRect];
+      levelState.capturedRects = [];
+      levelState.walls = [];
+      levelState.obstacles = (config.obstacles || []).map((obstacle, index) => createObstacle(obstacle, auditRect, index));
+      levelState.elapsed = 0;
+      levelState.activeLine = null;
+      levelState.balls = BALL_STARTS.slice(0, config.balls).map((start) => ({
+        x: auditRect.x + auditRect.w * start.x,
+        y: auditRect.y + auditRect.h * start.y,
+        vx: speed * start.vx,
+        vy: speed * start.vy,
+        r: BALL_RADIUS
+      }));
+      levelState.ball = levelState.balls[0] || null;
+
+      let validStarts = 0;
+      let verticalStarts = 0;
+      let horizontalStarts = 0;
+      let maxFirstCapture = 0;
+      const columns = 11;
+      const rows = 11;
+      for (let column = 1; column <= columns; column += 1) {
+        for (let row = 1; row <= rows; row += 1) {
+          const point = {
+            x: auditRect.x + (auditRect.w * column) / (columns + 1),
+            y: auditRect.y + (auditRect.h * row) / (rows + 1)
+          };
+          ["vertical", "horizontal"].forEach((orientation) => {
+            const castResult = getLineCastResult(point, orientation, auditRect);
+            if (!castResult.canBuild) {
+              return;
+            }
+            const splitResult = getPotentialSplitResultFromCast(castResult);
+            if (!splitResult.canKeepLine) {
+              return;
+            }
+
+            validStarts += 1;
+            if (orientation === "vertical") {
+              verticalStarts += 1;
+            } else {
+              horizontalStarts += 1;
+            }
+            maxFirstCapture = Math.max(
+              maxFirstCapture,
+              (splitResult.capturableArea / Math.max(1, rectArea(auditRect))) * 100
+            );
+          });
+        }
+      }
+
+      const dangerObstacles = levelState.obstacles.filter((obstacle) => obstacle.dangerForLine).length;
+      const captureObstacles = getCaptureObstacles().length;
+      const movingObstacles = levelState.obstacles.filter((obstacle) => obstacle.moving).length;
+      const riskFlags = [
+        config.target >= 86 ? "high-target" : null,
+        config.balls >= 4 ? "four-balls" : null,
+        config.speed === "fast" ? "fast" : null,
+        dangerObstacles >= 2 ? "many-danger" : null,
+        movingObstacles >= 2 ? "many-moving" : null,
+        validStarts < 6 ? "few-openers" : null,
+        maxFirstCapture < 6 ? "low-first-capture" : null
+      ].filter(Boolean);
+
+      return {
+        level: levelNumber,
+        target: config.target,
+        balls: config.balls,
+        speed: config.speed,
+        obstacles: levelState.obstacles.length,
+        dangerObstacles,
+        captureObstacles,
+        movingObstacles,
+        validStarts,
+        verticalStarts,
+        horizontalStarts,
+        maxFirstCapture: Math.round(maxFirstCapture * 10) / 10,
+        risk: riskFlags.join(", ")
+      };
+    };
+
+    const selectedLevels = (Array.isArray(levels) ? levels : [levels])
+      .map((levelNumber) => Math.max(1, Math.min(TOTAL_LEVELS, Math.round(Number(levelNumber)))))
+      .filter((levelNumber, index, list) => Number.isFinite(levelNumber) && list.indexOf(levelNumber) === index);
+    let report = [];
+    try {
+      report = selectedLevels.map(scanLevel);
+    } finally {
+      stateKeys.forEach((key) => {
+        levelState[key] = previous[key];
+      });
+    }
+
+    console.table(report);
+    return report;
   };
 
   const openChapter = (chapterId) => {
@@ -5505,11 +6801,8 @@
         return;
       }
 
-      openChapter(completion.chapterChestId);
-      const shouldOpenChest = await showChapterChestPrompt(completion.chapterChestId);
-      if (shouldOpenChest) {
-        await showChapterChestClaimPanel(completion.chapterChestId);
-      }
+      renderInventory();
+      updateInventoryBadge();
     };
 
     if (destination === "next" && completion.replayingCompleted) {
@@ -5660,22 +6953,12 @@
     }
 
     if (action === "achievements") {
-      await showConfirm({
-        title: t("achievements"),
-        message: t("achievementSummary", { stars: getEarnedStars(), total: TOTAL_LEVELS * 3 }),
-        acceptText: t("ok"),
-        cancelText: t("cancel")
-      });
+      openAchievementsPanel();
       return;
     }
 
     if (action === "shop") {
-      await showConfirm({
-        title: t("shop"),
-        message: t("shopSummary", { coins: state.coins, lives: state.lives }),
-        acceptText: t("ok"),
-        cancelText: t("cancel")
-      });
+      openInventoryModal("recommended");
       return;
     }
 
@@ -5697,6 +6980,14 @@
     if (action === "close-settings") {
       toggleSettings(false);
     }
+  };
+
+  const handleLevelBoostClick = (event) => {
+    const boostButton = event.target.closest("[data-level-boost]");
+    if (!boostButton || boostButton.disabled) {
+      return;
+    }
+    useLevelBooster(boostButton.dataset.levelBoost);
   };
 
   const blockBrowserGesture = (event) => {
@@ -5750,13 +7041,16 @@
     if (!actionButton) {
       return;
     }
+    if (actionButton.disabled || actionButton.getAttribute("aria-disabled") === "true") {
+      return;
+    }
 
     const action = actionButton.dataset.inventoryAction;
     if (action === "open-chest") {
       const chapterId = Number(actionButton.dataset.chapterId);
       closeInventoryModal();
       await waitNextFrame();
-      await openChapterChest(chapterId);
+      await showChapterChestClaimPanel(chapterId);
       return;
     }
 
@@ -5764,6 +7058,44 @@
       closeInventoryModal();
       await waitNextFrame();
       await openAllPendingChests();
+      return;
+    }
+
+    if (action === "buy-booster") {
+      buyBooster(actionButton.dataset.boosterId);
+      return;
+    }
+
+    if (action === "buy-life") {
+      buyLifeItem(actionButton.dataset.lifeId);
+      return;
+    }
+
+    if (action === "buy-chest") {
+      buyShopChest(actionButton.dataset.chestId);
+      return;
+    }
+
+    if (action === "buy-skin") {
+      buySkin(actionButton.dataset.cosmeticGroup, actionButton.dataset.skinId);
+      return;
+    }
+
+    if (action === "watch-ad") {
+      const adItem = SHOP_AD_REWARDS[actionButton.dataset.adId];
+      if (adItem?.reward?.lives && getMissingLives() <= 0) {
+        showShopNotice(t("livesFull"));
+        renderInventory();
+        return;
+      }
+      if (adItem) {
+        await showRewardedShopAd(adItem);
+      }
+      return;
+    }
+
+    if (action === "buy-iap") {
+      await buyIapProduct(actionButton.dataset.productId);
       return;
     }
 
@@ -5787,6 +7119,7 @@
   });
   window.setInterval(updateLifeRestore, 1000);
   document.addEventListener("keydown", handleModalKeydown);
+  document.addEventListener("click", handleLevelBoostClick);
   document.addEventListener("click", handleAction);
   document.addEventListener("selectstart", blockBrowserGesture);
   document.addEventListener("dragstart", blockBrowserGesture);
@@ -5856,9 +7189,11 @@
 
   if (IS_DEBUG) {
     window.showScreen = showScreen;
+    window.auditJezzBallLevels = runDevLevelAudit;
     window.JezzBallChapterMap = {
       chapters,
       state,
+      auditLevels: runDevLevelAudit,
       openChapter,
       openLevel,
       spendLife,

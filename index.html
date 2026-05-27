@@ -89,6 +89,12 @@
                 <button class="level-boost-button" type="button" data-level-boost="lineShield" aria-label="Щит">
                   <span class="boost-icon" aria-hidden="true">🛡</span><span class="boost-label">Щит</span><strong data-booster-count="lineShield">x0</strong>
                 </button>
+                <button class="level-boost-button" type="button" data-level-boost="targetEase" aria-label="Фокус">
+                  <span class="boost-icon" aria-hidden="true">◎</span><span class="boost-label">Фокус</span><strong data-booster-count="targetEase">x0</strong>
+                </button>
+                <button class="level-boost-button" type="button" data-level-boost="penaltyRepair" aria-label="Откат">
+                  <span class="boost-icon" aria-hidden="true">↩</span><span class="boost-label">Откат</span><strong data-booster-count="penaltyRepair">x0</strong>
+                </button>
               </div>
               <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
                 <button class="obstacle-legend-toggle" type="button" aria-label="Подсказка по препятствиям" aria-expanded="false">?</button>
@@ -117,7 +123,7 @@
               <p class="reward-capture">Ты захватил <strong id="levelCompleteScore">70%</strong> поля!</p>
               <div class="reward-prizes" id="rewardPrizes" data-prize-count="1" aria-label="Ваши награды">
                 <h3>Награды</h3>
-                <div class="reward-prize">
+                <div class="reward-prize reward-coin-prize">
                   <img class="reward-prize-icon coin-icon" src="assets/images/coin.svg" alt="" aria-hidden="true">
                   <strong id="rewardCoins">+180</strong>
                 </div>
@@ -178,13 +184,19 @@
 
     <section class="inventory-modal" id="inventoryModal" aria-hidden="true">
       <div class="inventory-panel" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
-        <button class="inventory-close" type="button" id="inventoryCloseButton" aria-label="Закрыть инвентарь">×</button>
-        <h2 id="inventoryTitle">Инвентарь</h2>
-        <div class="inventory-tabs" role="tablist" aria-label="Разделы инвентаря">
-          <button type="button" data-inventory-tab="chests">Сундуки</button>
-          <button type="button" data-inventory-tab="boosts">Бусты</button>
-          <button type="button" data-inventory-tab="skins">Скины</button>
-          <button type="button" data-inventory-tab="gifts">Подарки</button>
+        <button class="inventory-close" type="button" id="inventoryCloseButton" aria-label="Закрыть магазин">×</button>
+        <div class="shop-topline" aria-label="Ресурсы магазина">
+          <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
+          <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
+        </div>
+        <h2 id="inventoryTitle">Магазин</h2>
+        <div class="inventory-tabs" role="tablist" aria-label="Разделы магазина">
+          <button type="button" data-inventory-tab="recommended">★<span>Рекомендуем</span></button>
+          <button type="button" data-inventory-tab="boosts">⚡<span>Бустеры</span></button>
+          <button type="button" data-inventory-tab="lives">♥<span>Жизни</span></button>
+          <button type="button" data-inventory-tab="skins">◆<span>Скины</span></button>
+          <button type="button" data-inventory-tab="chests">▣<span>Сундуки</span></button>
+          <button type="button" data-inventory-tab="coins">●<span>Монеты</span></button>
         </div>
         <div class="inventory-content" id="inventoryContent"></div>
       </div>
