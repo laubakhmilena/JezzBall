@@ -3,6 +3,8 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  --sticky-banner-reserve: 0px;
+  --effective-safe-bottom: calc(var(--safe-bottom) + var(--sticky-banner-reserve));
   --viewport-width: 100dvw;
   --viewport-height: 100dvh;
   --panel: rgba(34, 15, 76, 0.58);
@@ -25,6 +27,9 @@
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 html,
@@ -117,12 +122,6 @@ button {
     grid-column: 1;
     grid-row: 1;
     gap: 6px;
-  }
-
-  .level-screen .settings-button {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
   }
 
   .level-screen .icon-button {
@@ -1076,8 +1075,7 @@ button {
 }
 
 .level-placeholder,
-.final-card,
-.settings-panel {
+.final-card {
   border: 2px solid var(--panel-border);
   border-radius: 8px;
   background:
@@ -1859,18 +1857,32 @@ button {
 }
 
 .coin-icon {
-  object-fit: contain;
+  flex: 0 0 auto;
+  color: #8a4300;
+  background:
+    radial-gradient(circle at 34% 28%, #fff9c8 0 22%, transparent 23%),
+    radial-gradient(circle at 50% 50%, #ffe36e 0 48%, #f2a51e 49% 68%, #bd6500 69% 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.46),
+    inset 0 -3px 0 rgba(139, 71, 0, 0.34),
+    0 0 14px rgba(255, 205, 61, 0.52);
   filter:
     drop-shadow(0 3px 0 rgba(117, 48, 0, 0.42))
     drop-shadow(0 0 16px rgba(255, 205, 61, 0.58));
+  font-size: 0;
+  line-height: 1;
   transform: rotate(-6deg);
 }
 
 .heart-icon {
-  object-fit: contain;
+  color: #fff7fb;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.86) 0 20%, transparent 21%),
+    linear-gradient(135deg, #ff89b8, #ff4b84 58%, #9d214f);
   filter:
     drop-shadow(0 3px 0 rgba(93, 7, 45, 0.44))
     drop-shadow(0 0 16px rgba(255, 75, 142, 0.72));
+  line-height: 1;
 }
 
 .reward-actions {
@@ -2120,6 +2132,7 @@ button {
   padding: calc(var(--safe-top) + clamp(12px, 3vmin, 28px)) calc(var(--safe-right) + clamp(12px, 3vmin, 28px)) calc(var(--safe-bottom) + clamp(12px, 3vmin, 28px)) calc(var(--safe-left) + clamp(12px, 3vmin, 28px));
   background: rgba(9, 4, 28, 0.74);
   color: #fffaff;
+  overscroll-behavior: contain;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -2174,6 +2187,7 @@ button {
   gap: 10px;
   min-height: 0;
   overflow-y: auto;
+  touch-action: pan-y;
   padding: 2px 4px 4px 2px;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -3740,68 +3754,6 @@ button {
 
 }
 
-.settings-modal {
-  position: absolute;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: clamp(16px, 5vmin, 36px);
-  background: rgba(9, 3, 28, 0.56);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 220ms ease,
-    visibility 0s linear 220ms;
-}
-
-.settings-modal.is-open {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition-delay: 0s;
-}
-
-.settings-panel {
-  position: relative;
-  display: grid;
-  gap: 18px;
-  width: min(92vw, 360px);
-  padding: 28px;
-  color: #fff8ff;
-}
-
-.settings-panel h2 {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 950;
-}
-
-.settings-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 38px;
-}
-
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  min-height: 42px;
-  color: rgba(255, 247, 255, 0.86);
-  font-size: 1rem;
-  font-weight: 850;
-}
-
-.toggle-row input {
-  width: 46px;
-  height: 26px;
-  accent-color: #ff55d7;
-}
-
 .chapter-1 {
   --chapter-bg: url("objects/fone/sunny-glade-2.png.png");
   --chapter-bg-portrait: url("objects/fone/sunny-glade-1.png.png");
@@ -4210,18 +4162,6 @@ button {
 .chapter-screen .chapter-top-back::after {
   content: "В меню";
   white-space: nowrap;
-}
-
-.chapter-screen .settings-button {
-  width: clamp(44px, 6vmin, 56px);
-  border-color: rgba(230, 157, 255, 0.72);
-  background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.2), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
-    rgba(52, 24, 112, 0.68);
-  box-shadow:
-    0 0 14px rgba(255, 101, 220, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.26);
 }
 
 .resource-plus {
@@ -4958,10 +4898,6 @@ button {
     width: 1.24em;
   }
 
-  .chapter-screen .settings-button {
-    width: 40px;
-  }
-
   .resource-plus {
     display: none;
   }
@@ -5279,8 +5215,7 @@ button {
 
   .level-screen .icon-button,
   .chapter-screen .icon-button,
-  .chapter-screen .chapter-top-back,
-  .chapter-screen .settings-button {
+  .chapter-screen .chapter-top-back {
     width: 38px;
     height: 38px;
   }
@@ -5537,12 +5472,6 @@ button {
     grid-column: 1;
     grid-row: 1;
     gap: 6px;
-  }
-
-  .level-screen .settings-button {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
   }
 
   .level-screen .icon-button {
@@ -6143,12 +6072,6 @@ button {
     display: flex;
     gap: 6px;
     min-width: 0;
-  }
-
-  .level-side-panel .settings-button {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
   }
 
   .level-side-panel .resource-strip {
@@ -6778,7 +6701,6 @@ button {
 .is-low-performance .level-button,
 .is-low-performance .resource-pill,
 .is-low-performance .menu-panel,
-.is-low-performance .settings-panel,
 .is-low-performance .modal-card,
 .is-low-performance .inventory-panel,
 .is-low-performance .level-complete-card,
@@ -6795,14 +6717,14 @@ button {
   }
 }
 
-/* Final level HUD fit: resources stay between navigation and settings. */
+/* Final level HUD fit: resources stay beside navigation. */
 #level-screen .level-helper-panel {
   display: none !important;
 }
 
 #level-screen .top-ui {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: clamp(4px, 1.2vmin, 8px);
   min-width: 0;
@@ -6820,17 +6742,12 @@ button {
   grid-column: 2;
   grid-row: 1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(3px, 0.9vmin, 6px);
   width: 100%;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
-}
-
-#level-screen .settings-button {
-  grid-column: 3;
-  grid-row: 1;
 }
 
 #level-screen .resource-pill {
@@ -7047,7 +6964,7 @@ button {
   }
 
   #level-screen .top-ui {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 3px;
   }
 
@@ -7380,11 +7297,6 @@ button {
     gap: 3px;
   }
 
-  #level-screen .settings-button {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
   #level-screen .resource-strip {
     grid-column: 2;
     grid-row: 1;
@@ -7539,10 +7451,6 @@ button {
     gap: 4px;
     width: 100%;
     overflow: hidden;
-  }
-
-  #level-screen .settings-button {
-    grid-column: 3;
   }
 
   #level-screen .icon-button {
@@ -7737,6 +7645,7 @@ body,
 .chapter-scene,
 .level-scene,
 .final-scene {
+  box-sizing: border-box;
   max-width: 100%;
   max-height: var(--viewport-height, 100dvh);
   min-width: 0;
@@ -7745,20 +7654,24 @@ body,
 
 .start-content {
   width: min(100% - 24px, 520px);
-  max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--safe-bottom) - 24px);
+  max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--effective-safe-bottom) - 24px);
   overflow: hidden;
 }
 
 .chapter-screen .chapter-scene,
 .final-screen .chapter-scene,
 .final-screen .final-scene {
+  box-sizing: border-box;
+  width: calc(var(--viewport-width, 100dvw) - var(--safe-left) - var(--safe-right));
+  max-width: calc(var(--viewport-width, 100dvw) - var(--safe-left) - var(--safe-right));
   height: var(--viewport-height, 100dvh);
+  margin-inline: auto;
   overflow: hidden;
 }
 
 .chapter-screen .chapter-select {
   max-width: calc(var(--viewport-width, 100dvw) - var(--safe-left) - var(--safe-right) - 24px);
-  max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--safe-bottom) - 150px);
+  max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--effective-safe-bottom) - 150px);
   min-width: 0;
   min-height: 0;
 }
@@ -7789,25 +7702,26 @@ body,
 }
 
 .final-card,
-.settings-panel,
 .inventory-panel,
 .confirm-panel,
 .reward-card {
   max-width: calc(var(--viewport-width, 100dvw) - var(--safe-left) - var(--safe-right) - 24px);
-  max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--safe-bottom) - 24px);
+  max-height: calc(var(--viewport-height, 100dvh) - var(--safe-top) - var(--effective-safe-bottom) - 24px);
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
 }
 
-.settings-modal,
 .inventory-modal,
 .confirm-modal,
 .level-complete-panel {
-  padding: calc(var(--safe-top) + 12px) calc(var(--safe-right) + 12px) calc(var(--safe-bottom) + 12px) calc(var(--safe-left) + 12px);
+  padding: calc(var(--safe-top) + 12px) calc(var(--safe-right) + 12px) calc(var(--effective-safe-bottom) + 12px) calc(var(--safe-left) + 12px);
 }
 
 #level-screen .level-playfield {
+  box-sizing: border-box;
+  width: auto;
+  max-width: calc(var(--viewport-width, 100dvw) - var(--safe-left) - var(--safe-right) - (var(--level-inset, 8px) * 2));
   min-width: 0;
   min-height: 0;
 }
@@ -8009,20 +7923,15 @@ body,
 @media (orientation: landscape) and (max-height: 460px) {
   #level-screen .top-ui {
     grid-template-areas:
-      "nav settings"
-      "resources resources";
-    grid-template-columns: minmax(0, 1fr) auto;
+      "nav"
+      "resources";
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto;
     align-items: center;
   }
 
   #level-screen .level-nav-actions {
     grid-area: nav;
-  }
-
-  #level-screen .settings-button {
-    grid-area: settings;
-    justify-self: end;
   }
 
   #level-screen .resource-strip {

@@ -25,7 +25,6 @@
   const rewardCoins = document.getElementById("rewardCoins");
   const rewardLifePrize = document.getElementById("rewardLifePrize");
   const rewardLife = document.getElementById("rewardLife");
-  const settingsModal = document.getElementById("settingsModal");
   const confirmModal = document.getElementById("confirmModal");
   const confirmTitle = document.getElementById("confirmTitle");
   const confirmMessage = document.getElementById("confirmMessage");
@@ -34,8 +33,6 @@
   const inventoryModal = document.getElementById("inventoryModal");
   const inventoryCloseButton = document.getElementById("inventoryCloseButton");
   const inventoryContent = document.getElementById("inventoryContent");
-  const musicToggle = document.getElementById("musicToggle");
-  const soundToggle = document.getElementById("soundToggle");
   const SAVE_KEY = "jezzball-progress-v1";
   const IS_LOCAL_HOST = ["localhost", "127.0.0.1", "::1", ""].includes(location.hostname);
   const IS_PERF = IS_LOCAL_HOST && new URLSearchParams(location.search).has("perf");
@@ -44,8 +41,8 @@
   const LEADERBOARD_NAME = "stars";
   const INTERSTITIAL_LEVEL_INTERVAL = 3;
   const INTERSTITIAL_MIN_INTERVAL_MS = 180 * 1000;
-  const DANGER_OBSTACLE_TOAST = "Красные блоки нельзя задевать";
-  const DANGER_OBSTACLE_TOAST_COOLDOWN_MS = 800;
+  const USER_PAUSE_AD_MIN_INTERVAL_MS = 90 * 1000;
+  const MAX_PROCESSED_IAP_PURCHASE_TOKENS = 100;
   const MAX_LIVES = 5;
   const LIFE_RESTORE_MS = 3 * 60 * 1000;
   const TOTAL_LEVELS = 100;
@@ -648,10 +645,10 @@
     },
     27: {
       target: 79,
-      balls: 3,
+      balls: 2,
       speed: "medium",
       obstacles: [
-        { orientation: "vertical", x: 0.35, y1: 0.18, y2: 0.82, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
+        { orientation: "vertical", x: 0.35, y1: 0.26, y2: 0.74, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true },
         { orientation: "horizontal", y: 0.62, x1: 0.2, x2: 0.8, type: "static", safe: false, color: "#8d2454" }
       ],
       purpose: "safe-danger-combination"
@@ -723,9 +720,13 @@
     pausedByPlatform: false,
     completedSinceInterstitial: 0,
     lastInterstitialAt: 0,
+    lastUserPauseAdAt: 0,
     lang: "ru",
     readySent: false,
-    gameplayActive: false
+    gameplayActive: false,
+    stickyBannerVisible: false,
+    stickyBannerTimer: null,
+    adShowing: false
   };
 
   const messages = {
@@ -744,7 +745,6 @@
       lives: "Жизни",
       levelStars: "Звезды за уровень",
       totalStars: "Всего звезд",
-      settings: "Настройки",
       levelGoal: "Цель уровня",
       chapter: "Глава",
       level: "Уровень",
@@ -776,9 +776,6 @@
       finalUnlocked: "Финал открыт",
       finalTitle: "Врата света пройдены",
       toMenu: "В меню",
-      closeSettings: "Закрыть настройки",
-      music: "Музыка",
-      sounds: "Звуки",
       confirm: "Подтверждение",
       continue: "Продолжить?",
       stay: "Остаться",
@@ -801,6 +798,8 @@
       penaltyProgress: "Штраф {count}/{max}",
       levelFailedTitle: "Попытка провалена",
       lineHitFailure: "Набран максимум штрафов. Попытка потеряна.",
+      failedRewardRetry: "Смотреть рекламу и сыграть еще раз",
+      failedRewardRetryHint: "Можно посмотреть рекламу и сыграть еще раз без дополнительной жизни.",
       leaveTitle: "Выйти из уровня?",
       leaveMessage: "Прогресс текущей попытки не сохранится. Остаться в игре?",
       leaveAccept: "Выйти",
@@ -828,8 +827,6 @@
     coins: 0,
     lives: MAX_LIVES,
     nextLifeAt: null,
-    music: true,
-    sound: true,
     starsByLevel: {},
     perfectChapters: new Set(),
     chapterChests: {},
@@ -844,6 +841,7 @@
     gifts: [],
     unlockedAchievements: new Set(),
     claimedAchievements: new Set(),
+    processedIapPurchaseTokens: new Set(),
     inventoryTab: "recommended",
     expandedChapters: new Set([1])
   };
@@ -905,7 +903,6 @@
   let layoutRaf = null;
   let layoutObserver = null;
   let lastViewportTooSmall = false;
-  let lastDangerObstacleToastAt = 0;
   const perfState = {
     overlay: null,
     frameTimes: [],
@@ -955,6 +952,7 @@
       previousFocus,
       onEscape: options.onEscape || null
     });
+    scheduleStickyBannerSync();
     window.requestAnimationFrame(() => focusModalContent(modal, options.initialFocus));
   };
 
@@ -980,6 +978,7 @@
     if (trap.previousFocus?.isConnected) {
       trap.previousFocus.focus({ preventScroll: true });
     }
+    scheduleStickyBannerSync();
   };
 
   const handleModalKeydown = (event) => {
@@ -1122,14 +1121,9 @@
     setAttribute("#final-screen .coins-pill", "aria-label", t("coins"));
     setAttribute("#final-screen .lives-pill", "aria-label", t("lives"));
     setAttribute("#final-screen [data-action='achievements']", "aria-label", t("totalStars"));
-    setAttribute("#final-screen [data-action='settings']", "aria-label", t("settings"));
     setText(".final-card span", t("finalUnlocked"));
     setText(".final-card h2", t("finalTitle"));
     setText(".final-card [data-action='main-menu']", t("toMenu"));
-    setAttribute(".settings-close", "aria-label", t("closeSettings"));
-    setText("#settingsTitle", t("settings"));
-    setText(".toggle-row:nth-of-type(1) span", t("music"));
-    setText(".toggle-row:nth-of-type(2) span", t("sounds"));
     setText("#confirmTitle", t("confirm"));
     setText("#confirmMessage", t("continue"));
     setText("#confirmCancelButton", t("stay"));
@@ -1246,8 +1240,6 @@
   };
 
   const refreshProgressUi = () => {
-    musicToggle.checked = state.music;
-    soundToggle.checked = state.sound;
     updateLifeRestore();
     renderChapterScreens();
     syncResources();
@@ -1304,6 +1296,7 @@
       renderChapterScreens();
       syncViewportLayoutNow({ resizeLevel: false });
       await markYandexGameReady();
+      scheduleStickyBannerSync();
       return yandexState.sdk;
     })();
 
@@ -1365,6 +1358,71 @@
       // SDK marker failures should never interrupt the playable loop.
     }
   };
+
+  function setStickyBannerReserve(isVisible) {
+    yandexState.stickyBannerVisible = Boolean(isVisible);
+    root?.style.setProperty("--sticky-banner-reserve", isVisible ? "56px" : "0px");
+    root?.classList.toggle("has-sticky-banner", Boolean(isVisible));
+  }
+
+  const isStickyBannerStatusVisible = (status) => Boolean(
+    status?.stickyAdvIsShowing
+      || status?.bannerAdvIsShowing
+      || status?.isShowing
+      || status?.visible
+  );
+
+  const canShowStickyBanner = () => {
+    const activeScreen = document.querySelector(".screen.is-active");
+    const activeScreenId = activeScreen?.id || "";
+    const allowedScreen = activeScreenId === "main-menu"
+      || activeScreenId === "final-screen"
+      || activeScreenId.startsWith("chapter-");
+    const allowedModal = inventoryModal?.classList.contains("is-open")
+      || Boolean(activeAchievementsPanel);
+
+    return (allowedModal || (allowedScreen && !levelScreen.classList.contains("is-active")))
+      && !yandexState.adShowing
+      && !lastViewportTooSmall;
+  };
+
+  async function syncStickyBannerVisibility() {
+    const adv = yandexState.sdk?.adv;
+    const hasBannerApi = adv
+      && typeof adv.showBannerAdv === "function"
+      && typeof adv.hideBannerAdv === "function";
+    if (!hasBannerApi) {
+      setStickyBannerReserve(false);
+      return;
+    }
+
+    const shouldShow = canShowStickyBanner();
+    try {
+      if (shouldShow) {
+        await adv.showBannerAdv();
+        if (typeof adv.getBannerAdvStatus === "function") {
+          const status = await adv.getBannerAdvStatus();
+          setStickyBannerReserve(isStickyBannerStatusVisible(status));
+        } else {
+          setStickyBannerReserve(true);
+        }
+        return;
+      }
+
+      await adv.hideBannerAdv();
+      setStickyBannerReserve(false);
+    } catch (_error) {
+      setStickyBannerReserve(false);
+    }
+  }
+
+  function scheduleStickyBannerSync() {
+    window.clearTimeout(yandexState.stickyBannerTimer);
+    yandexState.stickyBannerTimer = window.setTimeout(() => {
+      yandexState.stickyBannerTimer = null;
+      void syncStickyBannerVisibility();
+    }, 0);
+  }
 
   const clampChapterId = (chapterId) => Math.min(chapters.length, Math.max(1, chapterId));
   const getChapter = (chapterId) => chapters[clampChapterId(chapterId) - 1];
@@ -1610,7 +1668,6 @@
         <div class="resource-pill resource-counter coins-pill" aria-label="${t("coins")}"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
         <div class="resource-pill resource-counter achievement-button" aria-label="${t("stars")}"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></div>
       </div>
-      ${createIconButton("settings", t("settings"), "M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z", "settings-button")}
     </header>
   `;
 
@@ -1796,6 +1853,7 @@
       screen.classList.toggle("is-active", isActive);
       screen.setAttribute("aria-hidden", isActive ? "false" : "true");
     });
+    scheduleStickyBannerSync();
   }
 
   const serializeChapterChests = () => Object.fromEntries(
@@ -1928,6 +1986,13 @@
       .filter((id) => ACHIEVEMENT_IDS.has(id))
   );
 
+  const normalizeIapPurchaseTokens = (savedTokens) => new Set(
+    (Array.isArray(savedTokens) ? savedTokens : [])
+      .map((token) => String(token || "").trim())
+      .filter(Boolean)
+      .slice(-MAX_PROCESSED_IAP_PURCHASE_TOKENS)
+  );
+
   const serializeProgress = () => ({
     currentChapter: state.currentChapter,
     currentLevel: state.currentLevel,
@@ -1935,8 +2000,6 @@
     coins: state.coins,
     lives: state.lives,
     nextLifeAt: state.nextLifeAt,
-    music: state.music,
-    sound: state.sound,
     starsByLevel: state.starsByLevel,
     perfectChapters: Array.from(state.perfectChapters),
     chapterChests: serializeChapterChests(),
@@ -1947,6 +2010,7 @@
     gifts: state.gifts,
     unlockedAchievements: Array.from(state.unlockedAchievements),
     claimedAchievements: Array.from(state.claimedAchievements),
+    processedIapPurchaseTokens: Array.from(state.processedIapPurchaseTokens).slice(-MAX_PROCESSED_IAP_PURCHASE_TOKENS),
     expandedChapters: Array.from(state.expandedChapters)
   });
 
@@ -1967,8 +2031,6 @@
     state.coins = Math.max(0, Math.round(Number(saved.coins) || 0));
     state.lives = Math.max(0, Math.min(MAX_LIVES, Math.round(Number(saved.lives) || 0)));
     state.nextLifeAt = Number.isFinite(Number(saved.nextLifeAt)) ? Number(saved.nextLifeAt) : null;
-    state.music = saved.music !== false;
-    state.sound = saved.sound !== false;
     state.starsByLevel = normalizeStarsByLevel(saved.starsByLevel);
     state.perfectChapters = new Set(
       Array.isArray(saved.perfectChapters)
@@ -1983,6 +2045,7 @@
     state.gifts = normalizeGifts(saved.gifts);
     state.unlockedAchievements = normalizeAchievementIds(saved.unlockedAchievements);
     state.claimedAchievements = normalizeAchievementIds(saved.claimedAchievements);
+    state.processedIapPurchaseTokens = normalizeIapPurchaseTokens(saved.processedIapPurchaseTokens);
     state.expandedChapters = new Set(
       Array.isArray(saved.expandedChapters)
         ? saved.expandedChapters.map(Number).filter((chapterId) => chapterId >= 1 && chapterId <= chapters.length)
@@ -2108,6 +2171,7 @@
       state.cosmetics = normalizeCosmetics();
       state.equippedCosmetics = normalizeEquippedCosmetics({}, state.cosmetics);
       state.gifts = [];
+      state.processedIapPurchaseTokens = new Set();
       state.expandedChapters = new Set([getChapterForLevel(state.currentLevel)]);
     }
   };
@@ -2807,15 +2871,6 @@
     }, 1100);
   };
 
-  const showDangerObstacleToast = ({ force = false } = {}) => {
-    const now = performance.now();
-    if (!force && now - lastDangerObstacleToastAt < DANGER_OBSTACLE_TOAST_COOLDOWN_MS) {
-      return;
-    }
-    lastDangerObstacleToastAt = now;
-    showLevelToast(DANGER_OBSTACLE_TOAST);
-  };
-
   const escapeHtml = (value) => String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -3195,25 +3250,49 @@
     requestDrawJezzLevel();
   };
 
-  const grantIapPurchase = async (productId) => {
+  const getYandexPurchaseProductId = (purchase) => purchase?.productID || purchase?.productId || purchase?.id || "";
+
+  const getYandexPurchaseToken = (purchase) => String(purchase?.purchaseToken || "").trim();
+
+  const isIapPurchaseTokenProcessed = (token) => Boolean(token && state.processedIapPurchaseTokens.has(token));
+
+  const markIapPurchaseTokenProcessed = (token) => {
+    if (!token) {
+      return;
+    }
+
+    state.processedIapPurchaseTokens.add(token);
+    while (state.processedIapPurchaseTokens.size > MAX_PROCESSED_IAP_PURCHASE_TOKENS) {
+      const oldestToken = state.processedIapPurchaseTokens.values().next().value;
+      state.processedIapPurchaseTokens.delete(oldestToken);
+    }
+  };
+
+  const grantIapPurchase = async (productId, purchaseToken = "") => {
     const config = SHOP_IAP_REWARDS[productId];
     if (!config) {
       return false;
     }
+    if (isIapPurchaseTokenProcessed(purchaseToken)) {
+      return true;
+    }
+    markIapPurchaseTokenProcessed(purchaseToken);
     grantShopReward(config.reward);
     return true;
   };
 
   const consumeYandexPurchase = async (purchase) => {
-    const token = purchase?.purchaseToken;
+    const token = getYandexPurchaseToken(purchase);
     if (!token || !yandexState.payments || typeof yandexState.payments.consumePurchase !== "function") {
-      return;
+      return false;
     }
 
     try {
       await yandexState.payments.consumePurchase(token);
+      return true;
     } catch (_error) {
       // The purchase will be retried by getPurchases() on the next launch.
+      return false;
     }
   };
 
@@ -3226,8 +3305,14 @@
     try {
       const purchases = await payments.getPurchases();
       for (const purchase of Array.isArray(purchases) ? purchases : []) {
-        const productId = purchase?.productID || purchase?.productId || purchase?.id;
-        if (await grantIapPurchase(productId)) {
+        const purchaseToken = getYandexPurchaseToken(purchase);
+        if (isIapPurchaseTokenProcessed(purchaseToken)) {
+          await consumeYandexPurchase(purchase);
+          continue;
+        }
+
+        const productId = getYandexPurchaseProductId(purchase);
+        if (await grantIapPurchase(productId, purchaseToken)) {
           await consumeYandexPurchase(purchase);
         }
       }
@@ -3247,7 +3332,7 @@
 
     try {
       const purchase = await payments.purchase({ id: productId });
-      if (await grantIapPurchase(productId)) {
+      if (await grantIapPurchase(productId, getYandexPurchaseToken(purchase))) {
         await consumeYandexPurchase(purchase);
         renderInventory();
       }
@@ -5084,14 +5169,27 @@
     stopJezzLevel();
     syncLevelHud();
 
+    const canUseRewardedAd = Boolean(yandexState.sdk?.adv && typeof yandexState.sdk.adv.showRewardedVideo === "function");
     const shouldRetry = await showConfirm({
       title: t("levelFailedTitle"),
-      message: t("lineHitFailure"),
-      acceptText: t("play"),
+      message: canUseRewardedAd
+        ? `${t("lineHitFailure")} ${t("failedRewardRetryHint")}`
+        : t("lineHitFailure"),
+      acceptText: canUseRewardedAd ? t("failedRewardRetry") : t("play"),
       cancelText: t("toChapters")
     });
 
     if (shouldRetry) {
+      if (canUseRewardedAd) {
+        const rewarded = await showRewardedLifeAd();
+        if (!rewarded) {
+          openChapter(state.currentChapter);
+          return;
+        }
+        restoreLife();
+        saveProgressImmediate({ flushCloud: true });
+        syncResources();
+      }
       await openLevel(state.selectedLevel, { skipReplayConfirm: true });
       return;
     }
@@ -5199,7 +5297,7 @@
   const completeActiveLine = (line) => {
     if (!line?.negativeHit?.isValidAnchor || !line?.positiveHit?.isValidAnchor) {
       const hitDanger = Boolean(line?.negativeHit?.isDanger || line?.positiveHit?.isDanger);
-      cancelActiveLine(hitDanger, hitDanger ? DANGER_OBSTACLE_TOAST : null);
+      cancelActiveLine(hitDanger);
       return;
     }
     levelState.activeLine = null;
@@ -5237,7 +5335,7 @@
       return;
     }
     if (collision) {
-      cancelActiveLine(true, collision === "danger" ? DANGER_OBSTACLE_TOAST : null);
+      cancelActiveLine(true);
       return;
     }
 
@@ -5880,12 +5978,12 @@
   };
 
   const pauseJezzLevelForPlatform = () => {
+    yandexState.pausedByPlatform = true;
     if (!levelState.running || levelState.completed || levelState.failed) {
       updateGameplayMarker(false);
       return;
     }
 
-    yandexState.pausedByPlatform = true;
     levelState.running = false;
     updateGameplayMarker(false);
     if (levelState.animationId) {
@@ -5895,7 +5993,11 @@
   };
 
   const resumeJezzLevelFromPlatform = () => {
-    if (!yandexState.pausedByPlatform || levelState.completed || levelState.failed || !levelScreen.classList.contains("is-active") || lastViewportTooSmall) {
+    if (!yandexState.pausedByPlatform) {
+      return;
+    }
+
+    if (levelState.completed || levelState.failed || !levelScreen.classList.contains("is-active") || lastViewportTooSmall || modalFocusStack.length) {
       yandexState.pausedByPlatform = false;
       return;
     }
@@ -5950,6 +6052,7 @@
     if (changed) {
       root?.classList.toggle("is-viewport-too-small", isTooSmall);
       viewportTooSmallOverlay?.setAttribute("aria-hidden", isTooSmall ? "false" : "true");
+      scheduleStickyBannerSync();
     }
     if (isTooSmall) {
       pauseJezzLevelForViewport();
@@ -5987,22 +6090,48 @@
     try {
       yandexState.sdk.adv.showFullscreenAdv({
         callbacks: {
-          onOpen: pauseJezzLevelForPlatform,
+          onOpen: () => {
+            yandexState.adShowing = true;
+            scheduleStickyBannerSync();
+            pauseJezzLevelForPlatform();
+          },
           onClose: (wasShown) => {
+            yandexState.adShowing = false;
             resumeJezzLevelFromPlatform();
+            scheduleStickyBannerSync();
             resolve(Boolean(wasShown));
           },
           onError: () => {
+            yandexState.adShowing = false;
             resumeJezzLevelFromPlatform();
+            scheduleStickyBannerSync();
             resolve(false);
           }
         }
       });
     } catch (_error) {
+      yandexState.adShowing = false;
       resumeJezzLevelFromPlatform();
+      scheduleStickyBannerSync();
       resolve(false);
     }
   });
+
+  const showFullscreenAdForUserPause = async () => {
+    stopJezzLevel();
+    if (yandexState.adShowing) {
+      return false;
+    }
+    const now = getTrustedNow();
+    if (now - yandexState.lastUserPauseAdAt < USER_PAUSE_AD_MIN_INTERVAL_MS) {
+      return false;
+    }
+    const wasShown = await showFullscreenAd();
+    if (wasShown) {
+      yandexState.lastUserPauseAdAt = now;
+    }
+    return wasShown;
+  };
 
   const maybeShowInterstitialAd = async () => {
     yandexState.completedSinceInterstitial += 1;
@@ -6034,22 +6163,32 @@
     try {
       yandexState.sdk.adv.showRewardedVideo({
         callbacks: {
-          onOpen: pauseJezzLevelForPlatform,
+          onOpen: () => {
+            yandexState.adShowing = true;
+            scheduleStickyBannerSync();
+            pauseJezzLevelForPlatform();
+          },
           onRewarded: () => {
             rewarded = true;
           },
           onClose: () => {
+            yandexState.adShowing = false;
             resumeJezzLevelFromPlatform();
+            scheduleStickyBannerSync();
             resolve(rewarded);
           },
           onError: () => {
+            yandexState.adShowing = false;
             resumeJezzLevelFromPlatform();
+            scheduleStickyBannerSync();
             resolve(false);
           }
         }
       });
     } catch (_error) {
+      yandexState.adShowing = false;
       resumeJezzLevelFromPlatform();
+      scheduleStickyBannerSync();
       resolve(false);
     }
   });
@@ -6065,7 +6204,11 @@
     try {
       yandexState.sdk.adv.showRewardedVideo({
         callbacks: {
-          onOpen: pauseJezzLevelForPlatform,
+          onOpen: () => {
+            yandexState.adShowing = true;
+            scheduleStickyBannerSync();
+            pauseJezzLevelForPlatform();
+          },
           onRewarded: () => {
             rewarded = true;
             if (item.randomBooster) {
@@ -6077,17 +6220,23 @@
             }
           },
           onClose: () => {
+            yandexState.adShowing = false;
             resumeJezzLevelFromPlatform();
+            scheduleStickyBannerSync();
             resolve(rewarded);
           },
           onError: () => {
+            yandexState.adShowing = false;
             resumeJezzLevelFromPlatform();
+            scheduleStickyBannerSync();
             resolve(false);
           }
         }
       });
     } catch (_error) {
+      yandexState.adShowing = false;
       resumeJezzLevelFromPlatform();
+      scheduleStickyBannerSync();
       resolve(false);
     }
   });
@@ -6354,7 +6503,7 @@
     }
     const castResult = getLineCastResult(point, orientation, rect);
     if (castResult.failReason === "danger") {
-      cancelActiveLine(true, DANGER_OBSTACLE_TOAST);
+      cancelActiveLine(true);
       return;
     }
     if (castResult.failReason === "temporary-blocker") {
@@ -6535,11 +6684,6 @@
       if (orientation) {
         setLineOrientation(orientation);
         startActiveLine(point, orientation, rect);
-      } else if (
-        getLineCastResult(point, "vertical", rect).failReason === "danger"
-        || getLineCastResult(point, "horizontal", rect).failReason === "danger"
-      ) {
-        showDangerObstacleToast({ force: true });
       }
     }
 
@@ -6723,6 +6867,7 @@
 
     setCompletionActions(isCompletedLevel(state.selectedLevel));
     stopJezzLevel();
+    await showFullscreenAdForUserPause();
     window.requestAnimationFrame(startJezzLevel);
   };
 
@@ -6847,21 +6992,6 @@
     openChapter(state.currentChapter);
   };
 
-  const toggleSettings = (isOpen) => {
-    settingsModal.classList.toggle("is-open", isOpen);
-    settingsModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
-    if (isOpen) {
-      pauseJezzLevelForModal();
-      activateModalFocus(settingsModal, {
-        initialFocus: settingsModal.querySelector(".settings-close"),
-        onEscape: () => toggleSettings(false)
-      });
-    } else {
-      deactivateModalFocus(settingsModal);
-      resumeJezzLevelFromModal();
-    }
-  };
-
   const handleAction = async (event) => {
     const orientationButton = event.target.closest("[data-line-orientation]");
     if (orientationButton) {
@@ -6882,10 +7012,15 @@
       if (!(await confirmLeaveLevel())) {
         return;
       }
+      const shouldShowExitAd = levelScreen.classList.contains("is-active") && !levelState.completed;
       if (levelState.completed) {
         await completeSelectedLevel("stay");
       }
-      stopJezzLevel();
+      if (shouldShowExitAd) {
+        await showFullscreenAdForUserPause();
+      } else {
+        stopJezzLevel();
+      }
       showScreen("main-menu");
       playButton.disabled = false;
       saveProgress();
@@ -6931,8 +7066,12 @@
       if (!(await confirmLeaveLevel())) {
         return;
       }
+      const shouldShowExitAd = levelScreen.classList.contains("is-active") && !levelState.completed;
       if (levelState.completed) {
         await completeSelectedLevel("stay");
+      }
+      if (shouldShowExitAd) {
+        await showFullscreenAdForUserPause();
       }
       openChapter(state.currentChapter);
       return;
@@ -6972,14 +7111,6 @@
       return;
     }
 
-    if (action === "settings") {
-      toggleSettings(true);
-      return;
-    }
-
-    if (action === "close-settings") {
-      toggleSettings(false);
-    }
   };
 
   const handleLevelBoostClick = (event) => {
@@ -6991,7 +7122,7 @@
   };
 
   const blockBrowserGesture = (event) => {
-    if (event.type === "touchmove" && event.target.closest(".chapter-list, .inventory-content, .inventory-tabs")) {
+    if (event.type === "touchmove" && event.target.closest(".chapter-list, .inventory-content, .inventory-tabs, .achievements-list")) {
       return;
     }
 
@@ -7008,23 +7139,18 @@
     }, 220);
   });
 
-  completeCloseButton?.addEventListener("click", () => completeSelectedLevel("chapters"));
-  completeReplayButton?.addEventListener("click", replayCompletedLevel);
-  completeNextButton?.addEventListener("click", () => completeSelectedLevel(completeNextButton.dataset.destination || "next"));
-  musicToggle.addEventListener("change", () => {
-    state.music = musicToggle.checked;
-    saveProgress();
+  completeCloseButton?.addEventListener("click", () => {
+    completeSelectedLevel("chapters");
   });
-  soundToggle.addEventListener("change", () => {
-    state.sound = soundToggle.checked;
-    saveProgress();
+  completeReplayButton?.addEventListener("click", () => {
+    replayCompletedLevel();
   });
-  settingsModal.addEventListener("click", (event) => {
-    if (event.target === settingsModal) {
-      toggleSettings(false);
-    }
+  completeNextButton?.addEventListener("click", () => {
+    completeSelectedLevel(completeNextButton.dataset.destination || "next");
   });
-  inventoryCloseButton?.addEventListener("click", closeInventoryModal);
+  inventoryCloseButton?.addEventListener("click", () => {
+    closeInventoryModal();
+  });
   inventoryModal?.addEventListener("click", async (event) => {
     if (event.target === inventoryModal) {
       closeInventoryModal();
@@ -7121,6 +7247,7 @@
   document.addEventListener("keydown", handleModalKeydown);
   document.addEventListener("click", handleLevelBoostClick);
   document.addEventListener("click", handleAction);
+  document.addEventListener("contextmenu", blockBrowserGesture);
   document.addEventListener("selectstart", blockBrowserGesture);
   document.addEventListener("dragstart", blockBrowserGesture);
   document.addEventListener("touchmove", blockBrowserGesture, { passive: false });
@@ -7179,8 +7306,6 @@
   }
   createPerfOverlay();
   loadProgress();
-  musicToggle.checked = state.music;
-  soundToggle.checked = state.sound;
   updateLifeRestore();
   observeViewportLayout();
   syncViewportLayoutNow({ resizeLevel: false });

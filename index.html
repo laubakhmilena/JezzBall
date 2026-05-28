@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#160b3a">
   <title>JezzBall</title>
-  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -56,9 +55,6 @@
                 <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
                 <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Звёзды за уровень"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="level-stars">0</span></button>
               </div>
-              <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
-              </button>
             </header>
             <div class="level-hud" aria-label="Цель уровня">
               <div>
@@ -124,11 +120,11 @@
               <div class="reward-prizes" id="rewardPrizes" data-prize-count="1" aria-label="Ваши награды">
                 <h3>Награды</h3>
                 <div class="reward-prize reward-coin-prize">
-                  <img class="reward-prize-icon coin-icon" src="assets/images/coin.svg" alt="" aria-hidden="true">
+                  <span class="reward-prize-icon coin-icon" aria-hidden="true">●</span>
                   <strong id="rewardCoins">+180</strong>
                 </div>
                 <div class="reward-prize" id="rewardLifePrize">
-                  <img class="reward-prize-icon heart-icon" src="assets/images/heart.svg" alt="" aria-hidden="true">
+                  <span class="reward-prize-icon heart-icon" aria-hidden="true">♥</span>
                   <strong id="rewardLife">+1</strong>
                 </div>
               </div>
@@ -153,9 +149,6 @@
             <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
             <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Всего звёзд"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></button>
           </div>
-          <button class="icon-button settings-button" type="button" data-action="settings" aria-label="Настройки">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98L14.5 2.42A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.49.42L9.13 5.07c-.61.24-1.18.56-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.9 7.9 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.23.4.32.64.22l2.49-1c.51.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.49.42h4c.24 0 .45-.18.49-.42l.38-2.65c.61-.24 1.18-.56 1.69-.98l2.49 1c.24.1.51.01.64-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.18-1.65ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
-          </button>
         </header>
         <div class="final-card">
           <span>Финал открыт</span>
@@ -164,23 +157,6 @@
         </div>
       </div>
     </section>
-
-    <div class="settings-modal" id="settingsModal" aria-hidden="true">
-      <div class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-        <button class="icon-button settings-close" type="button" data-action="close-settings" aria-label="Закрыть настройки">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.7 5.3 12 10.59l5.3-5.3a1 1 0 1 1 1.4 1.42L13.41 12l5.3 5.3a1 1 0 0 1-1.42 1.4L12 13.41l-5.3 5.3a1 1 0 0 1-1.4-1.42L10.59 12l-5.3-5.3A1 1 0 1 1 6.7 5.3Z"/></svg>
-        </button>
-        <h2 id="settingsTitle">Настройки</h2>
-        <label class="toggle-row">
-          <span>Музыка</span>
-          <input type="checkbox" id="musicToggle" checked>
-        </label>
-        <label class="toggle-row">
-          <span>Звуки</span>
-          <input type="checkbox" id="soundToggle" checked>
-        </label>
-      </div>
-    </div>
 
     <section class="inventory-modal" id="inventoryModal" aria-hidden="true">
       <div class="inventory-panel" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
