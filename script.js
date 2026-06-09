@@ -313,11 +313,11 @@
       }
     }
   };
-  COSMETIC_GROUPS.balls.items.default.image = "objects/game-objects/ordinary-ball.png";
-  COSMETIC_GROUPS.balls.items.neon.image = "objects/game-objects/neon-ball.png";
+  COSMETIC_GROUPS.balls.items.default.image = "objects/game-objects/ordinary-ball-small.png";
+  COSMETIC_GROUPS.balls.items.neon.image = "objects/game-objects/neon-ball-small.png";
   COSMETIC_GROUPS.balls.items.ice = {
     icon: "❄",
-    image: "objects/game-objects/ice-ball.png",
+    image: "objects/game-objects/ice-ball-small.png",
     title: "Ледяной"
   };
   const LEVEL_REWARDS = {
@@ -333,6 +333,7 @@
     10: { 1: { coins: 90 }, 2: { coins: 135 }, 3: { coins: 198 } }
   };
   const LINE_GROW_SPEED = 420;
+  const LOW_PERFORMANCE_FRAME_INTERVAL = 1000 / 30;
   const LINE_GESTURE_DEAD_ZONE = 16;
   const LINE_GESTURE_TAP_MAX_MS = 220;
   const BALL_RADIUS = 11;
@@ -1071,7 +1072,7 @@
     if (subtitle) {
       const accent = document.createElement("span");
       accent.textContent = t("subtitleAccent");
-      subtitle.append(accent);
+      subtitle.replaceChildren(document.createTextNode(t("subtitleStart")), accent);
     }
     setAttribute(".menu-actions", "aria-label", t("mainMenu"));
     setText("#playButton > span:last-child", t("play"));
@@ -1170,6 +1171,18 @@
     window.setTimeout(done, 2500);
   });
 
+  const getInitialMenuBackgroundSrc = () => {
+    if (window.matchMedia?.("(max-width: 680px) and (orientation: portrait)")?.matches) {
+      return "objects/fone/fone_menu_two-mobile.jpg";
+    }
+
+    if (isLikelyMobileDevice()) {
+      return "objects/fone/fone_menu-mobile.jpg";
+    }
+
+    return "objects/fone/fone_menu.png";
+  };
+
   const getBallSkinImageSrc = (skinId) => COSMETIC_GROUPS.balls.items[skinId]?.image || "";
 
   const getCachedBallSkinImage = (skinId) => {
@@ -1199,12 +1212,7 @@
   };
 
   const waitForCriticalAssets = () => Promise.all([
-    waitForImageAsset("objects/fone/fone_menu.png"),
-    waitForImageAsset("objects/fone/fone_menu_two.png"),
-    ...Object.values(COSMETIC_GROUPS.balls.items)
-      .map((item) => item.image)
-      .filter(Boolean)
-      .map((src) => waitForImageAsset(src)),
+    waitForImageAsset(getInitialMenuBackgroundSrc()),
     document.fonts?.ready?.catch?.(() => null) || Promise.resolve()
   ]);
 
@@ -1288,14 +1296,14 @@
       yandexState.sdk = await window.YaGames.init();
       applyLanguage(getYandexLanguage());
       registerYandexPauseEvents();
-      await initYandexPlayer();
-      await initYandexPayments();
-      await loadCloudProgress();
-      await processPendingYandexPurchases();
       updateLifeRestore();
       renderChapterScreens();
       syncViewportLayoutNow({ resizeLevel: false });
       await markYandexGameReady();
+      await initYandexPlayer();
+      await initYandexPayments();
+      await loadCloudProgress();
+      await processPendingYandexPurchases();
       scheduleStickyBannerSync();
       return yandexState.sdk;
     })();
@@ -1780,6 +1788,20 @@
         </nav>
       </div>
     `;
+    screen.dataset.rendered = "true";
+  };
+
+  const renderChapterScreen = (chapterId, { force = false } = {}) => {
+    const chapter = getChapter(chapterId);
+    const screen = chapter ? document.getElementById(getChapterScreenId(chapter.id)) : null;
+
+    if (!chapter || !screen) {
+      return;
+    }
+
+    if (force || screen.dataset.rendered !== "true") {
+      createChapterScreen(chapter);
+    }
   };
 
   const getViewportSize = () => {
@@ -1819,7 +1841,7 @@
   };
 
   const renderChapterScreens = () => {
-    chapters.forEach(createChapterScreen);
+    renderChapterScreen(state.currentChapter || getChapterForLevel(state.currentLevel), { force: true });
     renderAllChapters();
     syncLevelBoostButtons();
     document.querySelectorAll("button").forEach(setPressedFeedback);
@@ -4093,7 +4115,7 @@
   const getJezzPlayRect = (size) => {
     const width = Math.max(1, size.width);
     const height = Math.max(1, size.height);
-    const desiredMargin = Math.max(12, Math.min(22, width * 0.03));
+    const desiredMargin = Math.max(8, Math.min(18, width * 0.025));
     const maxMargin = Math.max(0, Math.min(width, height) / 2 - 1);
     const margin = Math.min(desiredMargin, maxMargin);
     return {
@@ -5939,6 +5961,11 @@
       return;
     }
 
+    if (lowPerformanceMode && levelState.lastFrameAt && time - levelState.lastFrameAt < LOW_PERFORMANCE_FRAME_INTERVAL) {
+      levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
+      return;
+    }
+
     const dt = Math.min(0.033, Math.max(0, (time - levelState.lastFrameAt) / 1000 || 0));
     levelState.lastFrameAt = time;
     levelState.elapsed += dt;
@@ -6828,6 +6855,11 @@
     stopJezzLevel();
     const nextChapterId = clampChapterId(chapterId);
     state.currentChapter = nextChapterId;
+    renderChapterScreen(nextChapterId, { force: true });
+    renderAllChapters();
+    syncLevelBoostButtons();
+    document.querySelectorAll("button").forEach(setPressedFeedback);
+    updateInventoryBadge();
     showScreen(getChapterScreenId(nextChapterId));
     saveProgress();
   };
@@ -7300,7 +7332,7 @@
     submitLeaderboardScore();
   });
 
-  if (isLikelyMobileDevice() && (window.devicePixelRatio || 1) >= 2) {
+  if (isLikelyMobileDevice()) {
     lowPerformanceMode = true;
     root?.classList.add("is-low-performance");
   }

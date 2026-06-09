@@ -21,7 +21,7 @@
   --cta-a: #ff57dc;
   --cta-b: #744dff;
   --chapter-bg: url("objects/fone/sunny-glade-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/sunny-glade-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/sunny-glade-1-mobile.jpg");
 }
 
 * {
@@ -67,7 +67,7 @@ button {
   isolation: isolate;
   background:
     linear-gradient(180deg, rgba(28, 17, 98, 0.05), rgba(28, 17, 98, 0.18)),
-    url("objects/fone/fone_menu.png") center / cover no-repeat #21136d;
+    #21136d;
 }
 
 .screen {
@@ -104,7 +104,25 @@ button {
     background:
       radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.18), transparent 28%),
       linear-gradient(180deg, rgba(40, 12, 91, 0.04), rgba(20, 5, 52, 0.24)),
-      url("objects/fone/fone_menu_two.png") center / cover no-repeat;
+      url("objects/fone/fone_menu_two-mobile.jpg") center / cover no-repeat;
+  }
+}
+
+@media (pointer: coarse) and (min-width: 681px) and (orientation: portrait) {
+  .start-screen {
+    background:
+      radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.2), transparent 28%),
+      linear-gradient(180deg, rgba(40, 12, 91, 0.04), rgba(20, 5, 52, 0.24)),
+      url("objects/fone/fone_menu-mobile.jpg") center / cover no-repeat;
+  }
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .start-screen {
+    background:
+      radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.2), transparent 28%),
+      linear-gradient(180deg, rgba(40, 12, 91, 0.04), rgba(20, 5, 52, 0.24)),
+      url("objects/fone/fone_menu-mobile.jpg") center / cover no-repeat;
   }
 }
 
@@ -3756,7 +3774,7 @@ button {
 
 .chapter-1 {
   --chapter-bg: url("objects/fone/sunny-glade-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/sunny-glade-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/sunny-glade-1-mobile.jpg");
   --road-main: rgba(255, 93, 224, 0.9);
   --road-rim: rgba(255, 209, 92, 0.5);
   --level-a: #ffd166;
@@ -3767,7 +3785,7 @@ button {
 
 .chapter-2 {
   --chapter-bg: url("objects/fone/quiet-village-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/quiet-village-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/quiet-village-1-mobile.jpg");
   --road-main: rgba(255, 168, 98, 0.86);
   --road-rim: rgba(149, 77, 116, 0.52);
   --level-a: #ffb06e;
@@ -3778,7 +3796,7 @@ button {
 
 .chapter-3 {
   --chapter-bg: url("objects/fone/golden-meadows-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/golden-meadows-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/golden-meadows-1-mobile.jpg");
   --road-main: rgba(255, 224, 91, 0.9);
   --road-rim: rgba(224, 126, 42, 0.5);
   --level-a: #ffe265;
@@ -3789,7 +3807,7 @@ button {
 
 .chapter-4 {
   --chapter-bg: url("objects/fone/river-whisper-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/river-whisper-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/river-whisper-1-mobile.jpg");
   --road-main: rgba(111, 234, 255, 0.88);
   --road-rim: rgba(47, 132, 175, 0.54);
   --level-a: #80edff;
@@ -3800,7 +3818,7 @@ button {
 
 .chapter-5 {
   --chapter-bg: url("objects/fone/cote-dazur-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/cote-dazur-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/cote-dazur-1-mobile.jpg");
   --road-main: rgba(124, 238, 255, 0.86);
   --road-rim: rgba(228, 183, 97, 0.5);
   --level-a: #7cecff;
@@ -3811,7 +3829,7 @@ button {
 
 .chapter-6 {
   --chapter-bg: url("objects/fone/secret-of-the-depths-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/secret-of-the-depths-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/secret-of-the-depths-1-mobile.jpg");
   --road-main: rgba(79, 217, 250, 0.86);
   --road-rim: rgba(33, 70, 181, 0.55);
   --level-a: #56dcf5;
@@ -3822,7 +3840,7 @@ button {
 
 .chapter-7 {
   --chapter-bg: url("objects/fone/city-lights-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/city-lights-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/city-lights-1-mobile.jpg");
   --road-main: rgba(206, 113, 255, 0.86);
   --road-rim: rgba(82, 49, 178, 0.58);
   --level-a: #cf78ff;
@@ -3833,7 +3851,7 @@ button {
 
 .chapter-8 {
   --chapter-bg: url("objects/fone/neon-rhythm-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/neon-rhythm-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/neon-rhythm-1-mobile.jpg");
   --road-main: rgba(77, 241, 255, 0.88);
   --road-rim: rgba(255, 78, 218, 0.55);
   --level-a: #52f2ff;
@@ -3844,7 +3862,7 @@ button {
 
 .chapter-9 {
   --chapter-bg: url("objects/fone/star-trek-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/star-trek-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/star-trek-1-mobile.jpg");
   --road-main: rgba(156, 158, 255, 0.9);
   --road-rim: rgba(255, 92, 221, 0.42);
   --level-a: #a6a8ff;
@@ -3856,13 +3874,56 @@ button {
 .chapter-10,
 .final-screen {
   --chapter-bg: url("objects/fone/gates-of-light-2.png.png");
-  --chapter-bg-portrait: url("objects/fone/gates-of-light-1.png.png");
+  --chapter-bg-portrait: url("objects/fone/gates-of-light-1-mobile.jpg");
   --road-main: rgba(255, 237, 157, 0.92);
   --road-rim: rgba(239, 142, 91, 0.52);
   --level-a: #fff19a;
   --level-b: #ee945d;
   --cta-a: #fff19a;
   --cta-b: #ef7dc4;
+}
+
+@media (pointer: coarse) {
+  .chapter-1 {
+    --chapter-bg: url("objects/fone/sunny-glade-2-mobile.jpg");
+  }
+
+  .chapter-2 {
+    --chapter-bg: url("objects/fone/quiet-village-2-mobile.jpg");
+  }
+
+  .chapter-3 {
+    --chapter-bg: url("objects/fone/golden-meadows-2-mobile.jpg");
+  }
+
+  .chapter-4 {
+    --chapter-bg: url("objects/fone/river-whisper-2-mobile.jpg");
+  }
+
+  .chapter-5 {
+    --chapter-bg: url("objects/fone/cote-dazur-2-mobile.jpg");
+  }
+
+  .chapter-6 {
+    --chapter-bg: url("objects/fone/secret-of-the-depths-2-mobile.jpg");
+  }
+
+  .chapter-7 {
+    --chapter-bg: url("objects/fone/city-lights-2-mobile.jpg");
+  }
+
+  .chapter-8 {
+    --chapter-bg: url("objects/fone/neon-rhythm-2-mobile.jpg");
+  }
+
+  .chapter-9 {
+    --chapter-bg: url("objects/fone/star-trek-2-mobile.jpg");
+  }
+
+  .chapter-10,
+  .final-screen {
+    --chapter-bg: url("objects/fone/gates-of-light-2-mobile.jpg");
+  }
 }
 
 @keyframes currentPulse {
@@ -7217,7 +7278,7 @@ button {
 }
 
 #level-screen .level-playfield {
-  --level-inset: clamp(4px, 1.2vmin, 12px);
+  --level-inset: clamp(3px, 1vmin, 10px);
   position: absolute;
   inset: calc(var(--safe-top) + var(--level-inset)) calc(var(--safe-right) + var(--level-inset)) calc(var(--safe-bottom) + var(--level-inset)) calc(var(--safe-left) + var(--level-inset));
   z-index: 6;
@@ -7729,7 +7790,7 @@ body,
 #level-screen .jezz-canvas {
   display: block;
   min-width: 0;
-  min-height: 120px;
+  min-height: 0;
 }
 
 @media (orientation: landscape) and (min-width: 701px) {
@@ -7740,7 +7801,7 @@ body,
 
 @media (max-width: 700px), (orientation: portrait) {
   #level-screen .level-playfield {
-    grid-template-rows: auto auto minmax(120px, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
 }
 
