@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 <!doctype html>
 <html lang="ru">
 <head>
+=======
+<!doctype html>
+<html lang="ru">
+<head>
+>>>>>>> 6a9cc0cf46cd716e8056eab7d87af6f6ff409098
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#160b3a">
@@ -11,6 +17,7 @@
   <link rel="preload" as="image" href="objects/fone/fone_menu.png" media="(pointer: fine), (min-width: 681px) and (orientation: portrait)">
   <link rel="stylesheet" href="style.css">
 </head>
+<<<<<<< HEAD
 <body>
   <main class="game-root" id="gameRoot" aria-label="Экран игры JezzBall">
     <section class="start-screen screen is-active" id="main-menu" aria-labelledby="gameTitle">
@@ -78,6 +85,75 @@
                 <strong id="penaltyCount">0</strong>
               </div>
             </div>
+=======
+<body>
+  <main class="game-root" id="gameRoot" aria-label="Экран игры JezzBall">
+    <section class="start-screen screen is-active" id="main-menu" aria-labelledby="gameTitle">
+      <div class="start-content">
+        <h1 class="game-title" id="gameTitle">JezzBall</h1>
+        <p class="game-subtitle">Проведи линию. <span>Захвати пространство.</span></p>
+        <nav class="menu-actions" aria-label="Главное меню">
+          <button class="menu-button play-button" type="button" id="playButton">
+            <span class="play-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M8 5.7c0-.78.86-1.25 1.52-.82l9.1 5.78c.61.39.61 1.29 0 1.68l-9.1 5.78A.98.98 0 0 1 8 17.3V5.7Z"/>
+              </svg>
+            </span>
+            <span>Играть</span>
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <section class="chapter-screen chapter-1 screen" id="chapter-1-screen" data-chapter="1" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-2 screen" id="chapter-2-screen" data-chapter="2" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-3 screen" id="chapter-3-screen" data-chapter="3" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-4 screen" id="chapter-4-screen" data-chapter="4" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-5 screen" id="chapter-5-screen" data-chapter="5" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-6 screen" id="chapter-6-screen" data-chapter="6" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-7 screen" id="chapter-7-screen" data-chapter="7" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-8 screen" id="chapter-8-screen" data-chapter="8" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-9 screen" id="chapter-9-screen" data-chapter="9" aria-hidden="true"></section>
+    <section class="chapter-screen chapter-10 screen" id="chapter-10-screen" data-chapter="10" aria-hidden="true"></section>
+
+    <section class="level-screen screen" id="level-screen" aria-label="Экран уровня" aria-hidden="true">
+      <div class="chapter-scene level-scene">
+        <div class="level-playfield" id="levelPlayfield">
+          <div class="level-side-panel">
+            <header class="top-ui" aria-label="Верхняя панель">
+              <div class="level-nav-actions">
+                <button class="icon-button back-button" type="button" data-action="return-chapter" aria-label="Назад к главе">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/></svg>
+                </button>
+                <button class="icon-button restart-button" type="button" data-action="restart-level" aria-label="Играть уровень заново">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 1 1-7.06 4.24 1 1 0 1 1 1.76.94A6 6 0 1 0 12 6H9.41l1.3 1.29a1 1 0 1 1-1.42 1.42l-3-3a1 1 0 0 1 0-1.42l3-3a1 1 0 1 1 1.42 1.42L9.41 4H12Z"/></svg>
+                </button>
+              </div>
+              <div class="resource-strip" aria-label="Ресурсы">
+                <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
+                <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
+                <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Звёзды за уровень"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="level-stars">0</span></button>
+              </div>
+            </header>
+            <div class="level-hud" aria-label="Цель уровня">
+              <div>
+                <span id="levelChapterLabel">Глава 1</span>
+                <strong id="levelTitle">Уровень 1</strong>
+              </div>
+              <div class="level-stat">
+                <span>Цель</span>
+                <strong id="targetPercent">70%</strong>
+              </div>
+              <div class="level-stat">
+                <span>Захвачено</span>
+                <strong id="capturePercent">0%</strong>
+              </div>
+              <div class="level-stat">
+                <span>Штрафы</span>
+                <strong id="penaltyCount">0</strong>
+              </div>
+            </div>
+>>>>>>> 6a9cc0cf46cd716e8056eab7d87af6f6ff409098
             <div class="level-tools">
               <div class="level-boost-panel" id="levelBoostPanel" aria-label="Бусты уровня">
                 <button class="level-boost-button" type="button" data-level-boost="fastLine" aria-label="Линия">
@@ -96,6 +172,7 @@
                   <span class="boost-icon" aria-hidden="true">↩</span><span class="boost-label">Откат</span><strong data-booster-count="penaltyRepair">x0</strong>
                 </button>
               </div>
+<<<<<<< HEAD
               <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
                 <button class="obstacle-legend-toggle" type="button" aria-label="Подсказка по препятствиям" aria-expanded="false">?</button>
                 <span class="obstacle-legend-item">
@@ -162,6 +239,74 @@
       </div>
     </section>
 
+=======
+              <div class="obstacle-legend" aria-label="Подсказка по препятствиям">
+                <button class="obstacle-legend-toggle" type="button" aria-label="Подсказка по препятствиям" aria-expanded="false">?</button>
+                <span class="obstacle-legend-item">
+                  <span class="obstacle-swatch obstacle-swatch-danger" aria-hidden="true"></span>
+                  Яркая или темная линия - штраф при касании
+                </span>
+                <span class="obstacle-legend-item">
+                  <span class="obstacle-swatch obstacle-swatch-safe" aria-hidden="true"></span>
+                  Пунктирная светлая линия - линия может закрепиться, мячи отскакивают
+                </span>
+              </div>
+            </div>
+          </div>
+          <canvas class="jezz-canvas" id="jezzCanvas" tabindex="0" aria-label="Игровое поле JezzBall. Проведи пальцем или мышью вверх или вниз для вертикальной линии, влево или вправо для горизонтальной. Стрелки перемещают прицел, Space или Enter ставят линию."></canvas>
+          <div class="level-toast" id="levelToast" aria-live="polite"></div>
+          <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
+            <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
+              <button class="reward-close" type="button" id="completeCloseButton" aria-label="К главам">×</button>
+              <div class="reward-ribbon" id="rewardTitle">Уровень пройден!</div>
+              <div class="reward-stars" id="rewardStars" aria-label="Полученные звезды">
+                <span data-star="1">★</span>
+                <span data-star="2">★</span>
+                <span data-star="3">★</span>
+              </div>
+              <p class="reward-capture">Ты захватил <strong id="levelCompleteScore">70%</strong> поля!</p>
+              <div class="reward-prizes" id="rewardPrizes" data-prize-count="1" aria-label="Ваши награды">
+                <h3>Награды</h3>
+                <div class="reward-prize reward-coin-prize">
+                  <span class="reward-prize-icon coin-icon" aria-hidden="true">●</span>
+                  <strong id="rewardCoins">+180</strong>
+                </div>
+                <div class="reward-prize" id="rewardLifePrize">
+                  <span class="reward-prize-icon heart-icon" aria-hidden="true">♥</span>
+                  <strong id="rewardLife">+1</strong>
+                </div>
+              </div>
+              <div class="reward-actions">
+                <button class="menu-button map-reward-button compact-play" type="button" id="completeReplayButton">Играть еще раз</button>
+                <button class="menu-button play-button compact-play" type="button" id="completeNextButton">Следующий уровень</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-screen screen" id="final-screen" aria-label="Финал" aria-hidden="true">
+      <div class="chapter-scene final-scene">
+        <header class="top-ui" aria-label="Верхняя панель">
+          <button class="icon-button back-button" type="button" data-action="return-chapter" aria-label="Назад к главе">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L10.41 11H20a1 1 0 1 1 0 2h-9.59l4.3 4.3a1 1 0 0 1-1.42 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.42 0Z"/></svg>
+          </button>
+          <div class="resource-strip" aria-label="Ресурсы">
+            <div class="resource-pill resource-counter coins-pill" aria-label="Монеты"><span class="resource-icon" aria-hidden="true">●</span><span data-resource="coins">0</span></div>
+            <div class="resource-pill resource-counter lives-pill" aria-label="Жизни"><span class="resource-icon" aria-hidden="true">♥</span><span data-resource="lives">5</span><span class="life-restore-timer" data-life-timer hidden>3:00</span></div>
+            <button class="resource-pill achievement-button" type="button" data-action="achievements" aria-label="Всего звёзд"><span class="resource-icon" aria-hidden="true">★</span><span data-resource="total-stars">0</span></button>
+          </div>
+        </header>
+        <div class="final-card">
+          <span>Финал открыт</span>
+          <h2>Врата света пройдены</h2>
+          <button class="menu-button play-button compact-play" type="button" data-action="main-menu">В меню</button>
+        </div>
+      </div>
+    </section>
+
+>>>>>>> 6a9cc0cf46cd716e8056eab7d87af6f6ff409098
     <section class="inventory-modal" id="inventoryModal" aria-hidden="true">
       <div class="inventory-panel" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
         <button class="inventory-close" type="button" id="inventoryCloseButton" aria-label="Закрыть магазин">×</button>
@@ -181,6 +326,7 @@
         <div class="inventory-content" id="inventoryContent"></div>
       </div>
     </section>
+<<<<<<< HEAD
 
     <div class="confirm-modal" id="confirmModal" aria-hidden="true">
       <div class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
@@ -191,6 +337,18 @@
           <button class="menu-button play-button compact-play" type="button" id="confirmAcceptButton">Да</button>
         </div>
       </div>
+=======
+
+    <div class="confirm-modal" id="confirmModal" aria-hidden="true">
+      <div class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <h2 id="confirmTitle">Подтверждение</h2>
+        <p id="confirmMessage">Продолжить?</p>
+        <div class="confirm-actions">
+          <button class="menu-button map-reward-button compact-play" type="button" id="confirmCancelButton">Остаться</button>
+          <button class="menu-button play-button compact-play" type="button" id="confirmAcceptButton">Да</button>
+        </div>
+      </div>
+>>>>>>> 6a9cc0cf46cd716e8056eab7d87af6f6ff409098
     </div>
 
     <div class="viewport-too-small-overlay" id="viewportTooSmallOverlay" role="status" aria-live="polite" aria-hidden="true">
@@ -200,8 +358,16 @@
       </div>
     </div>
   </main>
+<<<<<<< HEAD
 
   <script src="/sdk.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+=======
+
+  <script src="/sdk.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
+>>>>>>> 6a9cc0cf46cd716e8056eab7d87af6f6ff409098
