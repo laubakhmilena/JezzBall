@@ -1,0 +1,54 @@
+# Build / static verification log
+UTC 2026-07-17T15:10:12Z
+
+## Source hashes
+4409e8e020e1722ed1b1c17a7400fb1466fa2861dbfb65d6d000709ed15fc2bc  /mnt/data/index(2).html
+13a792df28a6f9faa5e4b263d171be0a08a5df95d4c70d6669e0400818c9e03b  /mnt/data/script(1).js
+8f215fa727d27c2c9ca2e9900626ebd190ee256281dc2fe4d83be45dd3b67152  /mnt/data/style(1).css
+
+## JavaScript syntax check
+node_check_exit=0
+
+## Referenced local files from HTML/CSS/JS (sample and existence)
+total_local_references=40
+MISSING	${escapeHtml(image)}
+MISSING	/sdk.js
+MISSING	objects/fone/city-lights-1-mobile.jpg
+MISSING	objects/fone/city-lights-2-mobile.jpg
+MISSING	objects/fone/city-lights-2.png.png
+MISSING	objects/fone/cote-dazur-1-mobile.jpg
+MISSING	objects/fone/cote-dazur-2-mobile.jpg
+MISSING	objects/fone/cote-dazur-2.png.png
+MISSING	objects/fone/fone_menu-mobile.jpg
+MISSING	objects/fone/fone_menu.png
+MISSING	objects/fone/fone_menu_two-mobile.jpg
+MISSING	objects/fone/gates-of-light-1-mobile.jpg
+MISSING	objects/fone/gates-of-light-2-mobile.jpg
+MISSING	objects/fone/gates-of-light-2.png.png
+MISSING	objects/fone/golden-meadows-1-mobile.jpg
+MISSING	objects/fone/golden-meadows-2-mobile.jpg
+MISSING	objects/fone/golden-meadows-2.png.png
+MISSING	objects/fone/neon-rhythm-1-mobile.jpg
+MISSING	objects/fone/neon-rhythm-2-mobile.jpg
+MISSING	objects/fone/neon-rhythm-2.png.png
+MISSING	objects/fone/quiet-village-1-mobile.jpg
+MISSING	objects/fone/quiet-village-2-mobile.jpg
+MISSING	objects/fone/quiet-village-2.png.png
+MISSING	objects/fone/river-whisper-1-mobile.jpg
+MISSING	objects/fone/river-whisper-2-mobile.jpg
+MISSING	objects/fone/river-whisper-2.png.png
+MISSING	objects/fone/secret-of-the-depths-1-mobile.jpg
+MISSING	objects/fone/secret-of-the-depths-2-mobile.jpg
+MISSING	objects/fone/secret-of-the-depths-2.png.png
+MISSING	objects/fone/star-trek-1-mobile.jpg
+MISSING	objects/fone/star-trek-2-mobile.jpg
+MISSING	objects/fone/star-trek-2.png.png
+MISSING	objects/fone/sunny-glade-1-mobile.jpg
+MISSING	objects/fone/sunny-glade-2-mobile.jpg
+MISSING	objects/fone/sunny-glade-2.png.png
+MISSING	objects/game-objects/ice-ball-small.png
+MISSING	objects/game-objects/neon-ball-small.png
+MISSING	objects/game-objects/ordinary-ball-small.png
+MISSING	script.js
+MISSING	style.css
+missing_local_references=40

@@ -1,0 +1,251 @@
+127.0.0.1 - - [17/Jul/2026 15:11:09] "HEAD /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:15:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:15:12] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:21] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:21] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:26] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:26] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:29] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:29] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:29] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:29] "GET /objects/game-objects/ordinary-ball-small.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:45] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:45] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:49] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:49] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:52] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:52] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:53] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:53] "GET /objects/game-objects/ordinary-ball-small.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:57] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:57] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /index.html?debug HTTP/1.1" 304 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:58] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:58] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /index.html?debug HTTP/1.1" 304 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:16:59] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/fone_menu_two-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/gates-of-light-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/gates-of-light-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:00] "GET /objects/fone/gates-of-light-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:01] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:01] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:02] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:02] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:55] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:55] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:56] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:56] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:56] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:56] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:17:56] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:17:56] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:00] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:00] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:03] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:03] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:03] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:03] "GET /objects/game-objects/ordinary-ball-small.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:08] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:08] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /index.html?debug HTTP/1.1" 304 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /index.html?debug HTTP/1.1" 304 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:09] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:09] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/fone_menu.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:10] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:10] "GET /objects/fone/gates-of-light-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/sunny-glade-2.png.png HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /index.html?debug HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /style.css HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /sdk.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /script.js HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/fone_menu_two-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/gates-of-light-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/gates-of-light-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:11] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:11] "GET /objects/fone/gates-of-light-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:12] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:12] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [17/Jul/2026 15:18:13] code 404, message File not found
+127.0.0.1 - - [17/Jul/2026 15:18:13] "GET /objects/fone/sunny-glade-1-mobile.jpg HTTP/1.1" 404 -

@@ -1,0 +1,37 @@
+## Environment snapshot
+UTC 2026-07-17T15:19:02Z
+Linux 6626b9cf88f0 4.4.0 #1 SMP Sun Jan 10 15:06:54 PST 2016 x86_64 GNU/Linux
+
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Address sizes:       46 bits physical, 48 bits virtual
+Byte Order:          Little Endian
+CPU(s):              56
+On-line CPU(s) list: 0-55
+Vendor ID:           AuthenticAMD
+Model name:          unknown
+CPU family:          175
+Model:               17
+Thread(s) per core:  1
+Core(s) per socket:  56
+Socket(s):           1
+Stepping:            unknown
+BogoMIPS:            2596.15
+Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext fsgsbase bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid fsrm
+Virtualization:      AMD-V
+Hypervisor vendor:   Microsoft
+Virtualization type: full
+
+               total        used        free      shared  buff/cache   available
+Mem:           4.0Gi       825Mi       3.2Gi          0B       258Mi       3.2Gi
+Swap:             0B          0B          0B
+
+v22.16.0
+10.9.2
+Python 3.13.5
+Chromium 144.0.7559.96 built on Debian GNU/Linux 13 (trixie)
+
+DISPLAY=:0
+Desktop viewport tested: 1440x900 @1x
+Mobile viewport tested: 390x844 @2x
+Small viewport tested: 320x240

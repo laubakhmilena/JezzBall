@@ -1,0 +1,18 @@
+# Test execution log
+Executed UTC: 2026-07-17T15:17:02Z
+Build fingerprint: sha256-set 4409e8e0/13a792df/8f215fa7
+
+Static checks:
+- node --check script(1).js: PASS
+- expected runtime filenames present: FAIL (script.js and style.css absent)
+- referenced asset package present: FAIL (objects/ absent; 36 concrete asset paths missing, plus expected runtime names and platform SDK path)
+
+Dynamic checks using safe runtime copy in QA/work/runtime-copy and Chromium 144:
+- 16 PASS
+- 0 FAIL
+- 0 BLOCKED in executed browser subset
+- page JavaScript errors: 0
+- HTTP 4xx responses observed: 39 (all missing supplied image resources; repeated across scenarios)
+
+Full designed suite:
+- see QA/10_TEST_CASES.csv and QA/19_TEST_EXECUTION_REPORT.md

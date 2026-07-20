@@ -1,0 +1,62 @@
+[
+  {
+    "level": 1,
+    "target": 70,
+    "balls": 1,
+    "speed": "slow",
+    "obstacles": 0,
+    "dangerObstacles": 0,
+    "captureObstacles": 0,
+    "movingObstacles": 0,
+    "validStarts": 230,
+    "verticalStarts": 120,
+    "horizontalStarts": 110,
+    "maxFirstCapture": 58.3,
+    "risk": ""
+  },
+  {
+    "level": 10,
+    "target": 75,
+    "balls": 2,
+    "speed": "medium",
+    "obstacles": 1,
+    "dangerObstacles": 1,
+    "captureObstacles": 0,
+    "movingObstacles": 0,
+    "validStarts": 143,
+    "verticalStarts": 44,
+    "horizontalStarts": 99,
+    "maxFirstCapture": 32.5,
+    "risk": ""
+  },
+  {
+    "level": 50,
+    "target": 84,
+    "balls": 4,
+    "speed": "fast",
+    "obstacles": 5,
+    "dangerObstacles": 3,
+    "captureObstacles": 2,
+    "movingObstacles": 1,
+    "validStarts": 44,
+    "verticalStarts": 22,
+    "horizontalStarts": 22,
+    "maxFirstCapture": 8.3,
+    "risk": "four-balls, fast, many-danger"
+  },
+  {
+    "level": 100,
+    "target": 88,
+    "balls": 4,
+    "speed": "fast",
+    "obstacles": 6,
+    "dangerObstacles": 3,
+    "captureObstacles": 1,
+    "movingObstacles": 4,
+    "validStarts": 44,
+    "verticalStarts": 22,
+    "horizontalStarts": 22,
+    "maxFirstCapture": 8.3,
+    "risk": "high-target, four-balls, fast, many-danger, many-moving"
+  }
+]

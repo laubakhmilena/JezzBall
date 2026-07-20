@@ -1,0 +1,9 @@
+{
+  "desktop_load_seconds": 0.35662733499998467,
+  "navigation": {
+    "domContentLoaded": 60.09999999997672,
+    "load": 60.39999999990687,
+    "responseEnd": 4.299999999930151,
+    "transferSize": 300
+  }
+}

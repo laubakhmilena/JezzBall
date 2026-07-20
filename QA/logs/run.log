@@ -1,0 +1,103 @@
+Executed UTC: 2026-07-17T15:18:13Z
+TC-SMOKE-001	PASS	HTTP=200; title=JezzBall; active=main-menu; load=0.357s	QA/evidence/BVT-001_main-menu_desktop.png
+TC-CORE-LEVEL-AUDIT	PASS	Debug audit returned list; saved to level-audit.json	QA/logs/level-audit.json
+TC-INPUT-001	PASS	After Tab activeElement=playButton	QA/evidence/BVT-001_main-menu_desktop.png
+TC-SMOKE-002	PASS	Active=chapter-1-screen; level buttons=10	QA/evidence/SMOKE-002_chapter-1_desktop.png
+TC-UI-CHAPTER-ACTIONS	PASS	shop=1; achievements=1	QA/evidence/SMOKE-002_chapter-1_desktop.png
+TC-SHOP-001	PASS	Shop open=True	QA/evidence/SMOKE-003_shop.png
+TC-ACH-001	PASS	Achievements panels=1	QA/evidence/SMOKE-004_achievements.png
+TC-SMOKE-003	PASS	disabled=False; active=level-screen; canvas={'x': 299.796875, 'y': 9, 'width': 1131.203125, 'height': 882}	QA/evidence/SMOKE-005_level-1_start.png
+TC-CORE-001	PASS	Capture 0%->50%; penalties=0/3	QA/evidence/CORE-001_after_pointer_action.png
+TC-CORE-RESTART	PASS	modal=True; capture=0%; penalties=0/3	QA/evidence/CORE-002_restart-confirmation.png
+TC-NAV-RETURN	PASS	modal=True; after cancel=level-screen; after accept=chapter-1-screen	QA/evidence/SMOKE-002_chapter-1_desktop.png
+TC-SAVE-001	PASS	before_len=957; after_equal=True	
+TC-PERF-001	PASS	Navigation timing captured: {'domContentLoaded': 60.09999999997672, 'load': 60.39999999990687, 'responseEnd': 4.299999999930151, 'transferSize': 300}	QA/logs/browser-performance.json
+TC-SAVE-002	PASS	active=main-menu; playVisible=True; storage='{"currentChapter":1,"currentLevel":1,"selectedLevel":1,"coins":0,"lives":5,"nextLifeAt":null,"starsByLevel":{},"perfectChapters":[],"chapterChests":{"1":{"earnedTier":0,"claimedTier":0},"2":{"earnedTier":0,"claimedTier":0},"3":{"earnedTier":0,"claimedTier":0},"4":{"earnedTier":0,"claimedTier":0},"5":{"earnedTier":0,"claimedTier":0},"6":{"earnedTier":0,"claimedTier":0},"7":{"earnedTier":0,"claimedTier":0},"8":{"earnedTier":0,"claimedTier":0},"9":{"earnedTier":0,"claimedTier":0},"10":{"earnedTier":0,"claimedTier":0}},"boosters":{"fastLine":0,"slowBalls":0,"lineShield":0,"targetEase":0,"penaltyRepair":0},"selectedBoosters":["fastLine","slowBalls","lineShield"],"cosmetics":{"balls":["default"],"lines":["default"],"captureEffects":["default"]},"equippedCosmetics":{"ball":"default","line":"default","captureEffect":"default"},"gifts":[],"unlockedAchievements":[],"claimedAchievements":[],"processedIapPurchaseTokens":[],"expandedChapters":[1]}'	QA/evidence/SAVE-002_corrupt-save-recovery.png
+TC-COMPAT-001	PASS	overlay aria-hidden=false	QA/evidence/COMPAT-001_small-viewport.png
+TC-COMPAT-002	PASS	Mobile active=chapter-1-screen	QA/evidence/COMPAT-003_mobile-chapter.png
+
+page_errors=0
+
+console_messages=41
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "table", "text": "[Object, Object, Object, Object]"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "desktop-clean", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "corrupt-save", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "small-viewport", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"scenario": "mobile-portrait", "type": "error", "text": "Failed to load resource: the server responded with a status of 404 (File not found)"}
+
+network_issues=39
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/fone_menu.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/game-objects/ordinary-ball-small.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/fone_menu.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "desktop-clean", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/fone_menu.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/fone_menu.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "corrupt-save", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/fone_menu.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-2.png.png"}
+{"scenario": "small-viewport", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-2.png.png"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/fone_menu_two-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-1-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-1-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-1-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-1-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-1-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/gates-of-light-1-mobile.jpg"}
+{"scenario": "mobile-portrait", "kind": "response", "status": 404, "url": "http://127.0.0.1:8765/objects/fone/sunny-glade-1-mobile.jpg"}
