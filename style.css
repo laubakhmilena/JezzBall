@@ -6778,6 +6778,18 @@ button {
   }
 }
 
+/* The canvas box follows the logical aspect ratio; empty space is outside input. */
+.jezz-canvas-slot {
+  grid-area: canvas;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Final level HUD fit: resources stay beside navigation. */
 #level-screen .level-helper-panel {
   display: none !important;
@@ -8764,4 +8776,234 @@ body,
     grid-column: 1 / -1;
     max-width: none;
   }
+}
+
+/* Gameplay accessibility: retain actions on compact screens. */
+#level-screen .restart-button { display: inline-flex !important; }
+#level-screen button { min-width: 44px !important; min-height: 44px !important; }
+#level-screen .level-helper-panel {
+  display: none !important;
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  bottom: 68px;
+  transform: translateX(-50%);
+  width: min(300px, 85%);
+  pointer-events: none;
+}
+#level-screen .level-helper-panel.is-visible { display: block !important; }
+
+/* Level viewport contract: all level geometry is owned by this block. */
+#level-screen, #level-screen .level-scene { width:100%; height:var(--viewport-height,100dvh); min-height:0; overflow:hidden; }
+#level-screen .level-scene { background:var(--chapter-bg) center / cover no-repeat; }
+#level-screen .level-scene::before, #level-screen .level-scene::after { content:none; }
+#level-screen .level-playfield {
+  position:absolute; inset:0; margin:auto; transform:none; z-index:6; box-sizing:border-box;
+  width:100%; height:100%; min-width:0; min-height:0; max-width:none; max-height:none;
+  display:grid; grid-template:"top" auto "hud" auto "hint" 0px "canvas" minmax(0,1fr) "tools" auto / minmax(0,1fr);
+  gap:8px; padding:12px; overflow:hidden; border-radius:18px; border:1px solid #ffb8f775;
+  background:rgba(255,255,255,.06); box-shadow:0 8px 24px #04011526;
+}
+#level-screen .level-side-panel { display:contents !important; }
+#level-screen .top-ui, #level-screen .level-hud, #level-screen .level-tools,
+#level-screen .level-helper-panel, #level-screen .jezz-canvas-slot {
+  position:static; inset:auto; transform:none; margin:0; padding:0; width:100%; height:auto;
+  min-width:0; min-height:0; max-width:none; max-height:none; box-sizing:border-box;
+}
+#level-screen .top-ui { grid-area:top; display:grid; grid-template:"nav resources" auto / auto minmax(0,1fr); gap:8px; align-items:center; overflow:visible; }
+#level-screen .level-nav-actions { grid-area:nav; display:flex; gap:6px; width:auto; }
+#level-screen .icon-button { width:48px !important; height:48px !important; min-width:44px !important; min-height:44px !important; flex:0 0 auto; padding:8px; }
+#level-screen .icon-button svg { width:26px; height:26px; }
+#level-screen .resource-strip { grid-area:resources; display:grid; grid-template:auto / repeat(3,minmax(0,1fr)); width:100%; min-width:0; gap:6px; padding:0; border:0; background:none; overflow:visible !important; }
+#level-screen .resource-pill { box-sizing:border-box; display:flex; justify-content:center; align-items:center; width:100%; min-width:0; height:48px; min-height:44px; padding:4px; gap:4px; font-size:15px; overflow:visible !important; }
+#level-screen .resource-icon { width:auto; min-width:0; font-size:18px; }
+#level-screen .level-hud { grid-area:hud; display:grid; grid-template:auto / minmax(0,2fr) repeat(3,minmax(0,1fr)); gap:6px; align-items:stretch; align-content:start; }
+#level-screen .level-hud > div, #level-screen .level-hud > div:first-child { display:grid; grid-area:auto; min-width:0; min-height:44px; height:auto; padding:5px 8px; gap:2px; align-content:center; }
+#level-screen .level-hud span { font-size:12px; line-height:1.15; white-space:normal; }
+#level-screen .level-hud strong, #level-screen .level-hud > div:first-child strong { font-size:18px; line-height:1.15; white-space:normal; }
+#level-screen .jezz-canvas-slot { grid-area:canvas; display:grid; place-items:center; height:100%; overflow:hidden; border:0; border-radius:0; background:none; }
+#level-screen .jezz-canvas { grid-area:1 / 1; display:block; place-self:center; box-sizing:border-box; min-width:0; min-height:0; max-width:100%; max-height:100%; aspect-ratio:auto; padding:0; border:0; background:transparent; box-shadow:inset 0 0 0 2px #ff5bda; }
+#level-screen .level-helper-panel, #level-screen .level-helper-panel.is-visible, #level-screen.has-learned-lines .level-helper-panel {
+  grid-area:auto; position:absolute !important; inset:auto !important; display:flex !important; align-items:center; justify-content:center;
+  height:0; padding:0; transform:none; animation:none; visibility:hidden; opacity:0; pointer-events:none; overflow:hidden;
+}
+#level-screen:not(.has-learned-lines) .level-helper-panel.is-visible {
+  position:absolute !important; left:50% !important; top:120px !important;
+  width:min(85%,520px); height:auto; padding:6px 10px; transform:translateX(-50%);
+  visibility:visible; opacity:1; z-index:10;
+}
+#level-screen .level-helper-panel p { margin:0; font-size:12px; line-height:1.25; white-space:normal; text-align:center; overflow:hidden; }
+#level-screen .level-tools { grid-area:tools; display:flex; align-items:center; gap:6px; overflow:visible; }
+#level-screen .level-boost-panel { grid-area:auto; display:grid; grid-template:auto / repeat(5,minmax(0,1fr)); flex:1; width:100%; height:auto; min-width:0; min-height:0; gap:6px; padding:0 !important; align-self:auto; align-content:start; overflow:visible; }
+#level-screen .level-boost-button { grid-area:auto; display:flex; align-items:center; justify-content:center; box-sizing:border-box; gap:6px; width:100%; height:48px !important; min-width:44px !important; min-height:44px !important; padding:4px; overflow:visible !important; }
+#level-screen .level-boost-button .boost-icon { font-size:22px; }
+#level-screen .level-boost-button .boost-label { display:block; font-size:12px; }
+#level-screen .level-boost-button strong { font-size:13px; min-width:max-content; }
+#level-screen .obstacle-legend { display:block !important; grid-area:auto; position:relative; flex:0 0 44px; width:44px; min-width:44px; height:44px; min-height:44px; margin:0; padding:0; border:0; background:none; overflow:visible !important; }
+#level-screen .obstacle-legend[hidden] { display:none !important; }
+#level-screen .obstacle-legend-toggle { width:44px !important; height:44px !important; min-height:44px !important; }
+#level-screen .obstacle-legend-toggle::after { content:none; }
+#level-screen .level-toast { left:50%; right:auto; top:10px; max-width:85%; transform:translateX(-50%); z-index:20; }
+@media (orientation:portrait), (max-width:600px) {
+  #level-screen .level-scene { background-image:var(--chapter-bg-portrait,var(--chapter-bg)); }
+  #level-screen .level-playfield { width:100%; height:100%; border:0; border-radius:0; padding:max(6px,var(--safe-top)) max(6px,var(--safe-right)) max(6px,var(--safe-bottom)) max(6px,var(--safe-left)); gap:5px; }
+  #level-screen .level-hud { grid-template:auto auto / repeat(3,minmax(0,1fr)); }
+  #level-screen .level-hud > div:first-child { grid-column:1 / -1; }
+  #level-screen .level-boost-button .boost-label { display:none; }
+  #level-screen .level-boost-panel { gap:4px; }
+}
+@media (orientation:landscape) {
+  #level-screen .level-playfield {
+    width:100%; height:100%; border:0; border-radius:0; padding:6px;
+    grid-template:"top canvas" auto "hud canvas" auto "tools canvas" minmax(0,1fr) / clamp(156px,25%,280px) minmax(0,1fr);
+    gap:5px;
+  }
+  #level-screen .top-ui { grid-template:"nav" 44px "resources" 44px / minmax(0,1fr); gap:3px; }
+  #level-screen .icon-button { width:44px !important; height:44px !important; }
+  #level-screen .resource-strip { gap:3px; }
+  #level-screen .resource-pill { height:44px; padding:2px; font-size:13px; }
+  #level-screen .level-hud { grid-template:auto auto / repeat(3,minmax(0,1fr)); gap:3px; }
+  #level-screen .level-hud > div, #level-screen .level-hud > div:first-child { padding:3px; min-height:36px; }
+  #level-screen .level-hud > div:first-child { grid-column:1 / -1; }
+  #level-screen .level-hud span { font-size:clamp(9px,1.05vw,11px); overflow-wrap:anywhere; }
+  #level-screen .level-hud strong, #level-screen .level-hud > div:first-child strong { font-size:15px; }
+  #level-screen .level-tools { display:grid; grid-template:repeat(3,44px) / repeat(2,minmax(0,1fr)) !important; gap:3px; align-content:start; align-items:start; }
+  #level-screen .level-boost-panel { display:contents; }
+  #level-screen .level-boost-button { height:44px !important; gap:3px; padding:2px; }
+  #level-screen .level-boost-button .boost-label { display:none; }
+  #level-screen .level-boost-button .boost-icon { font-size:20px; }
+  #level-screen .level-helper-panel p { font-size:10px; }
+  #level-screen .level-helper-panel { display:none !important; }
+  #level-screen .obstacle-legend { position:relative; inset:auto; justify-self:center; }
+}
+
+/* Taller landscape screens retain a full-width header and a wide board. */
+@media (orientation:landscape) and (min-height:601px) {
+  #level-screen .level-playfield {
+    grid-template:"top top" auto "hud canvas" auto "tools canvas" minmax(0,1fr) / clamp(156px,25%,280px) minmax(0,1fr);
+    padding:8px; gap:8px;
+  }
+  #level-screen .top-ui { grid-template:"nav resources" 48px / auto minmax(0,1fr); gap:8px; }
+  #level-screen .level-hud > div { min-height:44px; }
+  #level-screen .level-hud span { font-size:12px; }
+  #level-screen .level-boost-button .boost-label { display:block; }
+}
+
+@media (orientation:landscape) and (max-height:360px) {
+  #level-screen .level-playfield { padding:3px; gap:2px; }
+  #level-screen .level-hud strong, #level-screen .level-hud > div:first-child strong { font-size:14px; }
+  #level-screen .top-ui { grid-template-rows:44px 44px; gap:2px; }
+  #level-screen .resource-pill { height:44px; min-height:44px; }
+  #level-screen .level-tools, #level-screen .level-hud { gap:2px; }
+  #level-screen .level-hud > div, #level-screen .level-hud > div:first-child { min-height:30px; padding:2px; }
+}
+#confirmModal #confirmMessage { white-space:pre-line; }
+.shop-chest-result-icon:has(img) { background:none; box-shadow:none; animation:none; }
+.shop-chest-result-icon img { width:100%; height:100%; object-fit:contain; }
+.shop-chest-result-panel { box-sizing:border-box; }
+.shop-chest-result-card { box-sizing:border-box; }
+
+/* Desktop keeps the compact help button without the redundant label. */
+@media (min-width:601px) {
+  #level-screen .level-side-panel .obstacle-legend::after {
+    content:none !important;
+    display:none !important;
+  }
+}
+
+/* Readable controls over the chapter artwork; no opaque full-screen panel. */
+#level-screen .level-hud > div, #level-screen .resource-pill,
+#level-screen .icon-button, #level-screen .level-boost-button {
+  background:rgba(45,24,76,.72); border:1px solid rgba(255,255,255,.42);
+  color:#fff; text-shadow:0 1px 2px #231035; box-shadow:none;
+}
+#level-screen .level-boost-button:disabled { opacity:.8; }
+#level-screen .level-nav-actions { justify-content:flex-start; }
+
+/* Both terminal states use the viewport, independent of the board layout. */
+#level-screen .level-complete-panel, #confirmModal {
+  position:fixed; inset:0; width:100%; height:var(--viewport-height,100dvh);
+  max-width:none; max-height:none; min-width:0; min-height:0;
+  box-sizing:border-box; grid-area:auto; display:grid; place-items:center;
+  padding:12px; z-index:60; transform:none; overflow:hidden;
+  background:rgba(27,15,45,.28); backdrop-filter:blur(4px);
+}
+
+/* Shared interface polish: stable icon geometry and clear reward hierarchy. */
+#level-screen .resource-pill { border-radius:24px; }
+#level-screen .resource-icon { flex:0 0 20px; width:20px; height:20px; line-height:20px; text-align:center; }
+#level-screen [data-resource] { min-width:0; padding:0; border:0; font-variant-numeric:tabular-nums; }
+.achievement-item .achievement-icon,
+.achievement-item.is-locked .achievement-icon,
+.achievement-item.is-claimed .achievement-icon {
+  opacity:1; filter:none; background:none; box-shadow:none; text-shadow:none;
+}
+.achievement-icon img { display:block; width:48px; height:48px; object-fit:contain; }
+.chest-card .shop-card-icon, .shop-feature-icon:has(img) {
+  background:none; box-shadow:none; border:0; padding:0; width:64px; height:64px;
+}
+.chest-card .shop-card-image, .shop-feature-icon img { display:block; width:100%; height:100%; object-fit:contain; }
+.shop-card .inventory-card-body { min-width:0; overflow-wrap:anywhere; }
+.shop-card > button { white-space:normal; height:auto; min-height:48px; }
+@media (max-width:600px) {
+  #inventoryModal .inventory-tabs {
+    display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+    overflow:visible; gap:5px; flex-shrink:0;
+  }
+  #inventoryModal .inventory-tabs button {
+    width:100%; min-width:0; min-height:44px; padding:4px;
+    white-space:normal; gap:3px; flex-direction:column;
+  }
+  #inventoryModal .inventory-tabs button span { font-size:9px; overflow-wrap:normal; }
+}
+#level-screen .reward-card, #confirmModal .confirm-panel {
+  box-sizing:border-box; width:min(100%,540px); height:auto;
+  max-width:100%; max-height:100%; min-height:0; padding:16px;
+  display:grid; align-content:start; justify-items:center; gap:10px;
+  overflow:auto; border-radius:18px; border:1px solid #eecaff;
+  background:rgba(53,29,82,.94); color:#fff; text-align:center;
+}
+#level-screen .reward-ribbon {
+  position:static; inset:auto; transform:none; width:auto; max-width:calc(100% - 60px);
+  margin:0; padding:8px; font-size:clamp(18px,3vmin,26px); line-height:1.15;
+}
+#level-screen .reward-ribbon::before, #level-screen .reward-ribbon::after { content:none; }
+#level-screen .reward-close { top:8px; right:8px; width:44px; height:44px; }
+#level-screen .reward-stars { margin:0; gap:10px; font-size:46px; line-height:1; }
+#level-screen .reward-stars span { opacity:1; transform:none; animation:none !important; }
+#level-screen .reward-capture { margin:0; font-size:15px; }
+#level-screen .reward-prizes { width:auto; min-height:0; margin:0; padding:8px; gap:8px; }
+#level-screen .reward-prizes h3 { margin:0; font-size:14px; }
+#level-screen .reward-prize { min-height:0; padding:4px 8px; }
+#level-screen .reward-prize-icon { width:32px; height:32px; font-size:24px; }
+#level-screen .reward-actions, #confirmModal .confirm-actions {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; gap:8px; margin:0;
+}
+#level-screen .reward-actions button, #confirmModal .confirm-actions button {
+  width:100%; min-width:0; min-height:44px; height:auto; padding:8px;
+  font-size:14px; line-height:1.2; white-space:normal;
+}
+#confirmModal .confirm-panel h2 { margin:0; font-size:22px; }
+#confirmModal .confirm-actions[data-count="1"] {
+  grid-template-columns:minmax(0,250px); justify-content:center;
+}
+#level-screen .reward-prizes,
+#level-screen .reward-coin-prize {
+  background:none; border:0; box-shadow:none;
+}
+#level-screen .reward-prizes h3 { display:none; }
+#level-screen .reward-coin-prize { display:flex; align-items:center; gap:8px; }
+#level-screen .reward-coin-prize::before,
+#level-screen .reward-coin-prize::after { content:none; }
+#confirmModal .confirm-panel p { font-size:15px; line-height:1.3; }
+#confirmModal[data-outcome="loss"] .confirm-panel::before {
+  content:"✕"; display:grid; place-items:center; width:48px; height:48px;
+  border-radius:50%; background:#a93464; color:#fff; font-size:32px; line-height:1;
+}
+@media (max-height:460px) {
+  #level-screen .reward-card, #confirmModal .confirm-panel { padding:10px 14px; gap:6px; }
+  #level-screen .reward-ribbon { padding:4px; font-size:20px; }
+  #level-screen .reward-stars { font-size:36px; }
+  #level-screen .reward-prizes { padding:4px; }
+  #confirmModal[data-outcome="loss"] .confirm-panel::before { width:36px; height:36px; font-size:26px; }
 }

@@ -333,6 +333,8 @@
     10: { 1: { coins: 90 }, 2: { coins: 135 }, 3: { coins: 198 } }
   };
   const LINE_GROW_SPEED = 420;
+  // Physics uses one world on every device; only its presentation is scaled.
+  const JEZZ_WORLD = { width: 384, height: 640 };
   const LOW_PERFORMANCE_FRAME_INTERVAL = 1000 / 30;
   const LINE_GESTURE_DEAD_ZONE = 16;
   const LINE_GESTURE_TAP_MAX_MS = 220;
@@ -403,82 +405,82 @@
   );
 
   const curatedProgressionLevelConfigs = {
-    31: level(79, 3, "medium", [dangerV(0.42, 0.18, 0.82), dangerH(0.58, 0.18, 0.82, 1), safeH(0.78, 0.22, 0.78)], "pressure-cross-lines"),
+    31: level(79, 3, "medium", [dangerV(0.42, 0.35, 0.62), dangerH(0.58, 0.48, 0.70, 1), safeH(0.78, 0.22, 0.62)], "pressure-cross-lines"),
     32: level(79, 3, "medium", [movingDangerV(0.54, 0.2, 0.78, "x", 0.09, 0.15), safeH(0.34, 0.22, 0.78)], "pressure-vertical-timing"),
     33: level(80, 4, "slow", [], "pressure-pure-chaos"),
     34: level(80, 3, "medium", [safeV(0.34, 0.16, 0.84), safeV(0.66, 0.16, 0.84), dangerH(0.5, 0.36, 0.64)], "pressure-safe-corridor"),
-    35: level(82, 4, "medium", [movingDangerV(0.5, 0.18, 0.82, "x", 0.1, 0.2), movingDangerH(0.5, 0.18, 0.82, "y", 0.1, 0.65, 1), safeH(0.28, 0.22, 0.78)], "pressure-mini-boss"),
+    35: level(82, 4, "medium", [movingDangerV(0.46, 0.34, 0.62, "x", 0.06, 0.2), movingDangerH(0.60, 0.48, 0.72, "y", 0.06, 0.65, 1), safeH(0.28, 0.22, 0.62)], "pressure-mini-boss"),
     36: level(81, 3, "fast", [safeV(0.28, 0.18, 0.84), safeV(0.72, 0.16, 0.82), dangerH(0.54, 0.3, 0.7)], "pressure-narrow-lanes"),
-    37: level(81, 4, "medium", [safeH(0.38, 0.18, 0.82), dangerV(0.62, 0.24, 0.78), dangerH(0.72, 0.2, 0.64, 1)], "pressure-safe-danger-combo"),
-    38: level(82, 4, "medium", [movingSafeV(0.35, 0.18, 0.82, "x", 0.08, 0.1), movingDangerH(0.63, 0.2, 0.8, "y", 0.1, 0.55), dangerV(0.74, 0.24, 0.74, 1)], "pressure-dual-moving"),
+    37: level(81, 4, "medium", [safeH(0.38, 0.20, 0.70), dangerV(0.65, 0.50, 0.70), dangerH(0.74, 0.30, 0.52, 1)], "pressure-safe-danger-combo"),
+    38: level(82, 4, "medium", [movingSafeV(0.32, 0.24, 0.56, "x", 0.06, 0.1), movingDangerH(0.66, 0.38, 0.62, "y", 0.06, 0.55), dangerV(0.76, 0.38, 0.58, 1)], "pressure-dual-moving"),
     39: level(82, 4, "fast", [safeH(0.28, 0.18, 0.82), safeH(0.72, 0.18, 0.82), dangerV(0.5, 0.34, 0.66)], "pressure-precision-corridor"),
-    40: level(83, 4, "fast", [movingSafeV(0.3, 0.16, 0.84, "x", 0.08, 0), movingDangerH(0.5, 0.18, 0.82, "y", 0.1, 0.3), dangerV(0.68, 0.2, 0.78, 1), safeH(0.78, 0.2, 0.7)], "pressure-boss"),
+    40: level(83, 4, "fast", [movingSafeV(0.28, 0.22, 0.52, "x", 0.05, 0), movingDangerH(0.52, 0.40, 0.62, "y", 0.06, 0.3), dangerV(0.70, 0.32, 0.52, 1), safeH(0.78, 0.28, 0.64)], "pressure-boss"),
 
     41: level(82, 3, "medium", [dangerH(0.48, 0.14, 0.86), safeH(0.36, 0.22, 0.78)], "precision-thin-gap"),
     42: level(82, 3, "medium", [movingSafeH(0.42, 0.18, 0.82, "y", 0.08, 0.15), movingSafeH(0.66, 0.2, 0.8, "y", 0.07, 0.65), dangerV(0.52, 0.22, 0.76)], "precision-temporary-walls"),
-    43: level(82, 3, "medium", [safeV(0.28, 0.16, 0.72), dangerH(0.62, 0.28, 0.88), dangerV(0.72, 0.28, 0.84, 1)], "precision-asymmetric-field"),
+    43: level(82, 3, "medium", [safeV(0.24, 0.20, 0.68), dangerH(0.66, 0.42, 0.64), dangerV(0.76, 0.34, 0.54, 1)], "precision-asymmetric-field"),
     44: level(83, 4, "medium", [dangerV(0.38, 0.2, 0.82), dangerV(0.66, 0.16, 0.78, 1), safeH(0.5, 0.2, 0.8)], "precision-safe-pockets"),
-    45: level(83, 4, "fast", [dangerH(0.42, 0.18, 0.84), movingDangerV(0.6, 0.22, 0.8, "x", 0.08, 0.35, 1), safeV(0.25, 0.18, 0.72)], "precision-mini-boss"),
+    45: level(83, 4, "fast", [dangerH(0.42, 0.38, 0.65), movingDangerV(0.64, 0.55, 0.76, "x", 0.05, 0.35, 1), safeV(0.25, 0.20, 0.62)], "precision-mini-boss"),
     46: level(83, 4, "medium", [safeV(0.5, 0.14, 0.86), safeH(0.5, 0.14, 0.86), dangerH(0.28, 0.34, 0.8), dangerV(0.74, 0.24, 0.66, 1)], "precision-split-islands"),
-    47: level(83, 4, "medium", [movingDangerV(0.35, 0.2, 0.82, "x", 0.09, 0.1), movingSafeH(0.66, 0.18, 0.82, "y", 0.09, 0.55), dangerH(0.34, 0.24, 0.76, 1)], "precision-double-moving"),
+    47: level(83, 4, "medium", [movingDangerV(0.35, 0.38, 0.62, "x", 0.05, 0.1), movingSafeH(0.70, 0.26, 0.66, "y", 0.05, 0.55), dangerH(0.30, 0.52, 0.76, 1)], "precision-double-moving"),
     48: level(84, 4, "medium", [movingSafeV(0.68, 0.16, 0.84, "x", 0.09, 0.25), movingDangerH(0.46, 0.18, 0.82, "y", 0.08, 0.75), safeH(0.78, 0.24, 0.72)], "precision-moving-combo"),
     49: level(84, 4, "fast", [safeV(0.24, 0.18, 0.84), safeV(0.76, 0.16, 0.82), dangerH(0.38, 0.26, 0.74), dangerH(0.66, 0.26, 0.74, 1)], "precision-corridors"),
-    50: level(84, 4, "fast", [dangerV(0.36, 0.16, 0.84), dangerH(0.5, 0.16, 0.84, 1), movingDangerV(0.66, 0.22, 0.78, "x", 0.09, 0.4, 2), safeH(0.26, 0.2, 0.8), safeV(0.82, 0.3, 0.74)], "precision-chapter-boss"),
+    50: level(84, 4, "fast", [dangerV(0.36, 0.28, 0.46), dangerH(0.56, 0.30, 0.52, 1), movingDangerV(0.70, 0.58, 0.78, "x", 0.05, 0.4, 2), safeH(0.22, 0.24, 0.70), safeV(0.84, 0.30, 0.58)], "precision-chapter-boss"),
 
     51: level(83, 3, "fast", [movingDangerH(0.4, 0.16, 0.84, "y", 0.1, 0.1), safeV(0.28, 0.22, 0.82)], "speed-fast-sweeps"),
-    52: level(83, 3, "fast", [movingDangerV(0.44, 0.18, 0.84, "x", 0.1, 0), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.5, 1), safeV(0.78, 0.22, 0.78)], "speed-cross-blockers"),
-    53: level(83, 4, "medium", [safeH(0.3, 0.18, 0.82), dangerV(0.5, 0.2, 0.82), safeV(0.72, 0.18, 0.74), dangerH(0.68, 0.22, 0.78, 1)], "speed-alternating-layout"),
-    54: level(84, 4, "fast", [movingSafeV(0.5, 0.14, 0.86, "x", 0.13, 0.2), dangerH(0.54, 0.2, 0.8), dangerV(0.78, 0.28, 0.74, 1)], "speed-unstable-wall"),
-    55: level(84, 4, "fast", [movingDangerH(0.36, 0.16, 0.84, "y", 0.11, 0.15), movingDangerV(0.64, 0.18, 0.82, "x", 0.1, 0.65, 1), safeH(0.76, 0.22, 0.78)], "speed-mini-boss"),
+    52: level(83, 3, "fast", [movingDangerV(0.40, 0.28, 0.50, "x", 0.06, 0), movingDangerH(0.68, 0.48, 0.72, "y", 0.05, 0.5, 1), safeV(0.80, 0.25, 0.58)], "speed-cross-blockers"),
+    53: level(83, 4, "medium", [safeH(0.28, 0.22, 0.72), dangerV(0.46, 0.42, 0.62), safeV(0.76, 0.36, 0.64), dangerH(0.76, 0.28, 0.52, 1)], "speed-alternating-layout"),
+    54: level(84, 4, "fast", [movingSafeV(0.42, 0.24, 0.62, "x", 0.08, 0.2), dangerH(0.72, 0.34, 0.60), dangerV(0.78, 0.36, 0.56, 1)], "speed-unstable-wall"),
+    55: level(84, 4, "fast", [movingDangerH(0.34, 0.24, 0.48, "y", 0.06, 0.15), movingDangerV(0.68, 0.48, 0.72, "x", 0.05, 0.65, 1), safeH(0.80, 0.30, 0.64)], "speed-mini-boss"),
     56: level(84, 4, "fast", [dangerV(0.32, 0.14, 0.7), dangerV(0.68, 0.3, 0.86, 1), safeH(0.5, 0.18, 0.82), dangerH(0.82, 0.22, 0.62, 2)], "speed-split-sectors"),
     57: level(84, 4, "medium", [safeV(0.2, 0.18, 0.44), safeH(0.24, 0.22, 0.5), safeV(0.8, 0.56, 0.84), safeH(0.76, 0.5, 0.78), dangerV(0.5, 0.22, 0.78)], "speed-safe-anchors"),
-    58: level(85, 4, "fast", [movingSafeH(0.34, 0.18, 0.82, "y", 0.08, 0.1), movingDangerV(0.5, 0.16, 0.84, "x", 0.09, 0.5), movingSafeH(0.7, 0.18, 0.82, "y", 0.08, 0.8)], "speed-moving-maze"),
-    59: level(85, 4, "fast", [safeV(0.3, 0.16, 0.84), movingDangerH(0.5, 0.18, 0.82, "y", 0.1, 0.25), dangerV(0.7, 0.2, 0.8, 1), safeH(0.74, 0.24, 0.78)], "speed-combo-challenge"),
-    60: level(85, 4, "fast", [movingDangerV(0.32, 0.16, 0.84, "x", 0.09, 0), movingDangerH(0.52, 0.18, 0.82, "y", 0.1, 0.4, 1), movingSafeV(0.72, 0.16, 0.84, "x", 0.08, 0.7), safeH(0.26, 0.2, 0.78)], "speed-boss"),
+    58: level(85, 4, "fast", [movingSafeH(0.30, 0.20, 0.54, "y", 0.05, 0.1), movingDangerV(0.62, 0.40, 0.64, "x", 0.05, 0.5), movingSafeH(0.76, 0.44, 0.78, "y", 0.04, 0.8)], "speed-moving-maze"),
+    59: level(85, 4, "fast", [safeV(0.28, 0.20, 0.65), movingDangerH(0.46, 0.42, 0.64, "y", 0.05, 0.25), dangerV(0.74, 0.58, 0.76, 1), safeH(0.80, 0.30, 0.62)], "speed-combo-challenge"),
+    60: level(85, 4, "fast", [movingDangerV(0.30, 0.42, 0.65, "x", 0.05, 0), movingDangerH(0.68, 0.48, 0.70, "y", 0.05, 0.4, 1), movingSafeV(0.76, 0.22, 0.50, "x", 0.04, 0.7), safeH(0.24, 0.22, 0.56)], "speed-boss"),
 
-    61: level(84, 3, "medium", [safeV(0.38, 0.16, 0.84), dangerH(0.62, 0.4, 0.86), dangerV(0.76, 0.24, 0.78, 1)], "mind-games-bait-left"),
+    61: level(84, 3, "medium", [safeV(0.34, 0.20, 0.74), dangerH(0.62, 0.48, 0.70), dangerV(0.78, 0.30, 0.50, 1)], "mind-games-bait-left"),
     62: level(84, 3, "medium", [safeH(0.48, 0.14, 0.86), dangerV(0.32, 0.2, 0.78), dangerV(0.68, 0.24, 0.82, 1)], "mind-games-anchor-wall"),
     63: level(84, 4, "medium", [safeV(0.45, 0.18, 0.84), safeH(0.64, 0.18, 0.82), dangerH(0.34, 0.24, 0.76)], "mind-games-two-stage-capture"),
-    64: level(85, 4, "medium", [dangerV(0.28, 0.18, 0.74), dangerH(0.3, 0.28, 0.8, 1), dangerV(0.72, 0.28, 0.84, 2), safeH(0.78, 0.24, 0.72)], "mind-games-trap-routes"),
-    65: level(85, 4, "fast", [safeV(0.52, 0.14, 0.86), movingDangerH(0.5, 0.18, 0.82, "y", 0.09, 0.2), dangerV(0.76, 0.24, 0.78, 1), safeH(0.28, 0.22, 0.68)], "mind-games-mini-boss"),
-    66: level(85, 4, "medium", [dangerH(0.28, 0.18, 0.82), dangerV(0.48, 0.2, 0.8, 1), dangerH(0.72, 0.18, 0.82, 2), safeV(0.82, 0.24, 0.78)], "mind-games-alternating-danger"),
+    64: level(85, 4, "medium", [dangerV(0.28, 0.42, 0.62), dangerH(0.28, 0.38, 0.62, 1), dangerV(0.74, 0.48, 0.70, 2), safeH(0.80, 0.26, 0.68)], "mind-games-trap-routes"),
+    65: level(85, 4, "fast", [safeV(0.50, 0.20, 0.70), movingDangerH(0.78, 0.28, 0.54, "y", 0.04, 0.2), dangerV(0.78, 0.38, 0.60, 1), safeH(0.24, 0.22, 0.40)], "mind-games-mini-boss"),
+    66: level(85, 4, "medium", [dangerH(0.28, 0.24, 0.48), dangerV(0.50, 0.42, 0.60, 1), dangerH(0.74, 0.52, 0.76, 2), safeV(0.82, 0.30, 0.62)], "mind-games-alternating-danger"),
     67: level(85, 4, "medium", [safeV(0.34, 0.16, 0.84), safeH(0.5, 0.18, 0.82), dangerV(0.58, 0.28, 0.78), dangerH(0.68, 0.34, 0.84, 1)], "mind-games-fake-corridor"),
-    68: level(86, 4, "medium", [movingDangerV(0.5, 0.16, 0.84, "x", 0.11, 0.15), movingSafeH(0.5, 0.18, 0.82, "y", 0.09, 0.65), safeV(0.22, 0.22, 0.78)], "mind-games-timing-puzzle"),
-    69: level(86, 4, "fast", [dangerV(0.3, 0.16, 0.84), dangerH(0.42, 0.2, 0.82, 1), safeV(0.58, 0.2, 0.78), dangerH(0.74, 0.24, 0.76, 2)], "mind-games-dense-fair"),
-    70: level(86, 4, "fast", [safeH(0.28, 0.16, 0.84), movingDangerV(0.42, 0.18, 0.82, "x", 0.09, 0.1), safeV(0.62, 0.16, 0.84), movingDangerH(0.68, 0.18, 0.82, "y", 0.1, 0.55, 1)], "mind-games-puzzle-boss"),
+    68: level(86, 4, "medium", [movingDangerV(0.60, 0.30, 0.52, "x", 0.07, 0.15), movingSafeH(0.68, 0.36, 0.72, "y", 0.05, 0.65), safeV(0.22, 0.25, 0.68)], "mind-games-timing-puzzle"),
+    69: level(86, 4, "fast", [dangerV(0.30, 0.30, 0.50), dangerH(0.42, 0.52, 0.76, 1), safeV(0.56, 0.56, 0.80), dangerH(0.76, 0.20, 0.38, 2)], "mind-games-dense-fair"),
+    70: level(86, 4, "fast", [safeH(0.24, 0.20, 0.60), movingDangerV(0.34, 0.38, 0.60, "x", 0.05, 0.1), safeV(0.72, 0.30, 0.62), movingDangerH(0.78, 0.40, 0.64, "y", 0.04, 0.55, 1)], "mind-games-puzzle-boss"),
 
     71: level(85, 3, "medium", [safeV(0.5, 0.18, 0.82)], "mastery-high-target-clean"),
-    72: level(85, 4, "medium", [movingSafeV(0.36, 0.16, 0.84, "x", 0.1, 0), movingSafeV(0.68, 0.16, 0.84, "x", 0.1, 0.5), dangerH(0.5, 0.24, 0.76)], "mastery-pulsing-safe-walls"),
+    72: level(85, 4, "medium", [movingSafeV(0.30, 0.22, 0.50, "x", 0.06, 0), movingSafeV(0.72, 0.48, 0.78, "x", 0.05, 0.5), dangerH(0.66, 0.30, 0.52)], "mastery-pulsing-safe-walls"),
     73: level(85, 4, "fast", [safeH(0.32, 0.18, 0.82), safeH(0.7, 0.18, 0.82), dangerV(0.42, 0.34, 0.66), dangerV(0.62, 0.34, 0.66, 1)], "mastery-narrow-openings"),
     74: level(86, 4, "fast", [], "mastery-clean-chaos"),
-    75: level(86, 4, "fast", [movingDangerH(0.42, 0.16, 0.84, "y", 0.1, 0.2), safeV(0.52, 0.16, 0.84), dangerV(0.76, 0.22, 0.8, 1), safeH(0.76, 0.2, 0.72)], "mastery-mini-boss"),
+    75: level(86, 4, "fast", [movingDangerH(0.38, 0.24, 0.46, "y", 0.05, 0.2), safeV(0.54, 0.22, 0.66), dangerV(0.78, 0.48, 0.68, 1), safeH(0.80, 0.28, 0.64)], "mastery-mini-boss"),
     76: level(86, 4, "medium", [safeV(0.33, 0.14, 0.86), safeV(0.67, 0.14, 0.86), dangerH(0.52, 0.34, 0.66)], "mastery-safe-divide"),
-    77: level(86, 4, "fast", [dangerH(0.36, 0.16, 0.84), movingDangerV(0.5, 0.2, 0.8, "x", 0.09, 0.45), dangerH(0.7, 0.16, 0.84, 1), safeV(0.82, 0.22, 0.78)], "mastery-timing-forced"),
-    78: level(87, 4, "fast", [safeV(0.26, 0.16, 0.84), dangerV(0.44, 0.18, 0.82), safeV(0.62, 0.16, 0.84), dangerV(0.8, 0.2, 0.78, 1)], "mastery-multi-lane"),
+    77: level(86, 4, "fast", [dangerH(0.30, 0.24, 0.50), movingDangerV(0.52, 0.42, 0.64, "x", 0.05, 0.45), dangerH(0.78, 0.50, 0.74, 1), safeV(0.82, 0.30, 0.64)], "mastery-timing-forced"),
+    78: level(87, 4, "fast", [safeV(0.22, 0.22, 0.68), dangerV(0.40, 0.32, 0.50), safeV(0.62, 0.36, 0.80), dangerV(0.82, 0.58, 0.76, 1)], "mastery-multi-lane"),
     79: level(87, 4, "fast", [dangerH(0.28, 0.18, 0.82), safeV(0.36, 0.18, 0.84), movingDangerH(0.54, 0.18, 0.82, "y", 0.08, 0.3), safeV(0.72, 0.16, 0.82), dangerH(0.78, 0.24, 0.76, 1)], "mastery-pre-boss"),
-    80: level(87, 4, "fast", [movingDangerV(0.34, 0.16, 0.84, "x", 0.1, 0), movingSafeH(0.5, 0.18, 0.82, "y", 0.09, 0.35), movingDangerV(0.68, 0.16, 0.84, "x", 0.1, 0.7, 1), safeH(0.78, 0.2, 0.8)], "mastery-boss"),
+    80: level(87, 4, "fast", [movingDangerV(0.30, 0.28, 0.50, "x", 0.05, 0), movingSafeH(0.58, 0.38, 0.72, "y", 0.04, 0.35), movingDangerV(0.76, 0.66, 0.84, "x", 0.04, 0.7, 1), safeH(0.80, 0.20, 0.50)], "mastery-boss"),
 
-    81: level(86, 4, "medium", [dangerV(0.26, 0.16, 0.84), dangerH(0.38, 0.18, 0.82, 1), safeV(0.54, 0.2, 0.8), dangerH(0.7, 0.2, 0.82, 2)], "endgame-dense-neon"),
+    81: level(86, 4, "medium", [dangerV(0.26, 0.42, 0.64), dangerH(0.28, 0.42, 0.70, 1), safeV(0.54, 0.46, 0.76), dangerH(0.80, 0.66, 0.84, 2)], "endgame-dense-neon"),
     82: level(86, 4, "fast", [movingDangerH(0.36, 0.16, 0.84, "y", 0.09, 0.1), movingDangerH(0.68, 0.16, 0.84, "y", 0.09, 0.6, 1), safeV(0.52, 0.18, 0.82)], "endgame-moving-pairs"),
     83: level(86, 4, "medium", [safeH(0.26, 0.16, 0.84), dangerV(0.38, 0.18, 0.82), safeH(0.5, 0.18, 0.82), dangerV(0.66, 0.18, 0.82, 1), safeH(0.76, 0.16, 0.84)], "endgame-layered-chain"),
     84: level(87, 4, "fast", [], "endgame-high-speed-clean"),
-    85: level(87, 4, "fast", [movingDangerV(0.32, 0.16, 0.84, "x", 0.11, 0.15), dangerH(0.46, 0.18, 0.82, 1), movingSafeV(0.68, 0.16, 0.84, "x", 0.08, 0.6), safeH(0.78, 0.2, 0.76)], "endgame-mini-boss"),
-    86: level(87, 4, "medium", [safeV(0.24, 0.16, 0.84), dangerH(0.34, 0.26, 0.82), safeH(0.52, 0.18, 0.76), dangerV(0.72, 0.2, 0.84, 1), safeV(0.84, 0.28, 0.76)], "endgame-safe-danger-maze"),
-    87: level(87, 4, "fast", [dangerV(0.34, 0.16, 0.84), dangerV(0.66, 0.16, 0.84, 1), dangerH(0.5, 0.24, 0.76, 2), safeH(0.28, 0.2, 0.8), safeH(0.74, 0.2, 0.8)], "endgame-bounce-chamber"),
-    88: level(88, 4, "fast", [safeV(0.28, 0.16, 0.84), movingDangerH(0.42, 0.18, 0.82, "y", 0.09, 0.25), dangerV(0.58, 0.2, 0.8, 1), safeH(0.74, 0.22, 0.78)], "endgame-precision-speed"),
-    89: level(88, 4, "fast", [safeH(0.24, 0.16, 0.84), dangerV(0.36, 0.18, 0.84), movingDangerV(0.58, 0.18, 0.82, "x", 0.08, 0.4, 1), dangerH(0.72, 0.18, 0.82, 2), safeV(0.78, 0.22, 0.78)], "endgame-final-prep"),
-    90: level(88, 4, "fast", [movingDangerH(0.32, 0.16, 0.84, "y", 0.1, 0), movingDangerV(0.5, 0.16, 0.84, "x", 0.1, 0.35, 1), movingSafeH(0.66, 0.18, 0.82, "y", 0.08, 0.7), dangerV(0.78, 0.22, 0.78, 2), safeV(0.22, 0.22, 0.78)], "endgame-boss"),
+    85: level(87, 4, "fast", [movingDangerV(0.30, 0.28, 0.50, "x", 0.06, 0.15), dangerH(0.66, 0.22, 0.46, 1), movingSafeV(0.72, 0.38, 0.66, "x", 0.05, 0.6), safeH(0.82, 0.36, 0.68)], "endgame-mini-boss"),
+    86: level(87, 4, "medium", [safeV(0.24, 0.24, 0.64), dangerH(0.30, 0.42, 0.66), safeH(0.58, 0.38, 0.68), dangerV(0.76, 0.70, 0.86, 1), safeV(0.86, 0.34, 0.56)], "endgame-safe-danger-maze"),
+    87: level(87, 4, "fast", [dangerV(0.32, 0.36, 0.54), dangerV(0.70, 0.48, 0.66, 1), dangerH(0.72, 0.34, 0.54, 2), safeH(0.24, 0.22, 0.72), safeH(0.84, 0.40, 0.76)], "endgame-bounce-chamber"),
+    88: level(88, 4, "fast", [safeV(0.26, 0.20, 0.62), movingDangerH(0.36, 0.46, 0.70, "y", 0.05, 0.25), dangerV(0.60, 0.54, 0.72, 1), safeH(0.80, 0.28, 0.70)], "endgame-precision-speed"),
+    89: level(88, 4, "fast", [safeH(0.22, 0.20, 0.68), dangerV(0.32, 0.36, 0.56), movingDangerV(0.62, 0.48, 0.68, "x", 0.04, 0.4, 1), dangerH(0.82, 0.24, 0.46, 2), safeV(0.82, 0.26, 0.60)], "endgame-final-prep"),
+    90: level(88, 4, "fast", [movingDangerH(0.28, 0.32, 0.54, "y", 0.04, 0), movingDangerV(0.52, 0.44, 0.62, "x", 0.05, 0.35, 1), movingSafeH(0.80, 0.42, 0.72, "y", 0.04, 0.7), dangerV(0.80, 0.40, 0.60, 2), safeV(0.22, 0.38, 0.74)], "endgame-boss"),
 
-    91: level(87, 4, "fast", [movingSafeV(0.3, 0.16, 0.84, "x", 0.08, 0.15), dangerH(0.48, 0.18, 0.82), movingDangerV(0.68, 0.2, 0.8, "x", 0.09, 0.55, 1)], "final-remix-pressure"),
+    91: level(87, 4, "fast", [movingSafeV(0.28, 0.24, 0.58, "x", 0.05, 0.15), dangerH(0.74, 0.30, 0.54), movingDangerV(0.72, 0.38, 0.60, "x", 0.05, 0.55, 1)], "final-remix-pressure"),
     92: level(87, 4, "medium", [safeH(0.32, 0.16, 0.84), dangerV(0.42, 0.28, 0.72), safeV(0.62, 0.16, 0.84), dangerH(0.7, 0.24, 0.76, 1)], "final-remix-precision"),
     93: level(87, 4, "fast", [movingDangerH(0.38, 0.16, 0.84, "y", 0.1, 0.1), safeV(0.52, 0.18, 0.82), movingDangerH(0.72, 0.16, 0.84, "y", 0.09, 0.6, 1)], "final-remix-speed"),
-    94: level(88, 4, "medium", [safeV(0.38, 0.16, 0.84), dangerH(0.36, 0.34, 0.86), safeH(0.58, 0.18, 0.72), dangerV(0.76, 0.22, 0.82, 1)], "final-remix-mind-games"),
+    94: level(88, 4, "medium", [safeV(0.34, 0.22, 0.70), dangerH(0.32, 0.52, 0.76), safeH(0.76, 0.42, 0.70), dangerV(0.80, 0.50, 0.68, 1)], "final-remix-mind-games"),
     95: level(88, 4, "fast", [movingDangerV(0.34, 0.16, 0.84, "x", 0.1, 0), safeH(0.5, 0.18, 0.82), movingDangerH(0.66, 0.18, 0.82, "y", 0.09, 0.45, 1), safeV(0.82, 0.24, 0.78)], "final-mini-boss"),
     96: level(88, 4, "fast", [safeV(0.5, 0.16, 0.84), dangerH(0.32, 0.18, 0.82), dangerH(0.72, 0.18, 0.82, 1)], "final-high-speed-arena"),
-    97: level(88, 4, "fast", [dangerV(0.28, 0.16, 0.84), movingDangerH(0.42, 0.18, 0.82, "y", 0.09, 0.2, 1), safeV(0.54, 0.16, 0.84), movingDangerV(0.76, 0.18, 0.82, "x", 0.08, 0.6, 2)], "final-boss-rush"),
-    98: level(88, 4, "fast", [safeH(0.24, 0.16, 0.84), dangerV(0.36, 0.22, 0.78), safeH(0.5, 0.18, 0.82), dangerV(0.64, 0.22, 0.78, 1), safeH(0.76, 0.16, 0.84)], "final-precision-gauntlet"),
-    99: level(88, 4, "fast", [movingSafeV(0.28, 0.16, 0.84, "x", 0.08, 0.15), movingDangerH(0.38, 0.16, 0.84, "y", 0.09, 0.35), dangerV(0.58, 0.18, 0.82, 1), movingDangerV(0.76, 0.2, 0.8, "x", 0.08, 0.75, 2), safeH(0.78, 0.2, 0.76)], "final-fake-finale"),
-    100: level(88, 4, "fast", [movingSafeV(0.24, 0.16, 0.84, "x", 0.08, 0), movingDangerH(0.34, 0.16, 0.84, "y", 0.1, 0.2), dangerV(0.48, 0.18, 0.82, 1), movingSafeH(0.58, 0.18, 0.82, "y", 0.08, 0.55), movingDangerV(0.72, 0.16, 0.84, "x", 0.1, 0.75, 2), safeH(0.82, 0.18, 0.82)], "final-boss-core-collapse")
+    97: level(88, 4, "fast", [dangerV(0.26, 0.28, 0.46), movingDangerH(0.30, 0.48, 0.70, "y", 0.04, 0.2, 1), safeV(0.54, 0.46, 0.80), movingDangerV(0.82, 0.56, 0.76, "x", 0.04, 0.6, 2)], "final-boss-rush"),
+    98: level(88, 4, "fast", [safeH(0.24, 0.18, 0.58), dangerV(0.36, 0.35, 0.44), safeH(0.50, 0.32, 0.76), dangerV(0.66, 0.60, 0.70, 1), safeH(0.82, 0.22, 0.66)], "final-precision-gauntlet"),
+    99: level(88, 4, "fast", [movingSafeV(0.24, 0.22, 0.52, "x", 0.04, 0.15), movingDangerH(0.30, 0.44, 0.66, "y", 0.04, 0.35), dangerV(0.48, 0.48, 0.66, 1), movingDangerV(0.78, 0.60, 0.78, "x", 0.04, 0.75, 2), safeH(0.82, 0.24, 0.58)], "final-fake-finale"),
+    100: level(88, 4, "fast", [movingSafeV(0.22, 0.22, 0.48, "x", 0.04, 0), movingDangerH(0.26, 0.42, 0.64, "y", 0.04, 0.2), dangerV(0.44, 0.44, 0.62, 1), movingSafeH(0.70, 0.20, 0.48, "y", 0.04, 0.55), movingDangerV(0.78, 0.52, 0.72, "x", 0.04, 0.75, 2), safeH(0.86, 0.48, 0.78)], "final-boss-core-collapse")
   };
 
   const LEVEL_CONFIGS = {
@@ -666,8 +668,8 @@
       balls: 3,
       speed: "fast",
       obstacles: [
-        { orientation: "vertical", x: 0.34, y1: 0.18, y2: 0.82, type: "static", safe: false, color: "#ff4e7a" },
-        { orientation: "horizontal", y: 0.42, x1: 0.2, x2: 0.8, type: "static", safe: false, color: "#8d2454" },
+        { orientation: "vertical", x: 0.34, y1: 0.30, y2: 0.54, type: "static", safe: false, color: "#ff4e7a" },
+        { orientation: "horizontal", y: 0.42, x1: 0.52, x2: 0.76, type: "static", safe: false, color: "#8d2454" },
         { orientation: "horizontal", y: 0.72, x1: 0.24, x2: 0.76, type: "static", safe: true, color: "rgba(173, 246, 255, 0.92)", blocksBall: true }
       ],
       purpose: "mini-boss-preparation"
@@ -727,7 +729,8 @@
     gameplayActive: false,
     stickyBannerVisible: false,
     stickyBannerTimer: null,
-    adShowing: false
+    adShowing: false,
+    rewardedInFlight: false
   };
 
   const messages = {
@@ -889,6 +892,10 @@
     slowBallsUntil: 0,
     targetEaseUsed: false
   };
+
+  const ACTIVE_ATTEMPT_FORMAT_VERSION = 1;
+  let pendingActiveAttempt = null;
+  let activeAttemptSuppressed = false;
 
   let confirmResolve = null;
   let lowPerformanceMode = false;
@@ -1287,12 +1294,13 @@
     if (yandexState.initPromise) {
       return yandexState.initPromise;
     }
-    if (!window.YaGames || typeof window.YaGames.init !== "function") {
-      applyLanguage("ru");
-      return null;
-    }
-
     yandexState.initPromise = (async () => {
+      await window.jezzSdkLoaded;
+      if (!window.YaGames || typeof window.YaGames.init !== "function") {
+        applyLanguage("ru");
+        yandexState.initPromise = null;
+        return null;
+      }
       yandexState.sdk = await window.YaGames.init();
       applyLanguage(getYandexLanguage());
       registerYandexPauseEvents();
@@ -1870,11 +1878,29 @@
     if (screenId !== "level-screen") {
       stopJezzLevel();
     }
-    document.querySelectorAll(".screen").forEach((screen) => {
+    const screens = [...document.querySelectorAll(".screen")];
+    const cancelScreenTransitions = () => {
+      screens.forEach((screen) => {
+        screen.getAnimations?.().forEach((animation) => animation.cancel());
+      });
+    };
+
+    cancelScreenTransitions();
+    const focusedScreen = document.activeElement?.closest(".screen");
+    if (focusedScreen && focusedScreen.id !== screenId) document.activeElement.blur();
+    screens.forEach((screen) => {
       const isActive = screen.id === screenId;
       screen.classList.toggle("is-active", isActive);
+      screen.inert = !isActive;
       screen.setAttribute("aria-hidden", isActive ? "false" : "true");
     });
+    screens.forEach((screen) => void screen.offsetWidth);
+    cancelScreenTransitions();
+    const activeScreen = document.getElementById(screenId);
+    if (focusedScreen && focusedScreen.id !== screenId) {
+      const nextFocus = activeScreen?.querySelector("button:not(:disabled), [tabindex='0']");
+      nextFocus?.focus({ preventScroll: true });
+    }
     scheduleStickyBannerSync();
   }
 
@@ -2015,6 +2041,237 @@
       .slice(-MAX_PROCESSED_IAP_PURCHASE_TOKENS)
   );
 
+  const finiteAttemptNumber = (value, fallback = 0) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  };
+
+  const normalizeAttemptRect = (value) => {
+    if (!value || typeof value !== "object") {
+      return null;
+    }
+
+    const rect = {
+      x: finiteAttemptNumber(value.x),
+      y: finiteAttemptNumber(value.y),
+      w: finiteAttemptNumber(value.w),
+      h: finiteAttemptNumber(value.h)
+    };
+    if (rect.w <= 0 || rect.h <= 0 || rect.w > 2 || rect.h > 2) {
+      return null;
+    }
+    return rect;
+  };
+
+  const serializeAttemptRect = (rect, baseRect) => {
+    if (!rect || !baseRect || baseRect.w <= 0 || baseRect.h <= 0) {
+      return null;
+    }
+    return {
+      x: (rect.x - baseRect.x) / baseRect.w,
+      y: (rect.y - baseRect.y) / baseRect.h,
+      w: rect.w / baseRect.w,
+      h: rect.h / baseRect.h
+    };
+  };
+
+  const restoreAttemptRect = (rect, baseRect) => {
+    const normalized = normalizeAttemptRect(rect);
+    if (!normalized || !baseRect) {
+      return null;
+    }
+    return {
+      x: baseRect.x + normalized.x * baseRect.w,
+      y: baseRect.y + normalized.y * baseRect.h,
+      w: normalized.w * baseRect.w,
+      h: normalized.h * baseRect.h
+    };
+  };
+
+  const serializeAttemptWall = (wall, baseRect) => {
+    if (!wall || !baseRect || baseRect.w <= 0 || baseRect.h <= 0) {
+      return null;
+    }
+    if (wall.orientation === "vertical") {
+      return {
+        orientation: "vertical",
+        x: (wall.x - baseRect.x) / baseRect.w,
+        y1: (wall.y1 - baseRect.y) / baseRect.h,
+        y2: (wall.y2 - baseRect.y) / baseRect.h
+      };
+    }
+    return {
+      orientation: "horizontal",
+      y: (wall.y - baseRect.y) / baseRect.h,
+      x1: (wall.x1 - baseRect.x) / baseRect.w,
+      x2: (wall.x2 - baseRect.x) / baseRect.w
+    };
+  };
+
+  const restoreAttemptWall = (wall, baseRect) => {
+    if (!wall || !baseRect || !["vertical", "horizontal"].includes(wall.orientation)) {
+      return null;
+    }
+    if (wall.orientation === "vertical") {
+      return {
+        orientation: "vertical",
+        x: baseRect.x + finiteAttemptNumber(wall.x, 0.5) * baseRect.w,
+        y1: baseRect.y + finiteAttemptNumber(wall.y1, 0) * baseRect.h,
+        y2: baseRect.y + finiteAttemptNumber(wall.y2, 1) * baseRect.h
+      };
+    }
+    return {
+      orientation: "horizontal",
+      y: baseRect.y + finiteAttemptNumber(wall.y, 0.5) * baseRect.h,
+      x1: baseRect.x + finiteAttemptNumber(wall.x1, 0) * baseRect.w,
+      x2: baseRect.x + finiteAttemptNumber(wall.x2, 1) * baseRect.w
+    };
+  };
+
+  const serializeAttemptBall = (ball, baseRect) => {
+    if (!ball || !baseRect || baseRect.w <= 0 || baseRect.h <= 0) {
+      return null;
+    }
+    return {
+      x: (ball.x - baseRect.x) / baseRect.w,
+      y: (ball.y - baseRect.y) / baseRect.h,
+      velocityFormat: 2,
+      vx: ball.vx / Math.min(baseRect.w, baseRect.h),
+      vy: ball.vy / Math.min(baseRect.w, baseRect.h),
+      r: ball.r / Math.max(1, Math.min(baseRect.w, baseRect.h))
+    };
+  };
+
+  const restoreAttemptBall = (ball, baseRect) => {
+    if (!ball || !baseRect) {
+      return null;
+    }
+    return {
+      x: baseRect.x + finiteAttemptNumber(ball.x, 0.5) * baseRect.w,
+      y: baseRect.y + finiteAttemptNumber(ball.y, 0.5) * baseRect.h,
+      vx: finiteAttemptNumber(ball.vx) * (ball.velocityFormat === 2 ? Math.min(baseRect.w, baseRect.h) : baseRect.w),
+      vy: finiteAttemptNumber(ball.vy) * (ball.velocityFormat === 2 ? Math.min(baseRect.w, baseRect.h) : baseRect.h),
+      r: BALL_RADIUS
+    };
+  };
+
+  const serializeActiveAttempt = () => {
+    const rect = levelState.rect;
+    if (!rect || rect.w <= 0 || rect.h <= 0 || !levelScreen.classList.contains("is-active")) {
+      return null;
+    }
+
+    return {
+      formatVersion: ACTIVE_ATTEMPT_FORMAT_VERSION,
+      level: state.selectedLevel,
+      layoutSignature: JSON.stringify(levelState.config),
+      lifeSpent: true,
+      target: levelState.target,
+      capturedAreaRatio: Math.max(0, Math.min(1, levelState.capturedArea / Math.max(1, levelState.totalArea))),
+      capturedRects: levelState.capturedRects.map((item) => serializeAttemptRect(item, rect)).filter(Boolean),
+      activeRects: levelState.activeRects.map((item) => serializeAttemptRect(item, rect)).filter(Boolean),
+      activeRect: serializeAttemptRect(levelState.activeRect, rect),
+      walls: levelState.walls.map((item) => serializeAttemptWall(item, rect)).filter(Boolean),
+      balls: levelState.balls.map((item) => serializeAttemptBall(item, rect)).filter(Boolean),
+      elapsed: Math.max(0, finiteAttemptNumber(levelState.elapsed)),
+      penalties: Math.max(0, Math.min(MAX_PENALTIES, Math.round(finiteAttemptNumber(levelState.penalties)))),
+      lineOrientation: levelState.lineOrientation === "horizontal" ? "horizontal" : "vertical",
+      fastLineArmed: levelState.fastLineArmed === true,
+      lineShieldArmed: levelState.lineShieldArmed === true,
+      slowBallsRemainingMs: Math.max(0, Math.min(SLOW_BALLS_DURATION_MS, levelState.slowBallsUntil
+        ? levelState.slowBallsUntil - getTrustedNow()
+        : 0)),
+      targetEaseUsed: levelState.targetEaseUsed === true,
+      updatedAt: Date.now()
+    };
+  };
+
+  const normalizeActiveAttempt = (saved) => {
+    if (!saved || typeof saved !== "object" || Number(saved.formatVersion) !== ACTIVE_ATTEMPT_FORMAT_VERSION || saved.lifeSpent !== true) {
+      return null;
+    }
+
+    const level = Math.round(Number(saved.level));
+    if (!Number.isInteger(level) || level < 1 || level > TOTAL_LEVELS) {
+      return null;
+    }
+
+    const config = getLevelConfig(level);
+    const balls = (Array.isArray(saved.balls) ? saved.balls : [])
+      .slice(0, 8)
+      .map((ball) => ({
+        x: finiteAttemptNumber(ball?.x, 0.5),
+        y: finiteAttemptNumber(ball?.y, 0.5),
+        vx: finiteAttemptNumber(ball?.vx),
+        vy: finiteAttemptNumber(ball?.vy),
+        velocityFormat: ball?.velocityFormat === 2 ? 2 : 1,
+        r: Math.max(0.001, finiteAttemptNumber(ball?.r, 0.01))
+      }));
+    if (balls.length !== config.balls) {
+      return null;
+    }
+
+    const rects = (value) => (Array.isArray(value) ? value : [])
+      .slice(0, 1000)
+      .map(normalizeAttemptRect)
+      .filter(Boolean);
+    const walls = (Array.isArray(saved.walls) ? saved.walls : [])
+      .slice(0, 1000)
+      .filter((wall) => wall && ["vertical", "horizontal"].includes(wall.orientation))
+      .map((wall) => ({
+        orientation: wall.orientation,
+        x: finiteAttemptNumber(wall.x, 0.5),
+        y: finiteAttemptNumber(wall.y, 0.5),
+        x1: finiteAttemptNumber(wall.x1, 0),
+        x2: finiteAttemptNumber(wall.x2, 1),
+        y1: finiteAttemptNumber(wall.y1, 0),
+        y2: finiteAttemptNumber(wall.y2, 1)
+      }));
+
+    return {
+      formatVersion: ACTIVE_ATTEMPT_FORMAT_VERSION,
+      level,
+      layoutSignature: typeof saved.layoutSignature === "string" ? saved.layoutSignature : null,
+      needsLayoutRestart: saved.layoutSignature !== JSON.stringify(config),
+      lifeSpent: true,
+      target: Math.max(50, Math.min(100, finiteAttemptNumber(saved.target, config.target))),
+      capturedAreaRatio: Math.max(0, Math.min(1, finiteAttemptNumber(saved.capturedAreaRatio))),
+      capturedRects: rects(saved.capturedRects),
+      activeRects: rects(saved.activeRects),
+      activeRect: normalizeAttemptRect(saved.activeRect),
+      walls,
+      balls,
+      elapsed: Math.max(0, Math.min(86400, finiteAttemptNumber(saved.elapsed))),
+      penalties: Math.max(0, Math.min(MAX_PENALTIES, Math.round(finiteAttemptNumber(saved.penalties)))),
+      lineOrientation: saved.lineOrientation === "horizontal" ? "horizontal" : "vertical",
+      fastLineArmed: saved.fastLineArmed === true,
+      lineShieldArmed: saved.lineShieldArmed === true,
+      slowBallsRemainingMs: Math.max(0, Math.min(SLOW_BALLS_DURATION_MS, finiteAttemptNumber(saved.slowBallsRemainingMs))),
+      targetEaseUsed: saved.targetEaseUsed === true,
+      updatedAt: Math.max(0, finiteAttemptNumber(saved.updatedAt, Date.now()))
+    };
+  };
+
+  const isRuntimeAttemptActive = () => (
+    levelScreen.classList.contains("is-active")
+      && Boolean(levelState.rect)
+      && !levelState.completed
+      && !levelState.failed
+      && (levelState.running || levelState.pausedByModal || levelState.pausedByViewport || yandexState.pausedByPlatform)
+  );
+
+  const getPersistedActiveAttempt = () => {
+    if (!activeAttemptSuppressed && isRuntimeAttemptActive()) {
+      return serializeActiveAttempt();
+    }
+    return pendingActiveAttempt;
+  };
+
+  const clearActiveAttempt = () => {
+    pendingActiveAttempt = null;
+    activeAttemptSuppressed = true;
+  };
+
   const serializeProgress = () => ({
     currentChapter: state.currentChapter,
     currentLevel: state.currentLevel,
@@ -2033,7 +2290,8 @@
     unlockedAchievements: Array.from(state.unlockedAchievements),
     claimedAchievements: Array.from(state.claimedAchievements),
     processedIapPurchaseTokens: Array.from(state.processedIapPurchaseTokens).slice(-MAX_PROCESSED_IAP_PURCHASE_TOKENS),
-    expandedChapters: Array.from(state.expandedChapters)
+    expandedChapters: Array.from(state.expandedChapters),
+    activeAttempt: getPersistedActiveAttempt()
   });
 
   const getProgressScore = (saved = {}) => {
@@ -2043,7 +2301,25 @@
   };
 
   const shouldUseIncomingProgress = (incoming) => (
-    incoming && typeof incoming === "object" && getProgressScore(incoming) >= getProgressScore(serializeProgress())
+    (() => {
+      if (!incoming || typeof incoming !== "object") {
+        return false;
+      }
+
+      const current = serializeProgress();
+      const currentAttempt = normalizeActiveAttempt(current.activeAttempt);
+      const incomingAttempt = normalizeActiveAttempt(incoming.activeAttempt);
+      if (currentAttempt && !incomingAttempt) {
+        return false;
+      }
+      if (currentAttempt && incomingAttempt && incomingAttempt.updatedAt <= currentAttempt.updatedAt) {
+        return false;
+      }
+      if (incomingAttempt && (!currentAttempt || incomingAttempt.updatedAt > currentAttempt.updatedAt)) {
+        return true;
+      }
+      return getProgressScore(incoming) >= getProgressScore(current);
+    })()
   );
 
   const applySavedProgress = (saved) => {
@@ -2074,6 +2350,8 @@
         : [getChapterForLevel(state.currentLevel)]
     );
     state.expandedChapters.add(getChapterForLevel(state.currentLevel));
+    pendingActiveAttempt = normalizeActiveAttempt(saved.activeAttempt);
+    activeAttemptSuppressed = !pendingActiveAttempt;
     evaluateAchievements();
   };
 
@@ -2113,6 +2391,7 @@
         applySavedProgress(cloudProgress);
         saveProgress({ skipCloud: true });
         refreshProgressUi();
+        clearActiveAttempt();
       } else {
         scheduleCloudSave(true);
       }
@@ -2195,10 +2474,15 @@
       state.gifts = [];
       state.processedIapPurchaseTokens = new Set();
       state.expandedChapters = new Set([getChapterForLevel(state.currentLevel)]);
+      pendingActiveAttempt = null;
+      activeAttemptSuppressed = true;
     }
   };
 
   const pauseJezzLevelForModal = () => {
+    if (!levelState.completed && !levelState.failed && levelScreen.classList.contains("is-active")) {
+      levelState.pausedByModal = true;
+    }
     if (levelState.running && levelScreen.classList.contains("is-active")) {
       levelState.running = false;
       levelState.pausedByModal = true;
@@ -2225,11 +2509,12 @@
     levelState.pausedByModal = false;
   };
 
-  const showConfirm = ({ title, message, acceptText = t("yes"), cancelText = t("stay") }) => {
+  const showConfirm = ({ title, message, acceptText = t("yes"), cancelText = t("stay"), outcome = "" }) => {
     if (!confirmModal) {
       return Promise.resolve(true);
     }
 
+    confirmModal.dataset.outcome = outcome;
     confirmTitle.textContent = title;
     if (message) {
       confirmMessage.hidden = false;
@@ -2261,9 +2546,9 @@
       return;
     }
 
+    deactivateModalFocus(confirmModal);
     confirmModal.classList.remove("is-open");
     confirmModal.setAttribute("aria-hidden", "true");
-    deactivateModalFocus(confirmModal);
     resumeJezzLevelFromModal();
     const resolve = confirmResolve;
     confirmResolve = null;
@@ -3059,7 +3344,7 @@
     panel.setAttribute("aria-label", "Результат сундука");
     panel.innerHTML = `
       <div class="shop-chest-result-card">
-        <div class="shop-chest-result-icon" aria-hidden="true">${escapeHtml(rolledReward.icon || "▣")}</div>
+        <div class="shop-chest-result-icon" aria-hidden="true"><img src="objects/ui/${Object.hasOwn(SHOP_CHEST_ITEMS, rolledReward.chestId) ? rolledReward.chestId : "small_chest"}.svg" alt=""></div>
         <p class="shop-chest-result-kicker">Выпало из сундука</p>
         <h3>${escapeHtml(rolledReward.chestTitle || "Сундук")}</h3>
         <div class="shop-chest-result-reward">${escapeHtml(rolledReward.rewardText || formatRewardText(rolledReward.reward || {}))}</div>
@@ -3078,7 +3363,7 @@
     }, { once: true });
 
     activeShopChestResultPanel = panel;
-    (inventoryModal || document.body).append(panel);
+    document.body.append(panel);
     activateModalFocus(panel, {
       initialFocus: claimButton
     });
@@ -3270,6 +3555,7 @@
 
     syncResources();
     requestDrawJezzLevel();
+    saveProgressImmediate();
   };
 
   const getYandexPurchaseProductId = (purchase) => purchase?.productID || purchase?.productId || purchase?.id || "";
@@ -3399,6 +3685,7 @@
         ${Object.entries(SHOP_CHEST_ITEMS).map(([id, item]) => renderShopCard({
           classes: `chest-card chest-${id}`,
           icon: item.icon,
+          image: `objects/ui/${id}.svg`,
           title: escapeHtml(item.title),
           description: "Случайная награда",
           meta: item.recommended ? "Рекомендуем" : "",
@@ -3626,7 +3913,7 @@
           <h3>${SHOP_CHEST_ITEMS.big_chest.title}</h3>
           <p>Случайная награда</p>
         </div>
-        <div class="shop-feature-icon" aria-hidden="true">▣</div>
+        <div class="shop-feature-icon" aria-hidden="true"><img src="objects/ui/big_chest.svg" alt=""></div>
         ${renderCoinButton(`data-inventory-action="buy-chest" data-chest-id="big_chest"`, SHOP_CHEST_ITEMS.big_chest.price, false)}
       </div>
       <div class="shop-section-title"><span aria-hidden="true">♥</span><h3>Быстрые награды</h3></div>
@@ -3646,6 +3933,7 @@
       const isVisible = visibleTabs.includes(button.dataset.inventoryTab);
       const isActive = isVisible && button.dataset.inventoryTab === state.inventoryTab;
       button.hidden = !isVisible;
+      button.setAttribute("role", "tab");
       button.setAttribute("aria-hidden", isVisible ? "false" : "true");
       button.classList.toggle("is-active", isActive);
       button.setAttribute("aria-selected", isActive ? "true" : "false");
@@ -3691,9 +3979,9 @@
     if (activeShopChestResultPanel) {
       return;
     }
+    deactivateModalFocus(inventoryModal);
     inventoryModal?.classList.remove("is-open");
     inventoryModal?.setAttribute("aria-hidden", "true");
-    deactivateModalFocus(inventoryModal);
     resumeJezzLevelFromModal();
   };
 
@@ -3735,7 +4023,7 @@
 
     return `
       <article class="${classes}">
-        <div class="achievement-icon" aria-hidden="true">${escapeHtml(achievement.icon || "★")}</div>
+        <div class="achievement-icon" aria-hidden="true"><img src="objects/ui/achievements/${achievement.id}.svg" alt=""></div>
         <div class="achievement-body">
           <div class="achievement-title-row">
             <h3>${escapeHtml(achievement.title)}</h3>
@@ -3973,12 +4261,13 @@
       return;
     }
 
-    window.clearTimeout(levelState.obstacleLegendTimer);
-    obstacleLegend.classList.add("is-visible");
+    // A viewport modal cannot be clipped by the compact controls' overflow.
+    if (confirmModal?.classList.contains("is-open")) return;
     setObstacleLegendExpanded(true);
-    levelState.obstacleLegendTimer = window.setTimeout(() => {
-      closeObstacleLegend();
-    }, 4000);
+    const message = [...obstacleLegend.querySelectorAll(".obstacle-legend-item")]
+      .map(item => item.textContent.trim()).join("\n\n");
+    showConfirm({ title: "Препятствия", message, acceptText: "Понятно", cancelText: null })
+      .finally(() => setObstacleLegendExpanded(false));
   };
 
   const showLevelHelperHint = () => {
@@ -3990,6 +4279,7 @@
     window.clearTimeout(levelState.helperHintTimer);
     closeObstacleLegend();
     panel.classList.remove("is-visible");
+    if (state.selectedLevel > 5) return;
     void panel.offsetWidth;
     panel.classList.add("is-visible");
     levelState.helperHintTimer = window.setTimeout(() => {
@@ -4082,12 +4372,29 @@
     }
   };
 
+  // The world's aspect follows the available slot. Rendering remains uniform
+  // so circles stay round; resizeActiveJezzLevel remaps progress proportionally.
+  let canvasView = { rotated: false, scale: 1, offsetX: 0, offsetY: 0 };
   const resizeJezzCanvas = () => {
     if (!jezzCanvas) {
       return { width: 0, height: 0 };
     }
 
     const pixelRatio = getCanvasPixelRatio();
+    const slot = jezzCanvas.parentElement;
+    const viewport = getViewportSize();
+    const rotated = viewport.width > viewport.height && slot.clientWidth > slot.clientHeight;
+    const slotWidth = Math.max(1, slot.clientWidth);
+    const slotHeight = Math.max(1, slot.clientHeight);
+    const logicalWidth = rotated ? slotHeight : slotWidth;
+    const logicalHeight = rotated ? slotWidth : slotHeight;
+    const fit = Math.min(logicalWidth, logicalHeight) / 384;
+    JEZZ_WORLD.width = logicalWidth / fit;
+    JEZZ_WORLD.height = logicalHeight / fit;
+    const viewWidth = rotated ? JEZZ_WORLD.height : JEZZ_WORLD.width;
+    const viewHeight = rotated ? JEZZ_WORLD.width : JEZZ_WORLD.height;
+    jezzCanvas.style.width = `${slotWidth}px`;
+    jezzCanvas.style.height = `${slotHeight}px`;
     const box = jezzCanvas.getBoundingClientRect();
     const width = Math.max(1, Math.round(box.width));
     const height = Math.max(1, Math.round(box.height));
@@ -4095,27 +4402,40 @@
     const pixelHeight = Math.round(height * pixelRatio);
     const changed = pixelWidth !== lastCanvasPixelWidth
       || pixelHeight !== lastCanvasPixelHeight
-      || pixelRatio !== lastCanvasPixelRatio;
+      || pixelRatio !== lastCanvasPixelRatio
+      || rotated !== canvasView.rotated;
     if (changed) {
       jezzCanvas.width = pixelWidth;
       jezzCanvas.height = pixelHeight;
-      jezzCanvas.getContext("2d").setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      const scale = Math.min(width / viewWidth, height / viewHeight);
+      const offsetX = (width - viewWidth * scale) / 2;
+      const offsetY = (height - viewHeight * scale) / 2;
+      if (rotated !== canvasView.rotated) clearLineGesture();
+      canvasView = { rotated, scale, offsetX, offsetY };
+      const context = jezzCanvas.getContext("2d");
+      if (rotated) {
+        context.setTransform(0, pixelRatio * scale, -pixelRatio * scale, 0,
+          pixelRatio * (offsetX + JEZZ_WORLD.height * scale), pixelRatio * offsetY);
+      } else {
+        context.setTransform(pixelRatio * scale, 0, 0, pixelRatio * scale,
+          pixelRatio * offsetX, pixelRatio * offsetY);
+      }
       lastCanvasPixelWidth = pixelWidth;
       lastCanvasPixelHeight = pixelHeight;
       lastCanvasPixelRatio = pixelRatio;
       backgroundCacheCanvas = backgroundCacheCanvas || document.createElement("canvas");
       staticLayerCanvas = staticLayerCanvas || document.createElement("canvas");
-      resizeLayerCanvas(backgroundCacheCanvas, width, height, pixelRatio);
-      resizeLayerCanvas(staticLayerCanvas, width, height, pixelRatio);
+      resizeLayerCanvas(backgroundCacheCanvas, JEZZ_WORLD.width, JEZZ_WORLD.height, pixelRatio);
+      resizeLayerCanvas(staticLayerCanvas, JEZZ_WORLD.width, JEZZ_WORLD.height, pixelRatio);
       markCanvasCachesDirty();
     }
-    return { width, height };
+    return { ...JEZZ_WORLD };
   };
 
   const getJezzPlayRect = (size) => {
-    const width = Math.max(1, size.width);
-    const height = Math.max(1, size.height);
-    const desiredMargin = Math.max(8, Math.min(18, width * 0.025));
+    const width = size.width;
+    const height = size.height;
+    const desiredMargin = 12;
     const maxMargin = Math.max(0, Math.min(width, height) / 2 - 1);
     const margin = Math.min(desiredMargin, maxMargin);
     return {
@@ -4128,10 +4448,10 @@
 
   const getCanvasPoint = (event) => {
     const rect = jezzCanvas.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    };
+    const { scale, offsetX, offsetY, rotated } = canvasView;
+    const x = (event.clientX - rect.left - offsetX) / scale;
+    const y = (event.clientY - rect.top - offsetY) / scale;
+    return rotated ? { x: y, y: JEZZ_WORLD.height - x } : { x, y };
   };
 
   const pointInRect = (point, rect) => (
@@ -4185,7 +4505,7 @@
       x2Ratio: normalized.x2,
       y1Ratio: normalized.y1,
       y2Ratio: normalized.y2,
-      phase: normalized.phase || index * 0.27,
+      phase: normalized.phase ?? index * 0.27,
       thickness: OBSTACLE_THICKNESS
     };
     return updateObstacleGeometry(obstacle, rect, 0);
@@ -4223,13 +4543,50 @@
     return obstacle;
   }
 
-  const ballRect = (ball) => levelState.activeRects.find((rect) => pointInRect(ball, rect)) || levelState.activeRect || levelState.rect;
+  // Rectangle decomposition is storage, not additional physical walls.
+  const ballRect = () => levelState.rect;
+
+  const ballTouchesObstacle = (ball, obstacle, clearance = 0) => {
+    if (!obstacle.blocksBall) return false;
+    const pad = (obstacle.thickness || OBSTACLE_THICKNESS) / 2 + clearance;
+    const rect = obstacle.w !== undefined ? obstacle : obstacle.orientation === "vertical"
+      ? { x: obstacle.x, y: obstacle.y1, w: 0, h: obstacle.y2 - obstacle.y1 }
+      : { x: obstacle.x1, y: obstacle.y, w: obstacle.x2 - obstacle.x1, h: 0 };
+    return circleTouchesRect(ball, rect, pad);
+  };
+
+  const createLevelBalls = (config, rect, obstacles, levelNumber = state.selectedLevel) => {
+    const speed = getSpeedValue(config.speed, rect), balls = [];
+    // Reproducible spread per level: retries stay fair, neighbouring levels differ.
+    const fraction = value => value - Math.floor(value);
+    for (const [index, start] of BALL_STARTS.slice(0, config.balls).entries()) {
+      const xRatio = .18 + .64 * fraction(levelNumber * .61803398875 + index * .38196601125);
+      const yRatio = .18 + .64 * fraction(levelNumber * .41421356237 + index * .61803398875);
+      const ball = { x: rect.x + rect.w * xRatio, y: rect.y + rect.h * yRatio,
+        vx: speed * start.vx, vy: speed * start.vy, r: BALL_RADIUS };
+      const clear = (point, margin) => !obstacles.some((o) => ballTouchesObstacle(point, o, margin))
+        && balls.every((b) => Math.hypot(b.x - point.x, b.y - point.y) > b.r + point.r + 2);
+      if (!clear(ball, 8)) {
+        let best = null, distance = Infinity;
+        for (let y = rect.y + BALL_RADIUS + 8; y <= rect.y + rect.h - BALL_RADIUS - 8; y += 8) {
+          for (let x = rect.x + BALL_RADIUS + 8; x <= rect.x + rect.w - BALL_RADIUS - 8; x += 8) {
+            const point = { ...ball, x, y }, d = Math.hypot(x - ball.x, y - ball.y);
+            if (d < distance && clear(point, 8)) { best = point; distance = d; }
+          }
+        }
+        if (!best) throw new Error("INV-002: no safe ball spawn");
+        Object.assign(ball, best);
+      }
+      balls.push(ball);
+    }
+    return balls;
+  };
 
   const pointInCapturedRect = (point) => levelState.capturedRects.some((rect) => pointInRect(point, rect));
 
   const getActiveAreaAtPoint = (point) => (
-    levelState.activeRects.find((rect) => pointInRect(point, rect))
-    || null
+    point && levelState.rect && pointInRect(point, levelState.rect) && !pointInCapturedRect(point)
+      ? levelState.rect : null
   );
 
   const getPointerActiveRect = getActiveAreaAtPoint;
@@ -4382,6 +4739,7 @@
       { kind: "frame", orientation: "vertical", x: rect.x, y1: rect.y, y2: rect.y + rect.h },
       { kind: "frame", orientation: "vertical", x: rect.x + rect.w, y1: rect.y, y2: rect.y + rect.h },
       ...levelState.walls.map((wall) => ({ kind: "wall", wall, ...wall })),
+      ...levelState.capturedRects.map((area) => ({ kind: "capture", orientation: "rect", ...area })),
       ...levelState.obstacles
         .filter((obstacle) => obstacle.blocksLine !== false)
         .map((obstacle) => ({ kind: "obstacle", obstacle, ...getObstacleCurrentSegment(obstacle) })),
@@ -4816,29 +5174,55 @@
     return rects.filter((rect) => rect.w > 0 && rect.h > 0);
   };
 
-  const floodRectsFromCells = (cells, sourceRect, cellSize) => {
-    if (!cells.size) {
-      return [];
+  const floodRectsFromCells = (cells, sourceRect, cellSize) => (
+    mergeAreaRects(floodRunRectsFromCells(cells, sourceRect, cellSize))
+  );
+
+  const mergeAreaRects = (rects) => {
+    const result = [];
+    for (const rect of [...rects].sort((a, b) => a.y - b.y || a.x - b.x)) {
+      const above = result.find((r) => Math.abs(r.x - rect.x) < 1e-7
+        && Math.abs(r.w - rect.w) < 1e-7 && Math.abs(r.y + r.h - rect.y) < 1e-7);
+      if (above) above.h += rect.h;
+      else result.push({ ...rect });
     }
+    return result;
+  };
 
-    let minColumn = Infinity;
-    let maxColumn = -Infinity;
-    let minRow = Infinity;
-    let maxRow = -Infinity;
-    cells.forEach((key) => {
-      const [cx, cy] = key.split(":").map(Number);
-      minColumn = Math.min(minColumn, cx);
-      maxColumn = Math.max(maxColumn, cx);
-      minRow = Math.min(minRow, cy);
-      maxRow = Math.max(maxRow, cy);
-    });
+  const subtractAreaRect = (rect, cut) => {
+    const x = Math.max(rect.x, cut.x), y = Math.max(rect.y, cut.y);
+    const x2 = Math.min(rect.x + rect.w, cut.x + cut.w), y2 = Math.min(rect.y + rect.h, cut.y + cut.h);
+    if (x2 <= x || y2 <= y) return [rect];
+    return [
+      { x: rect.x, y: rect.y, w: rect.w, h: y - rect.y },
+      { x: rect.x, y: y2, w: rect.w, h: rect.y + rect.h - y2 },
+      { x: rect.x, y, w: x - rect.x, h: y2 - y },
+      { x: x2, y, w: rect.x + rect.w - x2, h: y2 - y }
+    ].filter((r) => r.w > 1e-7 && r.h > 1e-7);
+  };
 
-    const x = sourceRect.x + minColumn * cellSize;
-    const y = sourceRect.y + minRow * cellSize;
-    const x2 = Math.min(sourceRect.x + sourceRect.w, sourceRect.x + (maxColumn + 1) * cellSize);
-    const y2 = Math.min(sourceRect.y + sourceRect.h, sourceRect.y + (maxRow + 1) * cellSize);
-    const rect = { x, y, w: x2 - x, h: y2 - y };
-    return isPlayableRect(rect) ? [rect] : [];
+  const circleTouchesRect = (ball, rect, padding = 0) => {
+    const x = Math.max(rect.x, Math.min(rect.x + rect.w, ball.x));
+    const y = Math.max(rect.y, Math.min(rect.y + rect.h, ball.y));
+    return Math.hypot(ball.x - x, ball.y - y) < ball.r + padding - 1e-7;
+  };
+
+  const assertCaptureGeometry = () => {
+    const overlap = (a, b) => Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) > 1e-6
+      && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) > 1e-6;
+    const all = [...levelState.activeRects, ...levelState.capturedRects];
+    for (let i = 0; i < all.length; i += 1) {
+      if (all.slice(i + 1).some((r) => overlap(all[i], r))) throw new Error("INV-001: overlapping capture geometry");
+    }
+    if (levelState.balls.some((ball) => levelState.capturedRects.some((r) => circleTouchesRect(ball, r)))) {
+      throw new Error("INV-001: ball intersects capture");
+    }
+    const area = levelState.capturedRects.reduce((sum, r) => sum + rectArea(r), 0);
+    const total = all.reduce((sum, r) => sum + rectArea(r), 0);
+    if (Math.abs(area - levelState.capturedArea) > 1e-5 || Math.abs(total - levelState.totalArea) > 1e-5) {
+      throw new Error("INV-001: area accounting mismatch");
+    }
+    return true;
   };
 
   const floodFillFromSeed = (seed, { sourceRect, completedLine, blockedCells = new Set() }) => {
@@ -4864,8 +5248,8 @@
     cells.add(startKey);
     blockedCells.add(startKey);
 
-    while (queue.length) {
-      const current = queue.shift();
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const current = queue[cursor];
       const from = cellCenter(current.cx, current.cy);
       [
         { cx: current.cx - 1, cy: current.cy },
@@ -4905,25 +5289,14 @@
     return levelState.balls
       .map((ball, index) => ({ ball, index }))
       .filter(({ ball }) => {
-        if (area.cells?.size && area.cellSize && area.sourceRect) {
-          if (!pointInRect(ball, area.sourceRect)) {
-            return false;
-          }
-          const cx = Math.max(0, Math.floor((ball.x - area.sourceRect.x) / area.cellSize));
-          const cy = Math.max(0, Math.floor((ball.y - area.sourceRect.y) / area.cellSize));
-          return area.cells.has(`${cx}:${cy}`);
-        }
-
         const rects = area.fillRects?.length ? area.fillRects : area.rects;
-        return rects.some((rect) => pointInRect(ball, rect));
+        return rects.some((rect) => circleTouchesRect(ball, rect));
       });
   };
 
   const areaContainsBall = (area) => getAreaBalls(area).length > 0;
 
-  const getAreaSize = (area) => area.cells?.size
-    ? area.cells.size * (area.cellSize || CAPTURE_FILL_CELL) ** 2
-    : area.rects.reduce((sum, rect) => sum + rectArea(rect), 0);
+  const getAreaSize = (area) => area.rects.reduce((sum, rect) => sum + rectArea(rect), 0);
 
   const isAreaLargeEnoughToCapture = (area) => (
     (area.cells?.size || 0) >= MIN_CAPTURE_CELLS
@@ -5001,7 +5374,7 @@
   };
 
   const getPotentialSplitResultFromCompletedLine = (completedLine) => {
-    const sourceRect = completedLine?.sourceArea || completedLine?.sourceRect || completedLine?.rect || levelState.activeRect;
+    const sourceRect = levelState.rect;
     if (!completedLine || !sourceRect || isLineRedundant(completedLine)) {
       return {
         canSplit: false,
@@ -5097,8 +5470,10 @@
 
   const markAreaCaptured = (area) => {
     (area.fillRects?.length ? area.fillRects : area.rects).forEach((rect) => {
-      levelState.capturedRects.push(rect);
-      levelState.capturedArea += rectArea(rect);
+      // Difference, not addition: repeated queries must never double-count pixels.
+      let pieces = [rect];
+      for (const captured of levelState.capturedRects) pieces = pieces.flatMap((r) => subtractAreaRect(r, captured));
+      levelState.capturedRects.push(...pieces);
     });
   };
 
@@ -5108,24 +5483,14 @@
       return false;
     }
 
-    const sourceIndex = levelState.activeRects.findIndex((active) => active === sourceRect || sameRect(active, sourceRect));
-    const nextActiveRects = levelState.activeRects.filter((active, index) => (
-      index !== sourceIndex && !sameRect(active, sourceRect)
-    ));
-
-    splitResult.activeAreas.forEach((area) => {
-      if (areaContainsBall(area) && isAreaLargeEnoughToCapture(area)) {
-        nextActiveRects.push(...area.rects);
-      }
-    });
     splitResult.capturableAreas.forEach(markAreaCaptured);
-
-    levelState.activeRects = nextActiveRects;
-    const completedLine = splitResult.completedLine;
-    levelState.activeRect = levelState.activeRects.find((active) => pointInRect({
-      x: completedLine.orientation === "vertical" ? completedLine.x : (completedLine.x1 + completedLine.x2) * 0.5,
-      y: completedLine.orientation === "horizontal" ? completedLine.y : (completedLine.y1 + completedLine.y2) * 0.5
-    }, active)) || levelState.activeRects[0] || null;
+    levelState.capturedRects = mergeAreaRects(levelState.capturedRects);
+    let free = [{ ...levelState.rect }];
+    for (const captured of levelState.capturedRects) free = free.flatMap((r) => subtractAreaRect(r, captured));
+    levelState.activeRects = mergeAreaRects(free);
+    levelState.activeRect = levelState.rect;
+    levelState.capturedArea = levelState.capturedRects.reduce((sum, r) => sum + rectArea(r), 0);
+    assertCaptureGeometry();
     return true;
   };
 
@@ -5166,6 +5531,7 @@
     clampBallsToActiveRects();
     markCanvasCachesDirty({ background: false, staticLayer: true });
     syncLevelHud();
+    saveProgressImmediate();
 
     if (getCaptureRatio() * 100 >= levelState.target) {
       finishJezzLevel();
@@ -5178,6 +5544,7 @@
     }
 
     levelState.failed = true;
+    clearActiveAttempt();
     levelState.activeLine = null;
     levelState.gestureStartPoint = null;
     levelState.gestureCurrentPoint = null;
@@ -5193,6 +5560,7 @@
 
     const canUseRewardedAd = Boolean(yandexState.sdk?.adv && typeof yandexState.sdk.adv.showRewardedVideo === "function");
     const shouldRetry = await showConfirm({
+      outcome: "loss",
       title: t("levelFailedTitle"),
       message: canUseRewardedAd
         ? `${t("lineHitFailure")} ${t("failedRewardRetryHint")}`
@@ -5227,6 +5595,7 @@
     levelState.activeLine = null;
     levelState.penalties = Math.min(MAX_PENALTIES, levelState.penalties + 1);
     syncLevelHud();
+    saveProgressImmediate();
     showLevelToast(message || t("penaltyProgress", { count: levelState.penalties, max: MAX_PENALTIES }));
 
     if (levelState.penalties >= MAX_PENALTIES) {
@@ -5488,6 +5857,15 @@
       levelState.walls.forEach((wall) => bounceBallOffWall(ball, wall, previous));
       levelState.obstacles.forEach((obstacle) => bounceBallOffObstacle(ball, obstacle));
       clampBallToRect(ball, rect);
+      // Captured cells are solid. Internal seams of their rectangle tiling are not.
+      if (levelState.capturedRects.some((r) => circleTouchesRect(ball, r))) {
+        const blockedX = levelState.capturedRects.some((r) => circleTouchesRect({ ...ball, y: previous.y }, r));
+        const blockedY = levelState.capturedRects.some((r) => circleTouchesRect({ ...ball, x: previous.x }, r));
+        if (blockedX || !blockedY) ball.vx *= -1;
+        if (blockedY || !blockedX) ball.vy *= -1;
+        ball.x = previous.x;
+        ball.y = previous.y;
+      }
     });
   };
 
@@ -5684,9 +6062,9 @@
     const ctx = backgroundCacheCanvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
     const boardGradient = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
-    boardGradient.addColorStop(0, "rgba(13, 10, 48, 0.94)");
-    boardGradient.addColorStop(0.5, "rgba(11, 16, 55, 0.96)");
-    boardGradient.addColorStop(1, "rgba(28, 10, 68, 0.94)");
+    boardGradient.addColorStop(0, "rgba(13, 10, 48, 0.32)");
+    boardGradient.addColorStop(0.5, "rgba(11, 16, 55, 0.38)");
+    boardGradient.addColorStop(1, "rgba(28, 10, 68, 0.32)");
     ctx.fillStyle = boardGradient;
     ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
     if (!lowPerformanceMode) {
@@ -5801,8 +6179,8 @@
 
     perfState.drawCount += 1;
     const ctx = jezzCanvas.getContext("2d");
-    const width = jezzCanvas.clientWidth;
-    const height = jezzCanvas.clientHeight;
+    const width = JEZZ_WORLD.width;
+    const height = JEZZ_WORLD.height;
     const rect = levelState.rect;
     ctx.clearRect(0, 0, width, height);
 
@@ -5888,12 +6266,13 @@
   };
 
   function finishJezzLevel() {
-    if (levelState.completed) {
+    if (levelState.completed || levelState.failed) {
       return;
     }
 
     levelState.completed = true;
     levelState.running = false;
+    clearActiveAttempt();
     levelState.pausedByViewport = false;
     updateGameplayMarker(false);
     levelState.activeLine = null;
@@ -5992,6 +6371,8 @@
     levelState.running = false;
     levelState.pausedByViewport = false;
     updateGameplayMarker(false);
+    window.clearTimeout(levelState.toastTimer);
+    levelToast?.classList.remove("is-visible");
     window.clearTimeout(levelState.helperHintTimer);
     document.querySelector(".level-helper-panel")?.classList.remove("is-visible");
     if (levelState.animationId) {
@@ -6036,6 +6417,7 @@
     if (!levelState.animationId) {
       levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
     }
+    return true;
   };
 
   const pauseJezzLevelForViewport = () => {
@@ -6090,7 +6472,7 @@
 
   const syncViewportLayoutNow = ({ resizeLevel = true } = {}) => {
     const { width, height } = syncViewportVars();
-    const isTooSmall = width < 320 || height < 360;
+    const isTooSmall = width < 320 || height < 300;
     applyViewportTooSmallState(isTooSmall);
     if (resizeLevel && levelScreen.classList.contains("is-active") && !isTooSmall) {
       resizeActiveJezzLevel();
@@ -6179,92 +6561,70 @@
     return wasShown;
   };
 
-  const showRewardedLifeAd = () => new Promise((resolve) => {
-    if (!yandexState.sdk?.adv || typeof yandexState.sdk.adv.showRewardedVideo !== "function") {
+  const runRewardedVideo = (onRewarded) => new Promise((resolve) => {
+    if (
+      yandexState.rewardedInFlight
+      || !yandexState.sdk?.adv
+      || typeof yandexState.sdk.adv.showRewardedVideo !== "function"
+    ) {
       resolve(false);
       return;
     }
 
+    yandexState.rewardedInFlight = true;
     let rewarded = false;
+    let opened = false;
+    let settled = false;
+
+    const finishOnce = (result) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      yandexState.adShowing = false;
+      yandexState.rewardedInFlight = false;
+      resumeJezzLevelFromPlatform();
+      scheduleStickyBannerSync();
+      resolve(Boolean(result));
+    };
 
     try {
       yandexState.sdk.adv.showRewardedVideo({
         callbacks: {
           onOpen: () => {
+            if (settled || opened) {
+              return;
+            }
+            opened = true;
             yandexState.adShowing = true;
             scheduleStickyBannerSync();
             pauseJezzLevelForPlatform();
           },
           onRewarded: () => {
+            if (settled || rewarded) {
+              return;
+            }
             rewarded = true;
+            onRewarded?.();
           },
-          onClose: () => {
-            yandexState.adShowing = false;
-            resumeJezzLevelFromPlatform();
-            scheduleStickyBannerSync();
-            resolve(rewarded);
-          },
-          onError: () => {
-            yandexState.adShowing = false;
-            resumeJezzLevelFromPlatform();
-            scheduleStickyBannerSync();
-            resolve(false);
-          }
+          onClose: () => finishOnce(rewarded),
+          onError: () => finishOnce(false)
         }
       });
     } catch (_error) {
-      yandexState.adShowing = false;
-      resumeJezzLevelFromPlatform();
-      scheduleStickyBannerSync();
-      resolve(false);
+      finishOnce(false);
     }
   });
 
-  const showRewardedShopAd = (item) => new Promise((resolve) => {
-    if (!canUseRewardedAd()) {
-      resolve(false);
-      return;
-    }
+  const showRewardedLifeAd = () => runRewardedVideo();
 
-    let rewarded = false;
-
-    try {
-      yandexState.sdk.adv.showRewardedVideo({
-        callbacks: {
-          onOpen: () => {
-            yandexState.adShowing = true;
-            scheduleStickyBannerSync();
-            pauseJezzLevelForPlatform();
-          },
-          onRewarded: () => {
-            rewarded = true;
-            if (item.randomBooster) {
-              const keys = Object.keys(DEFAULT_BOOSTERS);
-              const key = keys[Math.floor(Math.random() * keys.length)] || keys[0];
-              grantShopReward({ boosters: { [key]: 1 } });
-            } else {
-              grantShopReward(item.reward);
-            }
-          },
-          onClose: () => {
-            yandexState.adShowing = false;
-            resumeJezzLevelFromPlatform();
-            scheduleStickyBannerSync();
-            resolve(rewarded);
-          },
-          onError: () => {
-            yandexState.adShowing = false;
-            resumeJezzLevelFromPlatform();
-            scheduleStickyBannerSync();
-            resolve(false);
-          }
-        }
-      });
-    } catch (_error) {
-      yandexState.adShowing = false;
-      resumeJezzLevelFromPlatform();
-      scheduleStickyBannerSync();
-      resolve(false);
+  const showRewardedShopAd = (item) => runRewardedVideo(() => {
+    if (item.randomBooster) {
+      const keys = Object.keys(DEFAULT_BOOSTERS);
+      const key = keys[Math.floor(Math.random() * keys.length)] || keys[0];
+      grantShopReward({ boosters: { [key]: 1 } });
+    } else {
+      grantShopReward(item.reward);
     }
   });
 
@@ -6300,6 +6660,12 @@
     const oldRect = levelState.rect;
     const size = resizeJezzCanvas();
     const nextRect = getJezzPlayRect(size);
+
+    if (oldRect && sameRect(oldRect, nextRect)) {
+      markCanvasCachesDirty();
+      requestDrawJezzLevel();
+      return;
+    }
 
     if (!oldRect || oldRect.w <= 0 || oldRect.h <= 0) {
       startJezzLevel();
@@ -6339,14 +6705,87 @@
 
     syncLevelHud();
     requestDrawJezzLevel();
+    saveProgressImmediate();
   };
 
-  const startJezzLevel = () => {
+  const applyActiveAttemptToLevel = (attempt, rect) => {
+    if (!attempt || !rect) {
+      return false;
+    }
+    if (attempt.needsLayoutRestart) {
+      showLevelToast("Схема уровня обновлена. Попытка начата заново без потери жизни");
+      return false;
+    }
+
+    const restoredCapturedRects = attempt.capturedRects
+      .map((item) => restoreAttemptRect(item, rect))
+      .filter(Boolean);
+    const restoredWalls = attempt.walls
+      .map((item) => restoreAttemptWall(item, rect))
+      .filter(Boolean);
+    const restoredBalls = attempt.balls
+      .map((item, index) => {
+        const ball = restoreAttemptBall(item, rect);
+        if (ball && item.velocityFormat !== 2) {
+          // Legacy saves divided vx by width and vy by height, but omitted the
+          // source aspect ratio. Original component magnitudes are known from
+          // BALL_STARTS; collisions only change their signs.
+          const speed = getSpeedValue(levelState.config.speed, rect);
+          ball.vx = Math.sign(ball.vx || 1) * Math.abs(BALL_STARTS[index].vx) * speed;
+          ball.vy = Math.sign(ball.vy || 1) * Math.abs(BALL_STARTS[index].vy) * speed;
+        }
+        return ball;
+      })
+      .filter(Boolean);
+
+    if (restoredBalls.length !== levelState.config.balls) {
+      return false;
+    }
+
+    // A legacy invalid attempt restarts in-place, without spending another life.
+    // Completed-level progress and inventory are not changed.
+    if (restoredBalls.some((ball) => restoredCapturedRects.some((r) => circleTouchesRect(ball, r)))) {
+      showLevelToast("Старая попытка восстановлена с начала уровня");
+      return false;
+    }
+
+    levelState.target = attempt.target;
+    levelState.capturedRects = [];
+    markAreaCaptured({ rects: restoredCapturedRects });
+    levelState.capturedRects = mergeAreaRects(levelState.capturedRects);
+    let free = [{ ...rect }];
+    for (const captured of levelState.capturedRects) free = free.flatMap((r) => subtractAreaRect(r, captured));
+    levelState.activeRects = mergeAreaRects(free);
+    levelState.activeRect = rect;
+    levelState.walls = restoredWalls;
+    levelState.balls = restoredBalls;
+    levelState.ball = levelState.balls[0] || null;
+    levelState.capturedArea = levelState.capturedRects.reduce((sum, r) => sum + rectArea(r), 0);
+    levelState.elapsed = attempt.elapsed;
+    levelState.penalties = attempt.penalties;
+    levelState.lineOrientation = attempt.lineOrientation;
+    levelState.fastLineArmed = attempt.fastLineArmed;
+    levelState.lineShieldArmed = attempt.lineShieldArmed;
+    levelState.slowBallsUntil = attempt.slowBallsRemainingMs > 0
+      ? getTrustedNow() + attempt.slowBallsRemainingMs
+      : 0;
+    levelState.targetEaseUsed = attempt.targetEaseUsed;
+    levelState.obstacles.forEach((obstacle) => updateObstacleGeometry(obstacle, rect, levelState.elapsed));
+    assertCaptureGeometry();
+    syncLineOrientationButtons();
+    markCanvasCachesDirty();
+    return true;
+  };
+
+  const startJezzLevel = ({ restoreAttempt = null } = {}) => {
     stopJezzLevel();
+    if (!restoreAttempt) {
+      pendingActiveAttempt = null;
+    }
+    activeAttemptSuppressed = false;
     const size = resizeJezzCanvas();
     const rect = getJezzPlayRect(size);
     const config = getLevelConfig(state.selectedLevel);
-    const speed = getSpeedValue(config.speed, rect);
     levelState.running = true;
     updateGameplayMarker(true);
     levelState.completed = false;
@@ -6382,18 +6821,15 @@
       y: rect.y + rect.h / 2
     };
     levelState.lastCompletion = null;
-    levelState.balls = BALL_STARTS.slice(0, config.balls).map((start) => ({
-      x: rect.x + rect.w * start.x,
-      y: rect.y + rect.h * start.y,
-      vx: speed * start.vx,
-      vy: speed * start.vy,
-      r: BALL_RADIUS
-    }));
+    levelState.balls = createLevelBalls(config, rect, levelState.obstacles);
+    if (restoreAttempt) {
+      applyActiveAttemptToLevel(restoreAttempt, rect);
+    }
     markCanvasCachesDirty();
     levelState.ball = levelState.balls[0] || null;
+    deactivateModalFocus(levelCompletePanel);
     levelCompletePanel?.classList.remove("is-visible");
     levelCompletePanel?.setAttribute("aria-hidden", "true");
-    deactivateModalFocus(levelCompletePanel);
     syncLevelHud();
     showLevelHelperHint();
     showObstacleLegendHint();
@@ -6402,6 +6838,7 @@
     if (!levelState.animationId) {
       levelState.animationId = window.requestAnimationFrame(tickJezzLevel);
     }
+    return true;
   };
 
   const beginLineFromPointer = (event) => {
@@ -6507,7 +6944,7 @@
       event.preventDefault();
       const dx = key === "ArrowLeft" ? -1 : key === "ArrowRight" ? 1 : 0;
       const dy = key === "ArrowUp" ? -1 : key === "ArrowDown" ? 1 : 0;
-      moveKeyboardAim(dx, dy);
+      moveKeyboardAim(canvasView.rotated ? dy : dx, canvasView.rotated ? -dx : dy);
       return;
     }
 
@@ -6517,7 +6954,7 @@
       return;
     }
 
-    if (key === "Tab" || key.toLowerCase() === "q" || key.toLowerCase() === "e") {
+    if (key.toLowerCase() === "q" || key.toLowerCase() === "e") {
       event.preventDefault();
       toggleLineOrientation();
       syncKeyboardAim();
@@ -6530,7 +6967,7 @@
     }
     const castResult = getLineCastResult(point, orientation, rect);
     if (castResult.failReason === "danger") {
-      cancelActiveLine(true);
+      showLevelToast("Выберите свободное направление для линии");
       return;
     }
     if (castResult.failReason === "temporary-blocker") {
@@ -6721,7 +7158,7 @@
   };
 
   const runDevLevelAudit = (levels = Array.from({ length: TOTAL_LEVELS }, (_, index) => index + 1)) => {
-    const auditRect = { x: 0, y: 0, w: 480, h: 640 };
+    const auditRect = getJezzPlayRect(JEZZ_WORLD);
     const stateKeys = [
       "config",
       "target",
@@ -6746,7 +7183,6 @@
 
     const scanLevel = (levelNumber) => {
       const config = getLevelConfig(levelNumber);
-      const speed = getSpeedValue(config.speed, auditRect);
       levelState.config = config;
       levelState.target = config.target;
       levelState.capturedArea = 0;
@@ -6760,13 +7196,7 @@
       levelState.obstacles = (config.obstacles || []).map((obstacle, index) => createObstacle(obstacle, auditRect, index));
       levelState.elapsed = 0;
       levelState.activeLine = null;
-      levelState.balls = BALL_STARTS.slice(0, config.balls).map((start) => ({
-        x: auditRect.x + auditRect.w * start.x,
-        y: auditRect.y + auditRect.h * start.y,
-        vx: speed * start.vx,
-        vy: speed * start.vy,
-        r: BALL_RADIUS
-      }));
+      levelState.balls = createLevelBalls(config, auditRect, levelState.obstacles, levelNumber);
       levelState.ball = levelState.balls[0] || null;
 
       let validStarts = 0;
@@ -6852,6 +7282,7 @@
   };
 
   const openChapter = (chapterId) => {
+    clearActiveAttempt();
     stopJezzLevel();
     const nextChapterId = clampChapterId(chapterId);
     state.currentChapter = nextChapterId;
@@ -6903,6 +7334,46 @@
     window.requestAnimationFrame(startJezzLevel);
   };
 
+  const restoreSavedActiveAttempt = () => {
+    const attempt = pendingActiveAttempt;
+    if (!attempt) {
+      return false;
+    }
+
+    if (attempt.level > state.currentLevel || isCompletedLevel(attempt.level)) {
+      clearActiveAttempt();
+      saveProgressImmediate({ flushCloud: true });
+      return false;
+    }
+
+    pendingActiveAttempt = null;
+    activeAttemptSuppressed = false;
+    state.selectedLevel = attempt.level;
+    state.currentChapter = getChapterForLevel(attempt.level);
+    const chapter = getChapter(state.currentChapter);
+    setCompletionActions(isCompletedLevel(attempt.level));
+    levelScreen.className = `level-screen screen chapter-${chapter.id}${chapter.id > 1 ? " has-learned-lines" : ""}`;
+    levelChapterLabel.textContent = `${t("chapter")} ${chapter.id} - ${getChapterTitle(chapter.id)}`;
+    levelTitle.textContent = `${t("level")} ${attempt.level}`;
+    syncLevelHint(attempt.level);
+    showScreen("level-screen");
+    window.requestAnimationFrame(() => {
+      const restored = startJezzLevel({ restoreAttempt: attempt });
+      if (!restored) {
+        clearActiveAttempt();
+        stopJezzLevel();
+        showScreen("main-menu");
+        saveProgressImmediate({ flushCloud: true });
+        return;
+      }
+      syncViewportLayoutNow();
+      jezzCanvas?.focus({ preventScroll: true });
+      syncKeyboardAim();
+      saveProgressImmediate({ flushCloud: true });
+    });
+    return true;
+  };
+
   const openLevel = async (level, options = {}) => {
     if (level > state.currentLevel) {
       return;
@@ -6931,6 +7402,7 @@
     }
 
     const chapter = getChapter(getChapterForLevel(level));
+    clearActiveAttempt();
     state.selectedLevel = level;
     state.currentChapter = chapter.id;
     setCompletionActions(isCompletedLevel(level));
@@ -6945,6 +7417,7 @@
       syncViewportLayoutNow();
       jezzCanvas?.focus({ preventScroll: true });
       syncKeyboardAim();
+      saveProgressImmediate({ flushCloud: true });
     });
   };
 
@@ -6964,9 +7437,9 @@
       applied: false
     });
 
+    deactivateModalFocus(levelCompletePanel);
     levelCompletePanel?.classList.remove("is-visible");
     levelCompletePanel?.setAttribute("aria-hidden", "true");
-    deactivateModalFocus(levelCompletePanel);
     stopJezzLevel();
     if (!completion.replayingCompleted && !completion.interstitialShown) {
       completion.interstitialShown = true;
@@ -7053,6 +7526,7 @@
       } else {
         stopJezzLevel();
       }
+      clearActiveAttempt();
       showScreen("main-menu");
       playButton.disabled = false;
       saveProgress();
@@ -7306,7 +7780,7 @@
     }
 
     layoutObserver = new ResizeObserver(() => syncViewportLayout());
-    [root, levelPlayfield, jezzCanvas].forEach((element) => {
+    [root, levelPlayfield, jezzCanvas?.parentElement, jezzCanvas].forEach((element) => {
       if (element) {
         layoutObserver.observe(element);
       }
@@ -7342,6 +7816,10 @@
   observeViewportLayout();
   syncViewportLayoutNow({ resizeLevel: false });
   renderChapterScreens();
+  clearActiveAttempt();
+  // Results are viewport overlays, not grid items of the playable board.
+  if (levelCompletePanel) levelScreen.append(levelCompletePanel);
+  showScreen("main-menu");
   initYandexSdk();
 
   if (IS_DEBUG) {
@@ -7377,8 +7855,4 @@
     };
   }
 
-  const initialChapterMatch = window.location.hash.match(/^#chapter-(\d+)-screen$/);
-  if (initialChapterMatch) {
-    openChapter(Number(initialChapterMatch[1]));
-  }
 })();

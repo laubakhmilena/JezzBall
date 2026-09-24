@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#160b3a">
   <meta name="description" content="JezzBall - аркада, где нужно делить поле линиями, обходить шары и захватывать пространство.">
   <title>JezzBall</title>
+  <link rel="icon" href="data:,">
   <link rel="preload" as="image" href="objects/fone/fone_menu_two-mobile.jpg" media="(max-width: 680px) and (orientation: portrait)">
   <link rel="preload" as="image" href="objects/fone/fone_menu-mobile.jpg" media="(pointer: coarse) and (min-width: 681px), (pointer: coarse) and (orientation: landscape)">
   <link rel="preload" as="image" href="objects/fone/fone_menu.png" media="(pointer: fine), (min-width: 681px) and (orientation: portrait)">
@@ -109,8 +110,9 @@
               </div>
             </div>
           </div>
-          <canvas class="jezz-canvas" id="jezzCanvas" tabindex="0" aria-label="Игровое поле JezzBall. Проведи пальцем или мышью вверх или вниз для вертикальной линии, влево или вправо для горизонтальной. Стрелки перемещают прицел, Space или Enter ставят линию."></canvas>
+          <div class="jezz-canvas-slot"><canvas class="jezz-canvas" id="jezzCanvas" tabindex="0" aria-label="Игровое поле JezzBall. Проведи пальцем или мышью вверх или вниз для вертикальной линии, влево или вправо для горизонтальной. Стрелки перемещают прицел, Space или Enter ставят линию."></canvas></div>
           <div class="level-toast" id="levelToast" aria-live="polite"></div>
+          <aside class="level-helper-panel" aria-label="Подсказка уровня" aria-live="polite"><p>Проведи пальцем вверх или вниз</p></aside>
           <div class="level-complete-panel" id="levelCompletePanel" aria-hidden="true">
             <div class="reward-card" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
               <button class="reward-close" type="button" id="completeCloseButton" aria-label="К главам">×</button>
@@ -201,7 +203,7 @@
     </div>
   </main>
 
-  <script src="/sdk.js"></script>
+  <script src="load-sdk.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
