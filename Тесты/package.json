@@ -1,0 +1,13 @@
+{
+  "name": "jezzball-qa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "pnpm run test:static && pnpm run test:e2e",
+    "test:static": "node --test *.test.mjs",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0"
+  }
+}
