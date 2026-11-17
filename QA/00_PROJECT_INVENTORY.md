@@ -108,6 +108,6 @@ JezzBall — single-player браузерная аркада: игрок про�
 Production archive, original filenames, license/ownership of assets, browser support matrix, moderation state, real catalog/product IDs and prices, exact accessibility/performance requirements, audio design, analytics/privacy policy.
 
 ## Source links
-- [HTML](../index%282%29.html)
-- [JavaScript](../script%281%29.js)
-- [CSS](../style%281%29.css)
+- HTML исходной поставки: `index(2).html` (историческое имя).
+- JavaScript исходной поставки: `script(1).js` (историческое имя).
+- CSS исходной поставки: `style(1).css` (историческое имя).
